@@ -5,12 +5,12 @@ import { BuzonVisitas } from './pages/verificador/buzon-visitas/buzon-visitas';
 import { DetalleSolicitud } from './pages/verificador/detalle-solicitud/detalle-solicitud';
 import { FormularioCampo } from './pages/verificador/formulario-campo/formulario-campo';
 
-import { Layout as AdminLayout } from './pages/admin/layout/layout';
-import { PuntoAtencion } from './pages/admin/punto-atencion/punto-atencion';
-import { CajaDispersion } from './pages/admin/caja-dispersion/caja-dispersion';
-import { CargaArchivos } from './pages/admin/carga-archivos/carga-archivos';
-import { Conciliacion } from './pages/admin/conciliacion/conciliacion';
-import { Tokens } from './pages/admin/tokens/tokens';
+import { Layout as CoordinadorLayout } from './pages/coordinador/layout/layout';
+import { PuntoAtencion } from './pages/coordinador/punto-atencion/punto-atencion';
+import { CajaDispersion } from './pages/coordinador/caja-dispersion/caja-dispersion';
+import { CargaArchivos } from './pages/coordinador/carga-archivos/carga-archivos';
+import { Conciliacion } from './pages/coordinador/conciliacion/conciliacion';
+import { Tokens } from './pages/coordinador/tokens/tokens';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -26,8 +26,8 @@ export const routes: Routes = [
     ]
   },
   { 
-    path: 'admin', 
-    component: AdminLayout,
+    path: 'coordinador', 
+    component: CoordinadorLayout,
     children: [
       { path: '', redirectTo: 'punto-atencion', pathMatch: 'full' },
       { path: 'punto-atencion', component: PuntoAtencion },

@@ -19,10 +19,10 @@ export class Login {
     event.preventDefault();
     if (this.email === 'verificador@empresa.com') {
       this.router.navigate(['/verificador']);
-    } else if (this.email === 'admin@empresa.com') {
-      this.router.navigate(['/admin']);
+    } else if (this.email === 'coordinador@empresa.com') {
+      this.router.navigate(['/coordinador']);
     } else {
-      this.error = 'Usuario no reconocido. Usa verificador@empresa.com o admin@empresa.com';
+      this.error = 'Usuario no reconocido. Usa verificador@empresa.com o coordinador@empresa.com';
     }
   }
 }
