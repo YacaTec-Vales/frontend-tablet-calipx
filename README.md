@@ -98,3 +98,50 @@ Ejemplos:
 
 - Repositorio de tokens visuales: [`frontend-global-styles`](../frontend-global-styles)
 - Documentacion de Angular CLI: https://angular.dev/tools/cli
+
+---
+
+## Estructura Multirrepositorio y Configuración Local
+
+Para que los estilos compartidos funcionen correctamente, debes asegurarte de que tu estructura de carpetas local sea exactamente la siguiente:
+
+```text
+📂 flobwite-beta (o cualquier nombre)
+ ┣ 📂 frontend-global-styles
+ ┣ 📂 frontend-mobile-poch
+ ┣ 📂 frontend-tablet-calipx
+ ┗ 📂 frontend-desktop-tecu
+```
+
+Una vez que tengas esta estructura, para instalar todo lo necesario, simplemente entra a la carpeta de este proyecto y ejecuta:
+
+```bash
+npm install
+```
+*(No es necesario ejecutar `npm install` en la carpeta `frontend-global-styles`)*.
+
+### Configuración del Asistente de IA (MCP de Flowbite)
+
+Si estás usando un agente de IA para ayudarte a codificar o diseñar nuevas pantallas, debes inicializar el servidor MCP oficial de Flowbite. Para hacerlo, ejecuta el siguiente comando en la raíz (donde están todos los repositorios):
+
+```bash
+npx -y flowbite-mcp
+```
+Esto le dará al agente acceso a todos los componentes de la librería.
+
+### Diseño y Componentes
+
+Nuestra aplicación utiliza **Flowbite** para la construcción de interfaces. Puedes encontrar la documentación oficial y ejemplos de código aquí:
+👉 [Flowbite para Angular](https://flowbite.com/docs/getting-started/angular/)
+
+**Color Principal (Marca):**
+El color principal predeterminado de todo el sistema es el **Guindo**: `#600C0C`. Cualquier botón o elemento de acción principal debe respetar este color (a excepción de los estados de éxito, alerta o peligro).
+
+#### Estructura de Componentes (Tablet)
+
+Este repositorio contiene los módulos operativos para el trabajo de campo y supervisión usando Tablets. Los roles que vas a encontrar aquí son:
+
+1. **Verificador (Trabajo de Campo)**
+   - Formularios largos tipo checklist, uso intensivo de captura fotográfica, botones grandes (touch-friendly) para completar validaciones domiciliarias y listas de buzones de visita.
+2. **Coordinador**
+   - Vistas para cargar nuevas solicitudes de crédito de distribuidoras, con layouts organizados para visualización panorámica en tabletas y gestión de clientes.

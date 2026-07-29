@@ -1,0 +1,103 @@
+<div class="space-y-6 pb-24 max-w-3xl mx-auto">
+  <div class="mb-4">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Evidencia Física</h2>
+    <p class="text-gray-500 dark:text-gray-400">Juan Carlos Martínez (YCT-83921)</p>
+  </div>
+
+  <form class="space-y-8">
+    
+    <!-- 1. Módulo de Cámara -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">1. Fotografías del Domicilio</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Foto Fachada -->
+        <div>
+          <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Foto Fachada Externa</label>
+          <div class="flex items-center justify-center w-full">
+              <label for="fachada-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                  <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg class="w-10 h-10 mb-3 text-brand dark:text-brand-light" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 12.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 3h-2l-1-2H6L5 3H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/>
+                      </svg>
+                      <p class="text-sm font-bold text-gray-900 dark:text-white">Abrir Cámara</p>
+                  </div>
+                  <input id="fachada-file" type="file" class="hidden" capture="environment" accept="image/*" />
+              </label>
+          </div> 
+        </div>
+
+        <!-- Foto Interior -->
+        <div>
+          <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Foto Interior / Comprobante</label>
+          <div class="flex items-center justify-center w-full">
+              <label for="interior-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                  <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg class="w-10 h-10 mb-3 text-brand dark:text-brand-light" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 12.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 3h-2l-1-2H6L5 3H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/>
+                      </svg>
+                      <p class="text-sm font-bold text-gray-900 dark:text-white">Abrir Cámara</p>
+                  </div>
+                  <input id="interior-file" type="file" class="hidden" capture="environment" accept="image/*" />
+              </label>
+          </div> 
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Checklist -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">2. Lista de Verificación</h3>
+      <ul class="w-full text-sm font-medium text-gray-900 bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white space-y-3">
+        <li class="w-full">
+            <div class="flex items-center ps-3">
+                <input id="chk-domicilio" type="checkbox" value="" class="w-6 h-6 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand dark:focus:ring-brand-light dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                <label for="chk-domicilio" class="w-full py-3 ms-4 text-base font-medium text-gray-900 dark:text-gray-300">El domicilio coincide con el recibo de luz</label>
+            </div>
+        </li>
+        <li class="w-full">
+            <div class="flex items-center ps-3">
+                <input id="chk-persona" type="checkbox" value="" class="w-6 h-6 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand dark:focus:ring-brand-light dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                <label for="chk-persona" class="w-full py-3 ms-4 text-base font-medium text-gray-900 dark:text-gray-300">La persona se encontraba presente</label>
+            </div>
+        </li>
+        <li class="w-full">
+            <div class="flex items-center ps-3">
+                <input id="chk-vecinos" type="checkbox" value="" class="w-6 h-6 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand dark:focus:ring-brand-light dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                <label for="chk-vecinos" class="w-full py-3 ms-4 text-base font-medium text-gray-900 dark:text-gray-300">Vecinos confirmaron residencia mayor a 1 año</label>
+            </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 3. Dictamen -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">3. Dictamen Final</h3>
+      
+      <div class="mb-4">
+        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Resultado de la verificación</label>
+        <div class="flex gap-4">
+          <div class="flex items-center ps-4 border border-gray-200 rounded-lg dark:border-gray-700 flex-1 bg-green-50 dark:bg-gray-700">
+              <input id="radio-cumple" type="radio" value="" name="dictamen" class="w-5 h-5 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="radio-cumple" class="w-full py-4 ms-2 text-sm font-bold text-green-800 dark:text-green-300">Cumple</label>
+          </div>
+          <div class="flex items-center ps-4 border border-gray-200 rounded-lg dark:border-gray-700 flex-1 bg-red-50 dark:bg-gray-700">
+              <input id="radio-no-cumple" type="radio" value="" name="dictamen" class="w-5 h-5 text-red-600 bg-gray-100 border-gray-300 focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="radio-no-cumple" class="w-full py-4 ms-2 text-sm font-bold text-red-800 dark:text-red-300">No Cumple</label>
+          </div>
+        </div>
+      </div>
+
+      <div>
+          <label for="observaciones" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Observaciones adicionales (Opcional)</label>
+          <textarea id="observaciones" rows="3" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-brand focus:border-brand dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Ej. El portón estaba cerrado pero la vecina confirmó..."></textarea>
+      </div>
+      <div class="mt-8 mb-6">
+        <button routerLink="/verificador/buzon-visitas" type="button" class="w-full hover:opacity-90 focus:ring-4 focus:ring-brand-300 font-bold rounded-lg text-lg px-5 py-4 text-center shadow-md transition-transform active:scale-[0.98]" style="background-color: var(--color-brand); color: white; border: 1px solid var(--color-brand);">
+          Finalizar Visita y Guardar
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
