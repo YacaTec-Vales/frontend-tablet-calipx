@@ -17,6 +17,26 @@
       
       <ul class="space-y-2 flex-1 px-3">
         <li>
+          <a routerLink="/coordinador/reclutamiento" routerLinkActive="bg-gray-100 dark:bg-gray-700 text-brand font-bold" [title]="!isSidebarOpen ? 'Reclutamiento' : ''" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group transition-colors overflow-hidden">
+            <svg aria-hidden="true" class="w-6 h-6 flex-shrink-0 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-brand dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path>
+            </svg>
+            <span *ngIf="isSidebarOpen" class="ml-3 transition-opacity duration-300">Reclutamiento</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/coordinador/auditoria" routerLinkActive="bg-gray-100 dark:bg-gray-700 text-brand font-bold" [title]="!isSidebarOpen ? 'Auditoría (Edición)' : ''" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group transition-colors overflow-hidden">
+            <svg aria-hidden="true" class="w-6 h-6 flex-shrink-0 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-brand dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+              <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+            </svg>
+            <span *ngIf="isSidebarOpen" class="ml-3 transition-opacity duration-300">Auditoría</span>
+          </a>
+        </li>
+        <li class="pt-4 mt-4 space-y-2 border-t border-gray-200 dark:border-gray-700">
+          <span *ngIf="isSidebarOpen" class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Otros Módulos</span>
+        </li>
+        <li>
           <a routerLink="/coordinador/punto-atencion" routerLinkActive="bg-gray-100 dark:bg-gray-700" [title]="!isSidebarOpen ? 'Punto de Atención' : ''" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group transition-colors overflow-hidden">
             <svg aria-hidden="true" class="w-6 h-6 flex-shrink-0 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-brand dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
