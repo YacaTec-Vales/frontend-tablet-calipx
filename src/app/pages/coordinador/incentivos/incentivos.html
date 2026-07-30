@@ -1,0 +1,77 @@
+<div class="p-6 max-w-6xl mx-auto space-y-6">
+  <div class="flex items-center justify-between mb-2">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Incentivos</h2>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Revisa el historial de las distribuidoras y autoriza aumentos de crédito.</p>
+    </div>
+
+    <app-button *ngIf="selectedCandidata" variant="secondary" size="sm" (onClick)="volverLista()">
+      Volver a Candidatas
+    </app-button>
+  </div>
+
+  <!-- Vista Lista -->
+  <app-card *ngIf="!selectedCandidata" title="Distribuidoras Candidatas" subtitle="Con historial limpio y buen comportamiento de pago" [noPadding]="true">
+    <app-table [columns]="['ID', 'Nombre', 'Límite Actual', 'Comportamiento', 'Acciones']">
+      <tr *ngFor="let candidata of candidatas" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ candidata.id }}</td>
+        <td class="px-6 py-4">{{ candidata.nombre }}</td>
+        <td class="px-6 py-4 font-bold text-green-600">${{ candidata.limiteActual | number }}</td>
+        <td class="px-6 py-4">
+          <app-badge [text]="candidata.puntaje" [variant]="candidata.puntaje === 'Excelente' ? 'success' : 'info'"></app-badge>
+        </td>
+        <td class="px-6 py-4">
+          <app-button variant="outline" size="sm" (onClick)="seleccionar(candidata)">Ver Historial</app-button>
+        </td>
+      </tr>
+    </app-table>
+  </app-card>
+
+  <!-- Vista Detalle e Incentivo -->
+  <div *ngIf="selectedCandidata" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <app-card title="Historial de Crédito" subtitle="{{ selectedCandidata.nombre }}">
+      <div class="space-y-4 text-sm mt-4">
+        <div class="flex justify-between items-center border-b pb-2">
+          <span class="text-gray-500 font-bold">Vales Pagados:</span>
+          <span class="text-gray-900 dark:text-white font-bold">{{ selectedCandidata.valesPagados }}</span>
+        </div>
+        <div class="flex justify-between items-center border-b pb-2">
+          <span class="text-gray-500 font-bold">Límite Actual:</span>
+          <span class="text-gray-900 dark:text-white font-bold">${{ selectedCandidata.limiteActual | number }}</span>
+        </div>
+        <div class="flex justify-between items-center border-b pb-2">
+          <span class="text-gray-500 font-bold">Retrasos en pagos:</span>
+          <span class="text-green-600 font-bold">0 Días</span>
+        </div>
+      </div>
+    </app-card>
+
+    <app-card title="Pre-autorizar Aumento" subtitle="Enviar petición a Gerencia" extraClasses="border-t-4 border-t-brand">
+      
+      <div *ngIf="requestSent" class="p-6 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Petición Enviada</h3>
+        <p class="text-sm text-gray-500 mt-2">El gerente recibirá la notificación para aprobar el aumento en su próxima sesión.</p>
+      </div>
+
+      <div *ngIf="!requestSent" class="space-y-4">
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+          La distribuidora califica para un aumento del <strong>20%</strong> sobre su línea de crédito actual basado en su historial de pagos limpio.
+        </p>
+        
+        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg flex justify-between items-center mt-2">
+          <div>
+            <p class="text-xs text-gray-500">Nuevo límite sugerido:</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${{ selectedCandidata.limiteActual * 1.20 | number }}</p>
+          </div>
+        </div>
+
+        <app-button variant="primary" size="md" [fullWidth]="true" (onClick)="preAutorizarAumento()" [disabled]="isSending">
+          {{ isSending ? 'Enviando petición...' : 'Pre-autorizar Aumento' }}
+        </app-button>
+      </div>
+    </app-card>
+  </div>
+</div>
