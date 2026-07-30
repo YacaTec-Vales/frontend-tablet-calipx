@@ -1,0 +1,84 @@
+<div class="p-6 max-w-4xl mx-auto space-y-6">
+  <div class="flex items-center justify-between mb-2">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Módulo de Reclutamiento</h2>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Llenado de pre-solicitud para nuevas distribuidoras.</p>
+    </div>
+  </div>
+
+  <div *ngIf="successMessage" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 font-medium" role="alert">
+    {{ successMessage }}
+  </div>
+
+  <app-card title="Datos Generales" subtitle="Información principal de la prospecto">
+    <form class="space-y-6 mt-4" (ngSubmit)="onSubmit()">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <app-input 
+          label="Nombre Completo" 
+          placeholder="Ej. Ana García Méndez"
+          [(ngModel)]="formData.nombre"
+          name="nombre"
+          [disabled]="isSubmitting">
+        </app-input>
+
+        <app-input 
+          label="CURP" 
+          placeholder="18 caracteres alfanuméricos"
+          [(ngModel)]="formData.curp"
+          name="curp"
+          [disabled]="isSubmitting">
+        </app-input>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <app-input 
+          label="Teléfono Móvil" 
+          type="number"
+          placeholder="10 dígitos"
+          [(ngModel)]="formData.telefono"
+          name="telefono"
+          [disabled]="isSubmitting">
+        </app-input>
+
+        <app-input 
+          label="Correo Electrónico" 
+          type="email"
+          placeholder="correo@ejemplo.com"
+          [(ngModel)]="formData.correo"
+          name="correo"
+          [disabled]="isSubmitting">
+        </app-input>
+      </div>
+
+      <app-input 
+        label="Dirección Completa" 
+        type="textarea"
+        [rows]="3"
+        placeholder="Calle, Número, Colonia, Código Postal, Ciudad"
+        [(ngModel)]="formData.direccion"
+        name="direccion"
+        [disabled]="isSubmitting">
+      </app-input>
+
+      <app-input 
+        label="Evidencia de Domicilio" 
+        type="file"
+        hint="Toma una foto de la fachada o sube un comprobante (Luz, Agua)."
+        [(ngModel)]="formData.fotoDomicilio"
+        name="fotoDomicilio"
+        [disabled]="isSubmitting">
+      </app-input>
+
+      <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 dark:border-gray-700 mt-6 pt-6">
+        <app-button type="button" variant="outline" [disabled]="isSubmitting">
+          Cancelar
+        </app-button>
+        <app-button type="submit" variant="primary" [disabled]="isSubmitting || !formData.nombre || !formData.curp">
+          {{ isSubmitting ? 'Guardando...' : 'Generar Pre-solicitud' }}
+        </app-button>
+      </div>
+
+    </form>
+  </app-card>
+</div>
