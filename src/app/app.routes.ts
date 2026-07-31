@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { Login } from './pages/login/login';
 import { Layout as VerificadorLayout } from './pages/verificador/layout/layout';
 import { BuzonVisitas } from './pages/verificador/buzon-visitas/buzon-visitas';
-import { DetalleSolicitud } from './pages/verificador/detalle-solicitud/detalle-solicitud';
 import { FormularioCampo } from './pages/verificador/formulario-campo/formulario-campo';
 
 import { Layout as CoordinadorLayout } from './pages/coordinador/layout/layout';
@@ -25,7 +24,6 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'buzon-visitas', pathMatch: 'full' },
       { path: 'buzon-visitas', component: BuzonVisitas },
-      { path: 'detalle-solicitud', component: DetalleSolicitud },
       { path: 'formulario-campo', component: FormularioCampo }
     ]
   },
