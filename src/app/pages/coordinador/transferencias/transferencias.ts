@@ -19,7 +19,7 @@ interface SolicitudTransferencia {
 @Component({
   selector: 'app-transferencias',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent],
+  imports: [CommonModule, FormsModule, CardComponent, TableComponent, ButtonComponent, InputComponent],
   templateUrl: './transferencias.html'
 })
 export class Transferencias {
@@ -44,7 +44,7 @@ export class Transferencias {
     this.actionType = null;
   }
 
-  setAction(type: 'approve' | 'reject') {
+  setAction(type: 'approve' | 'reject' | null) {
     this.actionType = type;
   }
 
