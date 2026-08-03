@@ -1,3 +1,9 @@
+## [0.1.0-rc.2](https://github.com/YacaTec-Vales/frontend-tablet-calipx/compare/v0.1.0-rc.1...v0.1.0-rc.2) (2026-08-03)
+
+### Bug Fixes
+
+* **ci:** quitar skip ci de los commits de release ([dbcd988](https://github.com/YacaTec-Vales/frontend-tablet-calipx/commit/dbcd9888593c6bec1e698f8138cd9940094c4e1d))
+
 ## [0.1.0-rc.1](https://github.com/YacaTec-Vales/frontend-tablet-calipx/compare/v0.0.0...v0.1.0-rc.1) (2026-08-03)
 
 ### Features
