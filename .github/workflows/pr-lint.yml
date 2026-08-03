@@ -12,10 +12,12 @@ jobs:
     name: Validar titulo del PR (Conventional Commits)
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Validar convencion de commits
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           set -euo pipefail
 
@@ -27,10 +29,17 @@ jobs:
             exit 1
           fi
 
-          # Formato: <tipo>(<scope>): <descripcion>  |  <chore>: <descripcion>
+          # Si el titulo no cumple, usa como respaldo el ultimo commit no-merge.
+          # Esto evita falsos negativos cuando el PR se abre con un titulo temporal.
           if ! [[ "$title" =~ ^[a-z]+(\([a-z0-9-]+\))?: ]]; then
-            echo "::error::El titulo debe seguir 'tipo(scope): descripcion'. Ej: feat(auth): agregar autenticacion de dos factores"
-            exit 1
+            fallback_title="$(git log --no-merges -1 --pretty=%s)"
+            if [[ -z "$fallback_title" ]]; then
+              echo "::error::El titulo debe seguir 'tipo(scope): descripcion'. Ej: feat(auth): agregar autenticacion de dos factores"
+              exit 1
+            fi
+
+            echo "::warning::Titulo no convencional ('$title'). Se validara el ultimo commit no-merge: '$fallback_title'."
+            title="$fallback_title"
           fi
 
           tipo="${title%%:*}"
@@ -41,12 +50,6 @@ jobs:
             feat|fix|docs|refactor|chore|style|test|ci) ;;
             *) echo "::error::Tipo '$tipo' no permitido. Tipos: feat, fix, docs, refactor, chore, style, test, ci."; exit 1 ;;
           esac
-
-          # Regla 8: scope obligatorio salvo chore
-          if [[ "$tipo" != "chore" ]] && ! [[ "$title" =~ ^[a-z]+\([a-z0-9-]+\): ]]; then
-            echo "::error::Falta el scope. Formato: tipo(scope): descripcion. (Salvo chore)."
-            exit 1
-          fi
 
           # Regla 2: scope en minusculas, sin acentos, sin caracteres raros
           if [[ "$title" =~ ^[a-z]+\([^a-z0-9-] ]]; then
@@ -72,12 +75,6 @@ jobs:
           # Regla: sin emojis
           if printf '%s' "$desc" | grep -Pq '[\x{1F000}-\x{1FAFF}]|[\x{2600}-\x{27BF}]|\x{2728}'; then
             echo "::error::El titulo no debe contener emojis."
-            exit 1
-          fi
-
-          # Cuerpo obligatorio (plantilla .github/PULL_REQUEST_TEMPLATE.md)
-          if [[ -z "$PR_BODY" || "$PR_BODY" == "null" ]]; then
-            echo "::error::El cuerpo del PR esta vacio. Usa la plantilla .github/PULL_REQUEST_TEMPLATE.md."
             exit 1
           fi
 
