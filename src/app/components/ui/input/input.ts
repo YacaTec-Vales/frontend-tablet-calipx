@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/forms';
 
@@ -17,18 +17,23 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/f
 })
 export class InputComponent implements ControlValueAccessor {
   @Input() label: string = '';
-  @Input() type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'file' = 'text';
+  @Input() type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'file' | 'date' = 'text';
   @Input() placeholder: string = '';
   @Input() id: string = `input-${Math.random().toString(36).substring(2, 9)}`;
   @Input() disabled: boolean = false;
   @Input() rows: number = 4; // Solo para textarea
   @Input() hint: string = '';
 
-  value: string = '';
+  /** Permite binding directo con [value] */
+  @Input() value: string = '';
+
+  /** Emite el valor como string cuando cambia (para usar con (valueChange)) */
+  @Output() valueChange = new EventEmitter<string>();
+
   fileName: string = '';
 
-  onChange: any = () => {};
-  onTouch: any = () => {};
+  onChange: any = () => { };
+  onTouch: any = () => { };
 
   writeValue(value: any): void {
     this.value = value || '';
@@ -50,6 +55,7 @@ export class InputComponent implements ControlValueAccessor {
     const inputElement = event.target as HTMLInputElement | HTMLTextAreaElement;
     this.value = inputElement.value;
     this.onChange(this.value);
+    this.valueChange.emit(this.value);
     this.onTouch();
   }
 

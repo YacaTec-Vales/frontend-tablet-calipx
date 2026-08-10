@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
-import { BadgeComponent } from '../../../components/ui/badge/badge';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { InputComponent } from '../../../components/ui/input/input';
 
@@ -19,7 +18,7 @@ interface SolicitudTransferencia {
 @Component({
   selector: 'app-transferencias',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent],
+  imports: [CommonModule, FormsModule, CardComponent, TableComponent, ButtonComponent, InputComponent],
   templateUrl: './transferencias.html'
 })
 export class Transferencias {
@@ -44,17 +43,17 @@ export class Transferencias {
     this.actionType = null;
   }
 
-  setAction(type: 'approve' | 'reject') {
+  setAction(type: 'approve' | 'reject' | null) {
     this.actionType = type;
   }
 
   procesar() {
     this.isProcessing = true;
-    
+
     setTimeout(() => {
       // Quitar de la lista
       this.solicitudes = this.solicitudes.filter(s => s.id !== this.selectedSolicitud?.id);
-      
+
       this.isProcessing = false;
       this.selectedSolicitud = null;
       this.actionType = null;
