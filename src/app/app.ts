@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -7,6 +8,11 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
-  protected readonly title = signal('frontend-tablet-calpix');
+export class App implements OnInit {
+  private readonly authService = inject(AuthService);
+
+  ngOnInit(): void {
+    // Intenta restaurar la sesion si hay un token almacenado
+    this.authService.tryRestoreSession();
+  }
 }
