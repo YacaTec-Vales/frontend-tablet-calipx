@@ -101,32 +101,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'punto-atencion',
-        loadComponent: () =>
-          import('./pages/coordinador/punto-atencion/punto-atencion').then(
-            (m) => m.PuntoAtencion,
-          ),
-      },
-      {
-        path: 'caja-dispersion',
-        loadComponent: () =>
-          import('./pages/coordinador/caja-dispersion/caja-dispersion').then(
-            (m) => m.CajaDispersion,
-          ),
-      },
-      {
-        path: 'carga-archivos',
-        loadComponent: () =>
-          import('./pages/coordinador/carga-archivos/carga-archivos').then(
-            (m) => m.CargaArchivos,
-          ),
-      },
-      {
-        path: 'conciliacion',
-        loadComponent: () =>
-          import('./pages/coordinador/conciliacion/conciliacion').then((m) => m.Conciliacion),
-      },
-      {
         path: 'tokens',
         loadComponent: () =>
           import('./pages/coordinador/tokens/tokens').then((m) => m.Tokens),
