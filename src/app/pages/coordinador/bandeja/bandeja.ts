@@ -1,20 +1,22 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { interval, Subscription, startWith } from 'rxjs';
 import { SolicitudesService } from '../../../core/services/solicitudes.service';
 import { SolicitudResponse, EstadoSolicitud } from '../../../core/models/solicitud.model';
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
 import { ButtonComponent } from '../../../components/ui/button/button';
+import { PaginationComponent } from '../../../components/ui/pagination/pagination';
 
 @Component({
   selector: 'app-bandeja-coordinador',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent],
+  imports: [CommonModule, RouterModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, PaginationComponent],
   templateUrl: './bandeja.html',
 })
-export class Bandeja implements OnInit {
+export class Bandeja implements OnInit, OnDestroy {
   private readonly solicitudesService = inject(SolicitudesService);
   private readonly router = inject(Router);
 
@@ -24,13 +26,34 @@ export class Bandeja implements OnInit {
 
   readonly currentFilter = signal<EstadoSolicitud | ''>('');
 
+  // Pagination
+  readonly itemsPerPage = signal(10);
+  readonly currentPage = signal(1);
+
+  readonly paginatedSolicitudes = computed(() => {
+    const all = this.solicitudes();
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    return all.slice(start, start + this.itemsPerPage());
+  });
+
+  private pollingSub?: Subscription;
+
   ngOnInit(): void {
-    this.loadSolicitudes();
+    // Polling every 15 seconds
+    this.pollingSub = interval(15000).pipe(
+      startWith(0)
+    ).subscribe(() => this.loadSolicitudes(undefined, true));
   }
 
-  loadSolicitudes(estado?: string): void {
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
+  ngOnDestroy(): void {
+    this.pollingSub?.unsubscribe();
+  }
+
+  loadSolicitudes(estado?: string, isBackground = false): void {
+    if (!isBackground) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+    }
     if (estado !== undefined) {
       this.currentFilter.set(estado as EstadoSolicitud | '');
     }
@@ -40,11 +63,13 @@ export class Bandeja implements OnInit {
     this.solicitudesService.list(filters).subscribe({
       next: (res) => {
         this.solicitudes.set(res.data || []);
-        this.isLoading.set(false);
+        if (!isBackground) this.isLoading.set(false);
       },
       error: (err) => {
-        this.errorMessage.set(err.error?.message || 'Error al cargar las solicitudes');
-        this.isLoading.set(false);
+        if (!isBackground) {
+          this.errorMessage.set(err.error?.message || 'Error al cargar las solicitudes');
+          this.isLoading.set(false);
+        }
       },
     });
   }

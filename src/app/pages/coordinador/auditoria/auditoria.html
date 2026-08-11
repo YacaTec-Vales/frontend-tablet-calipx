@@ -3,79 +3,127 @@
     <div>
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Auditoría y Edición</h2>
       <p class="text-gray-500 dark:text-gray-400 mt-1">
-        {{ selectedDistribuidora ? 'Editando información y generando rastro de auditoría' : 'Selecciona una distribuidora para editar sus datos.' }}
+        {{ selectedSolicitud() ? 'Editando información y generando rastro de auditoría' : 'Selecciona una solicitud para revisar y editar sus datos.' }}
       </p>
     </div>
     
-    <app-button *ngIf="selectedDistribuidora" variant="secondary" size="sm" (onClick)="volverLista()">
+    <app-button *ngIf="selectedSolicitud()" variant="secondary" size="sm" (onClick)="volverLista()">
       Volver a la Lista
     </app-button>
   </div>
 
-  <!-- Vista 1: Lista de Distribuidoras -->
-  <app-card *ngIf="!selectedDistribuidora" title="Directorio de Distribuidoras" [noPadding]="true">
-    <app-table [columns]="['ID', 'Nombre', 'Teléfono', 'Estado', 'Acciones']">
-      <tr *ngFor="let dist of distribuidoras" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-        <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ dist.id }}</td>
-        <td class="px-6 py-4">{{ dist.nombre }}</td>
-        <td class="px-6 py-4">{{ dist.telefono }}</td>
-        <td class="px-6 py-4">
-          <app-badge [text]="dist.estado" [variant]="dist.estado === 'Activa' ? 'success' : 'error'"></app-badge>
-        </td>
-        <td class="px-6 py-4">
-          <app-button variant="outline" size="sm" (onClick)="seleccionar(dist)">Editar Datos</app-button>
-        </td>
-      </tr>
-    </app-table>
+  @if (errorMessage()) {
+    <div class="p-4 text-sm text-red-800 bg-red-50 rounded-lg font-bold" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Vista 1: Lista de Solicitudes -->
+  <app-card *ngIf="!selectedSolicitud()" title="Solicitudes en Verificación / Dictaminadas" [noPadding]="true">
+    
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-16">
+        <svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+      </div>
+    } @else {
+      <app-table [columns]="['Folio', 'Nombre', 'RFC', 'Estado', 'Acciones']">
+        <tr *ngFor="let sol of paginatedSolicitudes()" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ sol.folio ?? sol.id.slice(0, 8) }}</td>
+          <td class="px-6 py-4">{{ sol.datos_generales.nombre }} {{ sol.datos_generales.apellido_paterno }}</td>
+          <td class="px-6 py-4">{{ sol.datos_generales.rfc }}</td>
+          <td class="px-6 py-4">
+            <app-badge [text]="sol.estado" [variant]="sol.estado === 'EN_VERIFICACION' ? 'warning' : 'info'"></app-badge>
+          </td>
+          <td class="px-6 py-4">
+            <app-button variant="outline" size="sm" (onClick)="seleccionar(sol)">Auditar / Editar</app-button>
+          </td>
+        </tr>
+      </app-table>
+      
+      @if (solicitudes().length === 0) {
+        <div class="p-8 text-center text-gray-500">
+          No hay solicitudes pendientes de auditoría en este momento.
+        </div>
+      }
+      <div class="p-4 border-t border-gray-200 dark:border-gray-700" *ngIf="solicitudes().length > 0">
+        <app-pagination
+          [totalItems]="solicitudes().length"
+          [(itemsPerPage)]="itemsPerPage"
+          [(currentPage)]="currentPage">
+        </app-pagination>
+      </div>
+    }
   </app-card>
 
   <!-- Vista 2: Formulario de Edición -->
-  <div *ngIf="selectedDistribuidora" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div *ngIf="selectedSolicitud()" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
     <div class="lg:col-span-2">
-      <app-card title="Modificar Datos" subtitle="ID: {{ selectedDistribuidora.id }}">
+      <app-card title="Modificar Datos" subtitle="Folio: {{ selectedSolicitud()?.folio ?? selectedSolicitud()?.id }}">
         <form class="space-y-6 mt-4" (ngSubmit)="revisarCambios()">
           
-          <app-input 
-            label="Nombre Completo" 
-            [(ngModel)]="formData.nombre"
-            name="nombre"
-            maxlength="100"
-            [disabled]="isSubmitting || showAuditLog">
-          </app-input>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <app-input 
+              label="Nombre" 
+              [(ngModel)]="formData.nombre"
+              name="nombre"
+              maxlength="100"
+              [disabled]="isSubmitting() || showAuditLog()">
+            </app-input>
+            <app-input 
+              label="Apellido Paterno" 
+              [(ngModel)]="formData.apellido_paterno"
+              name="apellido_paterno"
+              maxlength="100"
+              [disabled]="isSubmitting() || showAuditLog()">
+            </app-input>
+          </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <app-input 
-              label="Teléfono Móvil" 
+              label="RFC" 
               type="text"
-              inputmode="numeric"
-              [(ngModel)]="formData.telefono"
-              name="telefono"
-              maxlength="10"
-              [disabled]="isSubmitting || showAuditLog">
+              [(ngModel)]="formData.rfc"
+              name="rfc"
+              maxlength="13"
+              [disabled]="isSubmitting() || showAuditLog()">
             </app-input>
+          </div>
 
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2">
+              <app-input 
+                label="Calle" 
+                type="text"
+                [(ngModel)]="formData.calle"
+                name="calle"
+                maxlength="150"
+                [disabled]="isSubmitting() || showAuditLog()">
+              </app-input>
+            </div>
             <app-input 
-              label="Correo Electrónico" 
-              type="email"
-              [(ngModel)]="formData.correo"
-              name="correo"
-              maxlength="50"
-              [disabled]="isSubmitting || showAuditLog">
+              label="Número" 
+              type="text"
+              [(ngModel)]="formData.numero"
+              name="numero"
+              maxlength="10"
+              [disabled]="isSubmitting() || showAuditLog()">
             </app-input>
           </div>
 
           <app-input 
-            label="Dirección Completa" 
-            type="textarea"
-            [rows]="3"
-            [(ngModel)]="formData.direccion"
-            name="direccion"
-            maxlength="200"
-            [disabled]="isSubmitting || showAuditLog">
+            label="Colonia" 
+            type="text"
+            [(ngModel)]="formData.colonia"
+            name="colonia"
+            maxlength="100"
+            [disabled]="isSubmitting() || showAuditLog()">
           </app-input>
 
-          <div *ngIf="!showAuditLog" class="pt-4 flex justify-end">
+          <div *ngIf="!showAuditLog()" class="pt-4 flex justify-end">
             <app-button type="submit" variant="primary">
               Revisar Cambios
             </app-button>
@@ -88,32 +136,32 @@
     <div class="lg:col-span-1">
       <app-card title="Log de Auditoría" subtitle="Antes vs Después" extraClasses="border-t-4 border-t-yellow-400">
         
-        <div *ngIf="!showAuditLog" class="py-12 text-center text-gray-500">
+        <div *ngIf="!showAuditLog()" class="py-12 text-center text-gray-500">
           <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p class="text-sm">Modifica algún dato y haz clic en "Revisar Cambios" para ver el rastro que se generará.</p>
+          <p class="text-sm">Modifica algún dato y haz clic en "Revisar Cambios" para ver el rastro que se generará en el backend.</p>
         </div>
 
-        <div *ngIf="showAuditLog" class="space-y-4">
+        <div *ngIf="showAuditLog()" class="space-y-4">
           <div class="p-4 bg-yellow-50 text-yellow-800 rounded-lg text-sm mb-4 border border-yellow-200">
-            <strong>Atención:</strong> Estás a punto de alterar el expediente de la distribuidora. Se guardará un log histórico con tu usuario.
+            <strong>Atención:</strong> Estás a punto de alterar los datos de la solicitud. Esto generará un registro histórico.
           </div>
 
-          <div *ngFor="let change of auditChanges" class="border-b border-gray-100 pb-3 mb-3">
+          <div *ngFor="let change of auditChanges()" class="border-b border-gray-100 pb-3 mb-3">
             <span class="text-xs font-bold text-gray-500">{{ change.field }}</span>
             <div class="flex flex-col gap-1 mt-1">
-              <div class="text-sm text-red-600 line-through bg-red-50 p-1 rounded px-2">- {{ change.old }}</div>
-              <div class="text-sm text-green-700 font-bold bg-green-50 p-1 rounded px-2">+ {{ change.new }}</div>
+              <div class="text-sm text-red-600 line-through bg-red-50 p-1 rounded px-2">- {{ change.old || '(vacío)' }}</div>
+              <div class="text-sm text-green-700 font-bold bg-green-50 p-1 rounded px-2">+ {{ change.new || '(vacío)' }}</div>
             </div>
           </div>
 
           <div class="flex gap-2 pt-4">
-            <app-button variant="outline" size="sm" [fullWidth]="true" (onClick)="cancelarGuardado()" [disabled]="isSubmitting">
+            <app-button variant="outline" size="sm" [fullWidth]="true" (onClick)="cancelarGuardado()" [disabled]="isSubmitting()">
               Cancelar
             </app-button>
-            <app-button variant="primary" size="sm" [fullWidth]="true" (onClick)="confirmarGuardado()" [isLoading]="isSubmitting" [disabled]="isSubmitting">
-              Confirmar y Auditar
+            <app-button variant="primary" size="sm" [fullWidth]="true" (onClick)="confirmarGuardado()" [isLoading]="isSubmitting()" [disabled]="isSubmitting()">
+              Confirmar
             </app-button>
           </div>
         </div>
