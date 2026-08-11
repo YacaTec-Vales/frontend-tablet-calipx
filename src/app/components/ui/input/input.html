@@ -7,8 +7,7 @@
 
     <!-- Textarea -->
     <textarea *ngSwitchCase="'textarea'" [id]="id" [rows]="rows" [placeholder]="placeholder" [disabled]="disabled"
-      [value]="value" [maxlength]="maxlength || null" (input)="onInput($event)" (blur)="onTouch()"
-      [ngClass]="{
+      [value]="value" [attr.maxlength]="maxlength || null" (input)="onInput($event)" (blur)="onTouch()" [ngClass]="{
         'border-red-500 focus:ring-red-500 focus:border-red-500': isInvalid,
         'border-gray-300 focus:ring-brand focus:border-brand': !isInvalid
       }"
@@ -41,9 +40,8 @@
 
     <!-- Default Inputs (text, email, password, number) -->
     <input *ngSwitchDefault [type]="type" [id]="id" [placeholder]="placeholder" [disabled]="disabled" [value]="value"
-      [maxlength]="maxlength || null" [attr.inputmode]="inputmode" (keypress)="onKeyPress($event)"
-      (input)="onInput($event)" (blur)="onTouch()"
-      [ngClass]="{
+      [attr.maxlength]="maxlength || null" [attr.inputmode]="inputmode" (keypress)="onKeyPress($event)"
+      (input)="onInput($event)" (blur)="onTouch()" [ngClass]="{
         'border-red-500 focus:ring-red-500 focus:border-red-500': isInvalid,
         'border-gray-300 focus:ring-brand focus:border-brand': !isInvalid
       }"

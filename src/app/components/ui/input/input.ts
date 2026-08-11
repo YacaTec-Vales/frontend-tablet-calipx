@@ -23,7 +23,7 @@ export class InputComponent implements ControlValueAccessor {
   @Input() disabled: boolean = false;
   @Input() rows: number = 4; // Solo para textarea
   @Input() hint: string = '';
-  @Input() maxlength?: number;
+  @Input() maxlength?: number | string;
   @Input() inputmode?: string;
   @Input() isInvalid: boolean = false;
   @Input() errorMessage: string = '';
