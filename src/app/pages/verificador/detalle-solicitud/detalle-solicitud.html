@@ -52,9 +52,9 @@
   </div>
 
   <div class="fixed bottom-0 left-0 z-40 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] dark:bg-gray-800 dark:border-gray-700 flex justify-center">
-    <button routerLink="/verificador/formulario-campo" type="button" class="flex-1 hover:opacity-90 focus:ring-4 focus:ring-brand-300 font-bold rounded-lg text-lg px-5 py-4 text-center shadow-md transition-transform active:scale-[0.98]" style="background-color: var(--color-brand); color: white; border: 1px solid var(--color-brand);">
+    <app-button variant="primary" size="lg" [fullWidth]="true" [isLoading]="isStarting()" (onClick)="iniciarValidacion()">
       Iniciar Validación en Sitio
-    </button>
+    </app-button>
   </div>
 
 </div>

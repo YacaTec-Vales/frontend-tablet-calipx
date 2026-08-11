@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiErrorResponse } from '../../core/models/api-response.model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ButtonComponent } from '../../components/ui/button/button';
 
 /**
  * Pagina de login para la tablet Calipx.
@@ -13,7 +14,8 @@ import { HttpErrorResponse } from '@angular/common/http';
  */
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  standalone: true,
+  imports: [FormsModule, ButtonComponent],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -103,6 +105,10 @@ export class Login {
         }
         break;
     }
+  }
+
+  clearError(): void {
+    this.error.set('');
   }
 
   /** Atajos de prueba para desarrollo */

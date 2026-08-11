@@ -26,7 +26,8 @@
         <app-input label="Foto de la Fachada" type="file" [(ngModel)]="fotoFachada" [disabled]="isSubmitting()">
         </app-input>
 
-        <app-input label="Comprobante de Domicilio" type="file" [(ngModel)]="fotoComprobante" [disabled]="isSubmitting()">
+        <app-input label="Comprobante de Domicilio" type="file" [(ngModel)]="fotoComprobante"
+          [disabled]="isSubmitting()">
         </app-input>
 
         <app-input label="Identificación Oficial (INE)" type="file" [(ngModel)]="fotoIdentificacion"
@@ -43,6 +44,7 @@
           <app-input label="Comentarios del Verificador" type="textarea" [rows]="8"
             placeholder="Describe las condiciones del domicilio, si coincide con las fotos, comentarios de vecinos, etc."
             hint="Mínimo 5 caracteres para habilitar los botones de dictamen." [(ngModel)]="comentarios"
+            maxlength="500"
             [disabled]="isSubmitting()">
           </app-input>
         </div>
@@ -51,13 +53,13 @@
           <p class="text-xs text-center text-gray-500 font-bold uppercase mb-2">Resolución Final</p>
 
           <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('CUMPLE')"
-            [disabled]="isSubmitting() || !canSubmit">
-            {{ isSubmitting() ? 'Subiendo evidencias...' : 'Aprobar (VERIFICADA)' }}
+            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit">
+            Aprobar (VERIFICADA)
           </app-button>
 
           <app-button variant="error" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('NO_CUMPLE')"
-            [disabled]="isSubmitting() || !canSubmit">
-            {{ isSubmitting() ? 'Subiendo evidencias...' : 'Rechazar Solicitud' }}
+            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit">
+            Rechazar Solicitud
           </app-button>
         </div>
 

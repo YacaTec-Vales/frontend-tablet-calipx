@@ -1,83 +1,64 @@
 <section class="relative min-h-screen flex font-sans bg-gray-100 overflow-hidden">
   <!-- Background Image (Visible full on mobile, left half on desktop) -->
   <div class="absolute inset-0 z-0 md:relative md:w-1/2 md:flex-shrink-0 lg:w-[55%]">
-    <img src="/Gemini_Generated_Image_91y1x91y1x91y1x9.png" alt="Fondo" class="absolute inset-0 w-full h-full object-cover grayscale opacity-70" />
+    <img src="/Gemini_Generated_Image_91y1x91y1x91y1x9.png" alt="Fondo"
+      class="absolute inset-0 w-full h-full object-cover grayscale opacity-70" />
     <div class="absolute inset-0 bg-gray-900/50 mix-blend-multiply"></div>
   </div>
 
   <!-- Login Panel -->
-  <div class="relative z-10 w-full flex flex-col justify-center items-center p-6 sm:p-12 md:w-1/2 lg:w-[45%] bg-transparent md:bg-white md:rounded-l-[3rem] shadow-2xl min-h-screen">
-      <div class="w-full max-w-md space-y-8 my-auto bg-white/95 md:bg-transparent p-10 md:p-0 rounded-3xl md:rounded-none shadow-2xl md:shadow-none backdrop-blur-sm md:backdrop-blur-none">
-          
-          <!-- Logo & Title -->
-          <div class="flex flex-col items-center text-center">
-              <img src="/logo-yt.svg" class="w-56 mb-4 drop-shadow-sm" alt="YacaTec Logo">
-              <h2 class="text-xl font-bold mt-2 text-gray-900">Panel de control</h2>
-          </div>
-          
-          @if (error()) {
-            <div class="p-3 text-sm text-red-800 bg-red-50 rounded-lg font-bold" role="alert">
-              {{ error() }}
-            </div>
-          }
+  <div
+    class="relative z-10 w-full flex flex-col justify-center items-center p-6 sm:p-12 md:w-1/2 lg:w-[45%] bg-transparent md:bg-white md:rounded-l-[3rem] shadow-2xl min-h-screen">
+    <div
+      class="w-full max-w-md space-y-8 my-auto bg-white/95 md:bg-transparent p-10 md:p-0 rounded-3xl md:rounded-none shadow-2xl md:shadow-none backdrop-blur-sm md:backdrop-blur-none">
 
-          <!-- Form -->
-          <form class="space-y-6" (submit)="onSubmit($event)">
-              <div>
-                  <label for="email" class="block mb-2 text-sm font-extrabold text-gray-900">Email</label>
-                  <input
-                    type="text"
-                    name="email"
-                    id="email"
-                    [value]="email()"
-                    (input)="email.set($any($event.target).value)"
-                    class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold transition-all"
-                    placeholder="usuario@empresa.com"
-                    required
-                    [disabled]="isLoading()"
-                    autocomplete="username">
-              </div>
-              <div>
-                  <label for="password" class="block mb-2 text-sm font-extrabold text-gray-900">Contraseña</label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    [value]="password()"
-                    (input)="password.set($any($event.target).value)"
-                    class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold transition-all"
-                    placeholder="••••••••"
-                    required
-                    [disabled]="isLoading()"
-                    autocomplete="current-password">
-              </div>
-              
-              <button
-                type="submit"
-                class="w-full text-white font-bold rounded-xl text-xl px-5 py-4 mt-4 text-center shadow-lg hover:opacity-90 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
-                style="background-color: var(--color-brand);"
-                [disabled]="isLoading()">
-                @if (isLoading()) {
-                  <span class="inline-flex items-center gap-2">
-                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    Iniciando sesión...
-                  </span>
-                } @else {
-                  Panel de control
-                }
-              </button>
-          </form>
-
-          <div class="mt-8 pt-6 border-t border-gray-200">
-              <h4 class="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wider text-center">Accesos de prueba</h4>
-              <div class="mt-4 flex gap-2">
-                  <span class="bg-gray-100 text-gray-800 text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-200" (click)="setTestEmail('test.verif@yacatec.test')">Rol Verificador</span>
-                  <span class="bg-gray-100 text-gray-800 text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-200" (click)="setTestEmail('test.coord@yacatec.test')">Rol Coordinador</span>
-              </div>
-          </div>
+      <!-- Logo & Title -->
+      <div class="flex flex-col items-center text-center">
+        <img src="/logo-yt.svg" class="w-56 mb-4 drop-shadow-sm" alt="YacaTec Logo">
+        <h2 class="text-xl font-bold mt-2 text-gray-900">Panel de control</h2>
       </div>
+
+      @if (error()) {
+      <div class="p-3 text-sm text-red-800 bg-red-50 rounded-lg font-bold flex justify-between items-center" role="alert">
+        <span>{{ error() }}</span>
+        <button type="button" class="text-red-800 hover:text-red-900 bg-transparent hover:bg-red-200 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" (click)="clearError()">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+        </button>
+      </div>
+      }
+
+      <!-- Form -->
+      <form class="space-y-6" (submit)="onSubmit($event)">
+        <div>
+          <label for="email" class="block mb-2 text-sm font-extrabold text-gray-900">Email</label>
+          <input type="text" name="email" id="email" [value]="email()" (input)="email.set($any($event.target).value)"
+            class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold transition-all"
+            placeholder="usuario@empresa.com" required [disabled]="isLoading()" autocomplete="username">
+        </div>
+        <div>
+          <label for="password" class="block mb-2 text-sm font-extrabold text-gray-900">Contraseña</label>
+          <input type="password" name="password" id="password" [value]="password()"
+            (input)="password.set($any($event.target).value)"
+            class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold transition-all"
+            placeholder="••••••••" required [disabled]="isLoading()" autocomplete="current-password">
+        </div>
+
+        <app-button type="submit" variant="primary" size="lg" [fullWidth]="true" [isLoading]="isLoading()" [disabled]="isLoading()" class="mt-4">
+          Panel de control
+        </app-button>
+      </form>
+
+      <div class="mt-8 pt-6 border-t border-gray-200">
+        <h4 class="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wider text-center">Accesos de prueba</h4>
+        <div class="mt-4 flex gap-2">
+          <span
+            class="bg-gray-100 text-gray-800 text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-200"
+            (click)="setTestEmail('test.verif@yacatec.test')">Rol Verificador</span>
+          <span
+            class="bg-gray-100 text-gray-800 text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-200"
+            (click)="setTestEmail('test.coord@yacatec.test')">Rol Coordinador</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
