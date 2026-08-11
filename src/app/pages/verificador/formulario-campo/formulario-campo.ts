@@ -5,6 +5,8 @@ import { CardComponent } from '../../../components/ui/card/card';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { SolicitudesService } from '../../../core/services/solicitudes.service';
+import { UploadsService } from '../../../core/services/uploads.service';
+import { forkJoin, switchMap } from 'rxjs';
 import { SolicitudResponse, Dictamen, VerificarSolicitudDto } from '../../../core/models/solicitud.model';
 
 /**
@@ -24,6 +26,7 @@ export class FormularioCampo implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly solicitudesService = inject(SolicitudesService);
+  private readonly uploadsService = inject(UploadsService);
 
   /** ID de la solicitud (viene de la ruta) */
   readonly solicitudId = signal('');
@@ -104,31 +107,42 @@ export class FormularioCampo implements OnInit {
    * - NO_CUMPLE + kill_switch=false → estado = DICTAMINADA (Gerente decide)
    */
   emitirDictamen(dictamen: Dictamen): void {
+    if (!this.fotoFachada || !this.fotoComprobante || !this.fotoIdentificacion) {
+      this.errorMessage.set('Las fotografías son requeridas antes de dictaminar.');
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    // TODO: Reemplazar con URLs reales cuando el modulo de uploads este implementado.
-    // Por ahora se envian placeholders para que el contrato se respete.
-    const fotosPlaceholder = [
-      'placeholder://fachada',
-      'placeholder://comprobante',
-      'placeholder://identificacion',
-    ];
+    const uploadFachada$ = this.uploadsService.uploadFile(this.fotoFachada, 'other');
+    const uploadComprobante$ = this.uploadsService.uploadFile(this.fotoComprobante, 'address_proof');
+    const uploadIdentificacion$ = this.uploadsService.uploadFile(this.fotoIdentificacion, 'ine');
 
-    const dto: VerificarSolicitudDto = {
-      fotos_verificacion: fotosPlaceholder,
-      comentarios_verificador: this.comentarios,
-      dictamen,
-      kill_switch: this.killSwitch(),
-    };
+    forkJoin([uploadFachada$, uploadComprobante$, uploadIdentificacion$]).pipe(
+      switchMap(([resFachada, resComprobante, resIdentificacion]) => {
+        const urls = [
+          resFachada.data.publicUrl,
+          resComprobante.data.publicUrl,
+          resIdentificacion.data.publicUrl,
+        ];
 
-    this.solicitudesService.verificar(this.solicitudId(), dto).subscribe({
+        const dto: VerificarSolicitudDto = {
+          fotos_verificacion: urls,
+          comentarios_verificador: this.comentarios,
+          dictamen,
+          kill_switch: this.killSwitch(),
+        };
+
+        return this.solicitudesService.verificar(this.solicitudId(), dto);
+      })
+    ).subscribe({
       next: () => {
         this.isSubmitting.set(false);
 
         const dictamenLabel = dictamen === 'CUMPLE' ? 'CUMPLE' : 'NO CUMPLE';
         this.successMessage.set(
-          `Dictamen "${dictamenLabel}" enviado exitosamente.`,
+          `Dictamen "${dictamenLabel}" enviado exitosamente.`
         );
 
         // Volver al buzon tras un breve delay
@@ -140,16 +154,12 @@ export class FormularioCampo implements OnInit {
         this.isSubmitting.set(false);
         const code = err.error?.error?.code;
 
-        switch (code) {
-          case 'DISTRIBUIDORES.NOT_IN_VERIFICATION':
-            this.errorMessage.set('Esta solicitud ya no está en verificación.');
-            break;
-          case 'DISTRIBUIDORES.VERIFIER_NO_BRANCH':
-            this.errorMessage.set('No tienes una sucursal asignada. Contacta al administrador.');
-            break;
-          default:
-            this.errorMessage.set(err.error?.message ?? 'Error al enviar el dictamen.');
-            break;
+        if (code === 'DISTRIBUIDORES.NOT_IN_VERIFICATION') {
+          this.errorMessage.set('Esta solicitud ya no está en verificación.');
+        } else if (code === 'DISTRIBUIDORES.VERIFIER_NO_BRANCH') {
+          this.errorMessage.set('No tienes una sucursal asignada. Contacta al administrador.');
+        } else {
+          this.errorMessage.set(err.error?.message ?? 'Error al subir los archivos o enviar el dictamen.');
         }
       },
     });

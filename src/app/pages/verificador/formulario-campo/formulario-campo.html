@@ -52,12 +52,12 @@
 
           <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('CUMPLE')"
             [disabled]="isSubmitting() || !canSubmit">
-            {{ isSubmitting() ? 'Procesando...' : 'Aprobar (VERIFICADA)' }}
+            {{ isSubmitting() ? 'Subiendo evidencias...' : 'Aprobar (VERIFICADA)' }}
           </app-button>
 
           <app-button variant="error" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('NO_CUMPLE')"
             [disabled]="isSubmitting() || !canSubmit">
-            {{ isSubmitting() ? 'Procesando...' : 'Rechazar Solicitud' }}
+            {{ isSubmitting() ? 'Subiendo evidencias...' : 'Rechazar Solicitud' }}
           </app-button>
         </div>
 
