@@ -54,4 +54,3 @@ jobs:
       - name: Build
         working-directory: frontend-tablet-calipx
         run: npm run build
-        continue-on-error: true
