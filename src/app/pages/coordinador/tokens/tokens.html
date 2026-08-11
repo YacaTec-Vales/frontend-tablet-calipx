@@ -20,11 +20,12 @@
         [rows]="3"
         placeholder="Ej: Modificación de fecha de pago por falla en sistema..."
         [(ngModel)]="motivo"
+        maxlength="200"
         [disabled]="isGenerating">
       </app-input>
 
-      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="generarToken()" [disabled]="isGenerating || !motivo">
-        {{ isGenerating ? 'Generando código seguro...' : 'Generar Token' }}
+      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="generarToken()" [isLoading]="isGenerating" [disabled]="isGenerating || !motivo">
+        Generar Token
       </app-button>
     </div>
 

@@ -5,89 +5,89 @@
     </app-button>
     <div>
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Corregir Solicitud</h2>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Modifica los datos para subsanar los errores señalados por el verificador.</p>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Modifica los datos para subsanar los errores señalados por el
+        verificador.</p>
     </div>
   </div>
 
   @if (successMessage()) {
-    <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50 font-medium" role="alert">
-      {{ successMessage() }}
-    </div>
+  <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50 font-medium" role="alert">
+    {{ successMessage() }}
+  </div>
   }
 
   @if (errorMessage()) {
-    <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50 font-medium flex justify-between items-center" role="alert">
-      <span>{{ errorMessage() }}</span>
-      @if (requiresManagerAuth()) {
-        <app-button variant="primary" size="sm" (onClick)="null">
-          Solicitar PIN de Gerente
-        </app-button>
-      }
-    </div>
+  <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50 font-medium flex justify-between items-center" role="alert">
+    <span>{{ errorMessage() }}</span>
+    @if (requiresManagerAuth()) {
+    <app-button variant="primary" size="sm" (onClick)="null">
+      Solicitar PIN de Gerente
+    </app-button>
+    }
+  </div>
   }
 
   @if (isLoading()) {
-    <div class="flex justify-center items-center py-16">
-      <svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-      </svg>
-    </div>
+  <div class="flex justify-center items-center py-16">
+    <svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+  </div>
   } @else if (isLoaded()) {
-    <form class="space-y-6" (ngSubmit)="onSubmit()">
-      
-      <app-card title="Datos a corregir" subtitle="Edita solo la información necesaria">
-        <div class="space-y-6 mt-4">
-          <!-- Nombre completo -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)"
-              name="nombre" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-            <app-input label="Apellido Paterno" placeholder="Ej. García" [value]="apellidoPaterno()"
-              (valueChange)="apellidoPaterno.set($event)" name="apellidoPaterno" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-            <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()"
-              (valueChange)="apellidoMaterno.set($event)" name="apellidoMaterno" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-          </div>
+  <form class="space-y-6" (ngSubmit)="onSubmit()">
 
-          <!-- RFC -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC" [value]="rfc()" 
-              (valueChange)="rfc.set($event)" name="rfc" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-          </div>
-
-          <!-- Dirección -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <app-input label="Calle" placeholder="Ej. Av. Juárez" [value]="calle()" (valueChange)="calle.set($event)"
-              name="calle" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-            <app-input label="Número" placeholder="Ej. 123" [value]="numero()" (valueChange)="numero.set($event)"
-              name="numero" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-            <app-input label="Colonia" placeholder="Ej. Centro" [value]="colonia()" (valueChange)="colonia.set($event)"
-              name="colonia" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <app-input label="Código Postal (5 dígitos)" placeholder="Ej. 44100" [value]="codigoPostal()"
-              (valueChange)="codigoPostal.set($event)" name="codigoPostal" [disabled]="isSubmitting() || requiresManagerAuth()">
-            </app-input>
-          </div>
+    <app-card title="Datos a corregir" subtitle="Edita solo la información necesaria">
+      <div class="space-y-6 mt-4">
+        <!-- Nombre completo -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)"
+            name="nombre" maxlength="50" [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
+          <app-input label="Apellido Paterno" placeholder="Ej. García" [value]="apellidoPaterno()"
+            (valueChange)="apellidoPaterno.set($event)" name="apellidoPaterno" maxlength="50"
+            [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
+          <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()"
+            (valueChange)="apellidoMaterno.set($event)" name="apellidoMaterno" maxlength="50"
+            [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
         </div>
-      </app-card>
 
-      <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 dark:border-gray-700 mt-6 pt-6">
-        <app-button type="submit" variant="primary" [disabled]="!canSubmit()">
-          @if (isSubmitting()) {
-            Guardando...
-          } @else {
-            Guardar Cambios
-          }
-        </app-button>
+        <!-- RFC -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC" [value]="rfc()"
+            (valueChange)="rfc.set($event)" name="rfc" maxlength="13" [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
+        </div>
+
+        <!-- Dirección -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <app-input label="Calle" placeholder="Ej. Av. Juárez" [value]="calle()" (valueChange)="calle.set($event)"
+            name="calle" maxlength="100" [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
+          <app-input label="Número" placeholder="Ej. 123" [value]="numero()" (valueChange)="numero.set($event)"
+            name="numero" maxlength="10" [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
+          <app-input label="Colonia" placeholder="Ej. Centro" [value]="colonia()" (valueChange)="colonia.set($event)"
+            name="colonia" maxlength="100" [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <app-input label="Código Postal (5 dígitos)" placeholder="Ej. 44100" [value]="codigoPostal()"
+            (valueChange)="codigoPostal.set($event)" name="codigoPostal" maxlength="5" inputmode="numeric"
+            [disabled]="isSubmitting() || requiresManagerAuth()">
+          </app-input>
+        </div>
       </div>
-    </form>
+    </app-card>
+
+    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 dark:border-gray-700 mt-6 pt-6">
+      <app-button type="submit" variant="primary" [isLoading]="isSubmitting()" [disabled]="!canSubmit()">
+        Guardar Cambios
+      </app-button>
+    </div>
+  </form>
   }
 </div>

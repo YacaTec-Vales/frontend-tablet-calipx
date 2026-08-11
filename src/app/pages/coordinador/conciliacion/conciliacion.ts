@@ -1,9 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { ButtonComponent } from '../../../components/ui/button/button';
 
 @Component({
   selector: 'app-conciliacion',
-  imports: [],
+  standalone: true,
+  imports: [ButtonComponent],
   templateUrl: './conciliacion.html',
   styleUrl: './conciliacion.css',
 })
-export class Conciliacion {}
+export class Conciliacion {
+  isAprobando = signal(false);
+
+  aprobar() {
+    this.isAprobando.set(true);
+    setTimeout(() => this.isAprobando.set(false), 2000);
+  }
+}

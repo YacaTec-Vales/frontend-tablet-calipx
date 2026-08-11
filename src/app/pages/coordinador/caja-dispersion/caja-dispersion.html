@@ -14,7 +14,7 @@
       </div>
       <div class="md:text-right">
         <p class="text-brand-100 font-medium mb-1">Monto Total</p>
-        <p class="text-4xl font-extrabold tracking-tight">$4,500.00</p>
+        <app-discrete-amount [amount]="4500" textClass="text-4xl font-extrabold tracking-tight text-white"></app-discrete-amount>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
       
       <div>
         <label for="autorizacion" class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">Número de Autorización (Transferencia SPEI)</label>
-        <input type="text" id="autorizacion" class="bg-white border-2 text-2xl font-mono rounded-lg focus:ring-brand focus:border-brand block w-full p-4 shadow-sm" style="border-color: var(--color-brand); color: var(--color-brand);" placeholder="Ej. 984123" required>
+        <input type="text" id="autorizacion" name="autorizacion" [(ngModel)]="autorizacion" [disabled]="isSubmitting()" maxlength="6" inputmode="numeric" class="bg-white border-2 text-2xl font-mono rounded-lg focus:ring-brand focus:border-brand block w-full p-4 shadow-sm" style="border-color: var(--color-brand); color: var(--color-brand);" placeholder="Ej. 984123" required>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Ingrese los 6 dígitos numéricos devueltos por su portal bancario.</p>
       </div>
 
@@ -52,9 +52,9 @@
         </div>
       </div>
 
-      <button type="button" class="w-full hover:opacity-90 focus:ring-4 focus:ring-brand-300 font-bold rounded-lg text-lg px-5 py-4 text-center shadow-md transition-transform active:scale-[0.98]" style="background-color: var(--color-brand); color: white; border: 1px solid var(--color-brand);">
+      <app-button variant="primary" size="lg" [fullWidth]="true" [isLoading]="isSubmitting()" [disabled]="isSubmitting() || autorizacion().length !== 6" (onClick)="confirmar()">
         Confirmar Dispersión
-      </button>
+      </app-button>
 
     </form>
   </div>

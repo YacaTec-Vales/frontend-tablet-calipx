@@ -21,7 +21,7 @@ export class Bandeja implements OnInit {
   readonly solicitudes = signal<SolicitudResponse[]>([]);
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  
+
   readonly currentFilter = signal<EstadoSolicitud | ''>('');
 
   ngOnInit(): void {
@@ -34,7 +34,7 @@ export class Bandeja implements OnInit {
     if (estado !== undefined) {
       this.currentFilter.set(estado as EstadoSolicitud | '');
     }
-    
+
     const filters = this.currentFilter() ? { estado: this.currentFilter() as EstadoSolicitud } : undefined;
 
     this.solicitudesService.list(filters).subscribe({

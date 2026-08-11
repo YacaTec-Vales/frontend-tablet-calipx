@@ -78,8 +78,8 @@
         </div>
         <div class="flex gap-2">
           <app-button variant="secondary" size="md" [fullWidth]="true" (onClick)="setAction(null)" [disabled]="isProcessing">Cancelar</app-button>
-          <app-button variant="primary" size="md" [fullWidth]="true" (onClick)="procesar()" [disabled]="isProcessing">
-            {{ isProcessing ? 'Procesando...' : 'Confirmar Aprobación' }}
+          <app-button variant="primary" size="md" [fullWidth]="true" (onClick)="procesar()" [isLoading]="isProcessing" [disabled]="isProcessing">
+            Confirmar Aprobación
           </app-button>
         </div>
       </div>
@@ -91,13 +91,14 @@
           [rows]="4"
           placeholder="Ej: Se contactó a la distribuidora actual y lograron resolver sus diferencias..."
           [(ngModel)]="motivoRechazo"
+          maxlength="500"
           [disabled]="isProcessing">
         </app-input>
         
         <div class="flex gap-2 pt-2">
           <app-button variant="secondary" size="md" [fullWidth]="true" (onClick)="setAction(null)" [disabled]="isProcessing">Cancelar</app-button>
-          <app-button variant="error" size="md" [fullWidth]="true" (onClick)="procesar()" [disabled]="isProcessing || !motivoRechazo">
-            {{ isProcessing ? 'Procesando...' : 'Confirmar Rechazo' }}
+          <app-button variant="error" size="md" [fullWidth]="true" (onClick)="procesar()" [isLoading]="isProcessing" [disabled]="isProcessing || !motivoRechazo">
+            Confirmar Rechazo
           </app-button>
         </div>
       </div>

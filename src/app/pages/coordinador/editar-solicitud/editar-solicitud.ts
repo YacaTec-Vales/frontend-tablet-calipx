@@ -21,7 +21,7 @@ export class EditarSolicitud implements OnInit {
   readonly isLoaded = signal(false);
   readonly isLoading = signal(true);
   readonly isSubmitting = signal(false);
-  
+
   readonly successMessage = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly requiresManagerAuth = signal(false);
@@ -59,7 +59,7 @@ export class EditarSolicitud implements OnInit {
         this.numero.set(s.datos_generales.numero);
         this.colonia.set(s.datos_generales.colonia);
         this.codigoPostal.set(s.datos_generales.codigo_postal);
-        
+
         this.isLoaded.set(true);
         this.isLoading.set(false);
       },
