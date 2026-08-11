@@ -1,7 +1,6 @@
 import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { interval, Subscription, startWith } from 'rxjs';
 import { SolicitudesService } from '../../../core/services/solicitudes.service';
 import { SolicitudResponse, EstadoSolicitud } from '../../../core/models/solicitud.model';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -36,20 +35,25 @@ export class Bandeja implements OnInit, OnDestroy {
     return all.slice(start, start + this.itemsPerPage());
   });
 
-  private pollingSub?: Subscription;
+  private pollingTimer: any;
+  private isDestroyed = false;
 
   ngOnInit(): void {
-    // Polling every 15 seconds
-    this.pollingSub = interval(15000).pipe(
-      startWith(0)
-    ).subscribe(() => this.loadSolicitudes(undefined, true));
+    this.loadSolicitudes();
   }
 
   ngOnDestroy(): void {
-    this.pollingSub?.unsubscribe();
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
   }
 
   loadSolicitudes(estado?: string, isBackground = false): void {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
     if (!isBackground) {
       this.isLoading.set(true);
       this.errorMessage.set(null);
@@ -64,14 +68,23 @@ export class Bandeja implements OnInit, OnDestroy {
       next: (res) => {
         this.solicitudes.set(res.data || []);
         if (!isBackground) this.isLoading.set(false);
+        this.scheduleNextPoll();
       },
       error: (err) => {
         if (!isBackground) {
           this.errorMessage.set(err.error?.message || 'Error al cargar las solicitudes');
           this.isLoading.set(false);
         }
+        this.scheduleNextPoll();
       },
     });
+  }
+
+  private scheduleNextPoll(): void {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.loadSolicitudes(undefined, true);
+    }, 15000);
   }
 
   verDetalle(id: string): void {

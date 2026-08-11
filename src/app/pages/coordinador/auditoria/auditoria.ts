@@ -1,7 +1,6 @@
 import { Component, inject, computed, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { interval, Subscription, startWith } from 'rxjs';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -42,19 +41,25 @@ export class Auditoria implements OnInit, OnDestroy {
     return all.slice(start, start + this.itemsPerPage());
   });
 
-  private pollingSub?: Subscription;
+  private pollingTimer: any;
+  private isDestroyed = false;
 
   ngOnInit() {
-    this.pollingSub = interval(15000).pipe(
-      startWith(0)
-    ).subscribe(() => this.loadSolicitudes(true));
+    this.loadSolicitudes();
   }
 
   ngOnDestroy() {
-    this.pollingSub?.unsubscribe();
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
   }
 
   loadSolicitudes(isBackground = false) {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
     if (!isBackground) {
       this.isLoading.set(true);
       this.errorMessage.set(null);
@@ -66,14 +71,23 @@ export class Auditoria implements OnInit, OnDestroy {
         const auditables = res.data.filter(s => s.estado === 'EN_VERIFICACION' || s.estado === 'DICTAMINADA');
         this.solicitudes.set(auditables);
         if (!isBackground) this.isLoading.set(false);
+        this.scheduleNextPoll();
       },
       error: (err) => {
         if (!isBackground) {
           this.errorMessage.set(err.error?.message || 'Error al cargar las solicitudes');
           this.isLoading.set(false);
         }
+        this.scheduleNextPoll();
       }
     });
+  }
+
+  private scheduleNextPoll() {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.loadSolicitudes(true);
+    }, 15000);
   }
 
   seleccionar(solicitud: SolicitudResponse) {
