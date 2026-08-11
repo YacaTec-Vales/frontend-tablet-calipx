@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { DistribuidorResponse, CreditIncrementRequest } from '../models/distribuidor.model';
+import { DistribuidorResponse, CreditIncrementRequest, CreateCreditRaiseDto } from '../models/distribuidor.model';
 
 /**
  * Servicio que conecta con los endpoints de distribuidoras
@@ -33,5 +33,13 @@ export class DistribuidoresService {
    */
   incrementCredit(id: string, dto: CreditIncrementRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${id}/credit/increment`, dto);
+  }
+
+  /**
+   * POST /distribuidores/:id/credit-raise-requests
+   * El Coordinador solicita un aumento de linea de credito que requiere aprobacion gerencial.
+   */
+  createCreditRaiseRequest(id: string, dto: CreateCreditRaiseDto): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/credit-raise-requests`, dto);
   }
 }
