@@ -53,11 +53,30 @@ export const routes: Routes = [
       import('./pages/coordinador/layout/layout').then((m) => m.Layout),
     canActivate: [authGuard, roleGuard('COORDINADOR')],
     children: [
-      { path: '', redirectTo: 'reclutamiento', pathMatch: 'full' },
+      { path: '', redirectTo: 'bandeja', pathMatch: 'full' },
+      {
+        path: 'bandeja',
+        loadComponent: () =>
+          import('./pages/coordinador/bandeja/bandeja').then((m) => m.Bandeja),
+      },
       {
         path: 'reclutamiento',
         loadComponent: () =>
           import('./pages/coordinador/reclutamiento/reclutamiento').then((m) => m.Reclutamiento),
+      },
+      {
+        path: 'solicitud/:id',
+        loadComponent: () =>
+          import('./pages/coordinador/detalle-solicitud/detalle-solicitud').then(
+            (m) => m.DetalleSolicitud,
+          ),
+      },
+      {
+        path: 'solicitud/:id/editar',
+        loadComponent: () =>
+          import('./pages/coordinador/editar-solicitud/editar-solicitud').then(
+            (m) => m.EditarSolicitud,
+          ),
       },
       {
         path: 'auditoria',
