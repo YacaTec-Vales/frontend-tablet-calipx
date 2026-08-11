@@ -20,7 +20,8 @@ export interface AuthUser {
   displayName?: string;
   firstName?: string;
   lastName?: string;
-  role: UserRole;
+  role?: UserRole;
+  roleCode?: UserRole;
   branchId?: string;
   mustChangePassword: boolean;
   mfaEnabled: boolean;

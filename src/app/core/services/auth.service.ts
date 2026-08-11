@@ -38,7 +38,7 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
 
   /** Rol del usuario actual */
-  readonly userRole = computed<UserRole | null>(() => this.currentUser()?.role ?? null);
+  readonly userRole = computed<UserRole | null>(() => this.currentUser()?.role ?? this.currentUser()?.roleCode ?? null);
 
   /** Flag que indica si el usuario debe cambiar su contrasena */
   readonly mustChangePassword = computed(() => this.currentUser()?.mustChangePassword ?? false);
