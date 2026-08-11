@@ -17,6 +17,7 @@ import {
 
 const TOKEN_KEY = 'calipx_access_token';
 const REFRESH_KEY = 'calipx_refresh_token';
+const USER_KEY = 'calipx_user';
 
 /**
  * Servicio de autenticacion para la tablet Calipx.
@@ -32,7 +33,16 @@ export class AuthService {
   private readonly apiUrl = environment.apiUrl;
 
   /** Usuario autenticado actual (null si no hay sesion) */
-  readonly currentUser = signal<AuthUser | null>(null);
+  readonly currentUser = signal<AuthUser | null>(this.getStoredUser());
+
+  private getStoredUser(): AuthUser | null {
+    const userStr = localStorage.getItem(USER_KEY);
+    try {
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
+  }
 
   /** Indica si hay un usuario autenticado con token valido */
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
@@ -58,14 +68,16 @@ export class AuthService {
     return localStorage.getItem(REFRESH_KEY);
   }
 
-  private saveTokens(accessToken: string, refreshToken: string): void {
+  private saveSession(accessToken: string, refreshToken: string, user: AuthUser): void {
     localStorage.setItem(TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_KEY, refreshToken);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   private clearTokens(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(USER_KEY);
   }
 
   // ─── Auth endpoints ────────────────────────────────────
@@ -82,7 +94,7 @@ export class AuthService {
       .pipe(
         tap((response) => {
           const { accessToken, refreshToken, user } = response.data;
-          this.saveTokens(accessToken, refreshToken);
+          this.saveSession(accessToken, refreshToken, user);
           this.currentUser.set(user);
           this.isLoading.set(false);
         }),
@@ -108,7 +120,7 @@ export class AuthService {
     return this.http.post<ApiResponse<TokenResponse>>(`${this.apiUrl}/auth/refresh`, body).pipe(
       tap((response) => {
         const { accessToken, refreshToken: newRefreshToken, user } = response.data;
-        this.saveTokens(accessToken, newRefreshToken);
+        this.saveSession(accessToken, newRefreshToken, user);
         this.currentUser.set(user);
       }),
     );
@@ -120,19 +132,23 @@ export class AuthService {
    */
   logout(): void {
     const refreshToken = this.getRefreshToken();
+    const token = this.getAccessToken();
+
+    if (!token && !refreshToken) {
+      this.clearSession();
+      return;
+    }
 
     this.http
       .post(`${this.apiUrl}/auth/logout`, refreshToken ? { refreshToken } : {})
       .pipe(catchError(() => {
         // Incluso si el backend falla, limpiamos el estado local
+        this.clearSession();
         return [];
       }))
       .subscribe(() => {
         this.clearSession();
       });
-
-    // Limpiamos inmediatamente sin esperar al backend
-    this.clearSession();
   }
 
   /**
@@ -158,7 +174,7 @@ export class AuthService {
         tap((response) => {
           // El backend devuelve nuevos tokens tras cambiar contrasena
           if (response.data?.accessToken) {
-            this.saveTokens(response.data.accessToken, response.data.refreshToken);
+            this.saveSession(response.data.accessToken, response.data.refreshToken, response.data.user);
             this.currentUser.set(response.data.user);
           }
         }),

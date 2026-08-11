@@ -44,6 +44,7 @@ export class Login {
       .login({
         usernameOrEmail: emailValue,
         password: passwordValue,
+        rememberMe: true,
       })
       .subscribe({
         next: () => {

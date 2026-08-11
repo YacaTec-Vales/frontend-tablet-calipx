@@ -27,7 +27,7 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       // Solo interceptamos 401 en rutas que NO son de auth
-      if (error.status !== 401 || req.url.includes('/auth/login') || req.url.includes('/auth/refresh')) {
+      if (error.status !== 401 || req.url.includes('/auth/login') || req.url.includes('/auth/refresh') || req.url.includes('/auth/logout')) {
         return throwError(() => error);
       }
 
