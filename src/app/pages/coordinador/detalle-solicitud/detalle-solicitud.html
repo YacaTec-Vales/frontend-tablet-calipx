@@ -1,0 +1,97 @@
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+  <div class="flex items-center justify-between mb-2">
+    <div>
+      <div class="flex items-center gap-3">
+        <app-button variant="secondary" size="sm" (onClick)="volver()">
+          &larr; Volver
+        </app-button>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Detalle de Solicitud</h2>
+      </div>
+      @if (solicitud()) {
+        <p class="text-gray-500 dark:text-gray-400 mt-2">
+          Folio: <span class="font-bold">{{ solicitud()!.folio ?? solicitud()!.id.slice(0, 8) }}</span>
+        </p>
+      }
+    </div>
+    @if (solicitud()) {
+      <div class="flex flex-col items-end gap-2">
+        <app-badge [text]="formatEstado(solicitud()!.estado)" [variant]="getBadgeVariant(solicitud()!.estado)"></app-badge>
+        @if (solicitud()!.dictamen === 'NO_CUMPLE' && solicitud()!.estado !== 'RECHAZADA') {
+          <app-button variant="primary" size="sm" (onClick)="editar()">
+            Corregir Datos
+          </app-button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <div class="p-4 text-sm text-red-800 bg-red-50 rounded-lg font-bold" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-16">
+      <svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-label="Cargando">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+    </div>
+  } @else if (solicitud()) {
+    
+    @if (solicitud()!.dictamen) {
+      <app-card title="Resultado de Verificación" 
+        [subtitle]="'Verificador: ' + (solicitud()!.verificador_id ? 'Asignado' : 'No Asignado')"
+        [class.border-red-500]="solicitud()!.dictamen === 'NO_CUMPLE'"
+        [class.border-green-500]="solicitud()!.dictamen === 'CUMPLE'">
+        
+        <div class="mt-4 p-4 rounded-lg" 
+          [class.bg-red-50]="solicitud()!.dictamen === 'NO_CUMPLE'"
+          [class.bg-green-50]="solicitud()!.dictamen === 'CUMPLE'">
+          
+          <h3 class="font-bold mb-2 text-lg" 
+            [class.text-red-800]="solicitud()!.dictamen === 'NO_CUMPLE'"
+            [class.text-green-800]="solicitud()!.dictamen === 'CUMPLE'">
+            Dictamen: {{ solicitud()!.dictamen }}
+          </h3>
+          
+          @if (solicitud()!.comentarios_verificador) {
+            <div class="mt-2 text-gray-700">
+              <span class="font-semibold block mb-1">Comentarios:</span>
+              <p class="bg-white p-3 rounded border border-gray-200">{{ solicitud()!.comentarios_verificador }}</p>
+            </div>
+          }
+        </div>
+      </app-card>
+    }
+
+    <app-card title="Datos Generales" subtitle="Información capturada inicialmente">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mt-4">
+        <div>
+          <span class="block text-sm font-semibold text-gray-500">Nombre Completo</span>
+          <p class="text-gray-900 dark:text-white font-medium">
+            {{ solicitud()!.datos_generales.nombre }} 
+            {{ solicitud()!.datos_generales.apellido_paterno }} 
+            {{ solicitud()!.datos_generales.apellido_materno }}
+          </p>
+        </div>
+        <div>
+          <span class="block text-sm font-semibold text-gray-500">RFC</span>
+          <p class="text-gray-900 dark:text-white font-medium">{{ solicitud()!.datos_generales.rfc }}</p>
+        </div>
+        <div class="md:col-span-2">
+          <span class="block text-sm font-semibold text-gray-500">Dirección</span>
+          <p class="text-gray-900 dark:text-white font-medium">
+            {{ solicitud()!.datos_generales.calle }} {{ solicitud()!.datos_generales.numero }},
+            {{ solicitud()!.datos_generales.colonia }}, CP {{ solicitud()!.datos_generales.codigo_postal }}
+          </p>
+          <p class="text-gray-700 dark:text-gray-300">
+            {{ solicitud()!.datos_generales.ciudad }}, {{ solicitud()!.datos_generales.estado }}
+          </p>
+        </div>
+      </div>
+    </app-card>
+
+  }
+</div>
