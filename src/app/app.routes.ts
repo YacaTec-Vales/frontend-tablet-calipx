@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { uuidGuard } from './core/guards/uuid.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -32,6 +33,7 @@ export const routes: Routes = [
       },
       {
         path: 'formulario-campo/:id',
+        canActivate: [uuidGuard],
         loadComponent: () =>
           import('./pages/verificador/formulario-campo/formulario-campo').then(
             (m) => m.FormularioCampo,
@@ -39,6 +41,7 @@ export const routes: Routes = [
       },
       {
         path: 'detalle-solicitud/:id',
+        canActivate: [uuidGuard],
         loadComponent: () =>
           import('./pages/verificador/detalle-solicitud/detalle-solicitud').then(
             (m) => m.DetalleSolicitud,
@@ -66,6 +69,7 @@ export const routes: Routes = [
       },
       {
         path: 'solicitud/:id',
+        canActivate: [uuidGuard],
         loadComponent: () =>
           import('./pages/coordinador/detalle-solicitud/detalle-solicitud').then(
             (m) => m.DetalleSolicitud,
@@ -73,6 +77,7 @@ export const routes: Routes = [
       },
       {
         path: 'solicitud/:id/editar',
+        canActivate: [uuidGuard],
         loadComponent: () =>
           import('./pages/coordinador/editar-solicitud/editar-solicitud').then(
             (m) => m.EditarSolicitud,
