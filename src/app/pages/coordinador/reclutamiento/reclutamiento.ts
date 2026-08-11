@@ -161,6 +161,9 @@ export class Reclutamiento {
         const code = err.error?.error?.code;
 
         switch (code) {
+          case 'DISTRIBUIDOR.SOLICITUD.ALREADY_OPEN':
+            this.errorMessage.set('No puedes crear una nueva solicitud porque ya tienes otra en proceso. Ciérrala o cancélala primero.');
+            break;
           case 'DISTRIBUIDORES.VALIDATION':
             this.errorMessage.set(
               `Error de validación: ${err.error?.message ?? 'Revisa los campos obligatorios.'}`,
