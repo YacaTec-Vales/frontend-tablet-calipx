@@ -23,6 +23,10 @@ export class InputComponent implements ControlValueAccessor {
   @Input() disabled: boolean = false;
   @Input() rows: number = 4; // Solo para textarea
   @Input() hint: string = '';
+  @Input() maxlength?: number;
+  @Input() inputmode?: string;
+  @Input() isInvalid: boolean = false;
+  @Input() errorMessage: string = '';
 
   /** Permite binding directo con [value] */
   @Input() value: string = '';
@@ -57,6 +61,15 @@ export class InputComponent implements ControlValueAccessor {
     this.onChange(this.value);
     this.valueChange.emit(this.value);
     this.onTouch();
+  }
+
+  onKeyPress(event: KeyboardEvent) {
+    if (this.type === 'number') {
+      // Prevenir 'e', '+', '-', '.' si queremos numeros puros
+      if (['e', 'E', '+', '-', '.'].includes(event.key)) {
+        event.preventDefault();
+      }
+    }
   }
 
   onFileChange(event: Event) {
