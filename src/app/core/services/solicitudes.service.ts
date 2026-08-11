@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
+import { AuthService } from './auth.service';
 import {
   CreateSolicitudDto,
   UpdateSolicitudDto,
@@ -33,37 +34,80 @@ export interface SolicitudFilters {
 @Injectable({ providedIn: 'root' })
 export class SolicitudesService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private readonly apiUrl = `${environment.apiUrl}/solicitudes`;
 
   /**
+   * Mapea un request de frontend al formato camelCase que espera el backend.
+   */
+  private mapCreateDtoToBackend(dto: CreateSolicitudDto): any {
+    const branchId = this.authService.currentUser()?.branchId;
+    return {
+      branchId,
+      generalData: dto.datos_generales,
+      additionalData: dto.datos_adicionales,
+    };
+  }
+
+  /**
+   * Mapea el response camelCase del backend al modelo snake_case del frontend.
+   */
+  private mapBackendToResponse(backendObj: any): SolicitudResponse {
+    return {
+      id: backendObj.id,
+      folio: backendObj.folio,
+      estado: backendObj.status, // status -> estado
+      datos_generales: backendObj.generalData,
+      datos_adicionales: backendObj.additionalData,
+      coordinador_id: backendObj.coordinatorId,
+      verificador_id: backendObj.verifierId,
+      branch_id: backendObj.branchId,
+      fotos_verificacion: backendObj.verificationPhotos,
+      comentarios_verificador: backendObj.verifierComments,
+      dictamen: backendObj.verdict, // verdict -> dictamen
+      kill_switch: backendObj.killSwitch,
+      created_at: backendObj.createdAt,
+      updated_at: backendObj.updatedAt,
+    };
+  }
+
+  /**
    * POST /solicitudes
-   * El Coordinador crea una nueva solicitud con datos_generales
-   * y datos_adicionales. Nace en estado EN_VERIFICACION.
    */
   create(dto: CreateSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.post<ApiResponse<SolicitudResponse>>(this.apiUrl, dto);
+    const payload = this.mapCreateDtoToBackend(dto);
+    return this.http.post<ApiResponse<any>>(this.apiUrl, payload).pipe(
+      map(res => ({
+        ...res,
+        data: this.mapBackendToResponse(res.data)
+      }))
+    );
   }
 
   /**
    * PATCH /solicitudes/:id
-   * El Coordinador edita una solicitud existente.
-   * - Antes del verificador: edicion libre.
-   * - Tras dictamen NO_CUMPLE: 1ra edicion libre, 2da+ requiere auth del Gerente.
-   * - Tras editar, vuelve a EN_VERIFICACION.
    */
   update(id: string, dto: UpdateSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.patch<ApiResponse<SolicitudResponse>>(`${this.apiUrl}/${id}`, dto);
+    const payload: any = {};
+    if (dto.datos_generales) payload.generalData = dto.datos_generales;
+    if (dto.datos_adicionales) payload.additionalData = dto.datos_adicionales;
+
+    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/${id}`, payload).pipe(
+      map(res => ({
+        ...res,
+        data: this.mapBackendToResponse(res.data)
+      }))
+    );
   }
 
   /**
    * GET /solicitudes
-   * Lista solicitudes filtradas por sucursal y permisos del actor.
    */
   list(filters?: SolicitudFilters): Observable<ApiResponse<SolicitudResponse[]>> {
     let params = new HttpParams();
 
     if (filters?.estado) {
-      params = params.set('estado', filters.estado);
+      params = params.set('status', filters.estado); // Maps estado to status for query param
     }
     if (filters?.page !== undefined) {
       params = params.set('page', filters.page.toString());
@@ -72,33 +116,47 @@ export class SolicitudesService {
       params = params.set('limit', filters.limit.toString());
     }
 
-    return this.http.get<ApiResponse<SolicitudResponse[]>>(this.apiUrl, { params });
+    return this.http.get<ApiResponse<any[]>>(this.apiUrl, { params }).pipe(
+      map(res => ({
+        ...res,
+        data: (res.data || []).map(item => this.mapBackendToResponse(item))
+      }))
+    );
   }
 
   /**
    * GET /solicitudes/:id
-   * Detalle completo de una solicitud: datos del coordinador,
-   * datos del verificador, dictamen y estado.
    */
   getById(id: string): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.get<ApiResponse<SolicitudResponse>>(`${this.apiUrl}/${id}`);
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}`).pipe(
+      map(res => ({
+        ...res,
+        data: this.mapBackendToResponse(res.data)
+      }))
+    );
   }
 
   /**
    * POST /solicitudes/:id/tomar
-   * El Verificador se asigna la solicitud para ir al domicilio.
-   * Solo funciona si la solicitud esta en EN_VERIFICACION.
    */
   tomar(id: string): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.post<ApiResponse<SolicitudResponse>>(`${this.apiUrl}/${id}/tomar`, {});
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/tomar`, {}).pipe(
+      map(res => ({
+        ...res,
+        data: this.mapBackendToResponse(res.data)
+      }))
+    );
   }
 
   /**
    * POST /solicitudes/:id/verificar
-   * El Verificador envia su dictamen con fotos, comentarios
-   * y kill_switch. Cambia estado segun reglas del dictamen.
    */
   verificar(id: string, dto: VerificarSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.post<ApiResponse<SolicitudResponse>>(`${this.apiUrl}/${id}/verificar`, dto);
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/verificar`, dto).pipe(
+      map(res => ({
+        ...res,
+        data: this.mapBackendToResponse(res.data)
+      }))
+    );
   }
 }
