@@ -14,6 +14,7 @@ export class ButtonComponent {
   @Input() variant: ButtonVariant = 'primary';
   @Input() size: ButtonSize = 'md';
   @Input() disabled = false;
+  @Input() isLoading = false;
   @Input() fullWidth = false;
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
 
@@ -22,8 +23,8 @@ export class ButtonComponent {
   get classes(): string {
     const base = 'font-bold rounded-lg focus:ring-4 focus:outline-none transition-all flex items-center justify-center gap-2';
     const widthClass = this.fullWidth ? 'w-full' : '';
-    const disabledClass = this.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5 active:scale-95 shadow-sm hover:shadow-md';
-    
+    const disabledClass = (this.disabled || this.isLoading) ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5 active:scale-95 shadow-sm hover:shadow-md';
+
     let variantClass = '';
     switch (this.variant) {
       case 'primary':
@@ -44,13 +45,13 @@ export class ButtonComponent {
     let sizeClass = '';
     switch (this.size) {
       case 'sm':
-        sizeClass = 'px-3 py-2 text-sm';
+        sizeClass = 'px-3 py-2 text-sm min-h-[36px]';
         break;
       case 'md':
-        sizeClass = 'px-5 py-2.5 text-base';
+        sizeClass = 'px-5 py-2.5 text-base min-h-[44px]'; // Tablet standard 44px
         break;
       case 'lg':
-        sizeClass = 'px-5 py-3 text-lg';
+        sizeClass = 'px-5 py-3 text-lg min-h-[48px]';
         break;
     }
 
@@ -58,7 +59,7 @@ export class ButtonComponent {
   }
 
   handleClick(event: Event) {
-    if (!this.disabled) {
+    if (!this.disabled && !this.isLoading) {
       this.onClick.emit(event);
     }
   }
