@@ -40,7 +40,7 @@ export class SolicitudesService {
   /**
    * Mapea un request de frontend al formato camelCase que espera el backend.
    */
-  private mapCreateDtoToBackend(dto: CreateSolicitudDto): any {
+  private mapCreateDtoToBackend(dto: CreateSolicitudDto): Record<string, unknown> {
     const branchId = this.authService.currentUser()?.branchId;
     return {
       branchId,
@@ -52,22 +52,22 @@ export class SolicitudesService {
   /**
    * Mapea el response camelCase del backend al modelo snake_case del frontend.
    */
-  private mapBackendToResponse(backendObj: any): SolicitudResponse {
+  private mapBackendToResponse(backendObj: Record<string, unknown>): SolicitudResponse {
     return {
-      id: backendObj.id,
-      folio: backendObj.folio,
-      estado: backendObj.status, // status -> estado
-      datos_generales: backendObj.generalData,
-      datos_adicionales: backendObj.additionalData,
-      coordinador_id: backendObj.coordinatorId,
-      verificador_id: backendObj.verifierId,
-      branch_id: backendObj.branchId,
-      fotos_verificacion: backendObj.verificationPhotos,
-      comentarios_verificador: backendObj.verifierComments,
-      dictamen: backendObj.verdict, // verdict -> dictamen
-      kill_switch: backendObj.killSwitch,
-      created_at: backendObj.createdAt,
-      updated_at: backendObj.updatedAt,
+      id: backendObj['id'] as string,
+      folio: backendObj['folio'] as string | undefined,
+      estado: backendObj['status'] as SolicitudResponse['estado'], // status -> estado
+      datos_generales: backendObj['generalData'] as any,
+      datos_adicionales: backendObj['additionalData'] as any,
+      coordinador_id: backendObj['coordinatorId'] as string,
+      verificador_id: backendObj['verifierId'] as string | undefined,
+      branch_id: backendObj['branchId'] as string,
+      fotos_verificacion: backendObj['verificationPhotos'] as string[] | undefined,
+      comentarios_verificador: backendObj['verifierComments'] as string | undefined,
+      dictamen: backendObj['verdict'] as SolicitudResponse['dictamen'], // verdict -> dictamen
+      kill_switch: backendObj['killSwitch'] as boolean | undefined,
+      created_at: backendObj['createdAt'] as string,
+      updated_at: backendObj['updatedAt'] as string,
     };
   }
 
@@ -88,9 +88,9 @@ export class SolicitudesService {
    * PATCH /solicitudes/:id
    */
   update(id: string, dto: UpdateSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
-    const payload: any = {};
-    if (dto.datos_generales) payload.generalData = dto.datos_generales;
-    if (dto.datos_adicionales) payload.additionalData = dto.datos_adicionales;
+    const payload: Record<string, unknown> = {};
+    if (dto.datos_generales) payload['generalData'] = dto.datos_generales;
+    if (dto.datos_adicionales) payload['additionalData'] = dto.datos_adicionales;
 
     return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/${id}`, payload).pipe(
       map(res => ({
