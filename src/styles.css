@@ -1,2 +1,2 @@
-@import 'tailwindcss';
-@import './styles/styles.css';
+@import "frontend-global-styles/global-theme.css";
+@source "./";
