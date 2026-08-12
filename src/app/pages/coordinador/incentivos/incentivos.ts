@@ -4,6 +4,10 @@ import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
 import { ButtonComponent } from '../../../components/ui/button/button';
+import { CoordinadoresService } from '../../../core/services/coordinadores.service';
+import { DistribuidoresService } from '../../../core/services/distribuidores.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { inject, signal, OnInit } from '@angular/core';
 
 interface Candidata {
   id: string;
@@ -15,20 +19,54 @@ interface Candidata {
 
 @Component({
   selector: 'app-incentivos',
-  standalone: true,
   imports: [CommonModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent],
   templateUrl: './incentivos.html'
 })
-export class Incentivos {
-  candidatas: Candidata[] = [
-    { id: 'DIST-001', nombre: 'María López', limiteActual: 10000, valesPagados: 45, puntaje: 'Excelente' },
-    { id: 'DIST-004', nombre: 'Juana Hernández', limiteActual: 5000, valesPagados: 30, puntaje: 'Bueno' },
-    { id: 'DIST-008', nombre: 'Sandra Castillo', limiteActual: 12000, valesPagados: 90, puntaje: 'Excelente' },
-  ];
+export class Incentivos implements OnInit {
+  private coordinadoresService = inject(CoordinadoresService);
+  private distribuidoresService = inject(DistribuidoresService);
+  private authService = inject(AuthService);
+
+  candidatas = signal<Candidata[]>([]);
+  isLoading = signal(true);
+  errorMessage = signal<string | null>(null);
 
   selectedCandidata: Candidata | null = null;
   isSending = false;
   requestSent = false;
+  
+  ngOnInit() {
+    this.cargarDistribuidoras();
+  }
+
+  cargarDistribuidoras() {
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.errorMessage.set('No hay sesión activa.');
+      this.isLoading.set(false);
+      return;
+    }
+
+    this.coordinadoresService.listarDistribuidoras(user.id).subscribe({
+      next: (res) => {
+        const d = res.data?.data || [];
+        // Map to Candidata format
+        const candidatasMap = d.map(dist => ({
+          id: dist.id,
+          nombre: `Distribuidora ${dist.distributorNumber}`,
+          limiteActual: (dist.creditLimitCents || 0) / 100,
+          valesPagados: 0, // Mocked, backend doesn't provide this yet
+          puntaje: dist.status === 'ACTIVA' ? 'Excelente' : 'Bueno'
+        }));
+        this.candidatas.set(candidatasMap);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.errorMessage.set('Error al cargar las distribuidoras candidatas.');
+        this.isLoading.set(false);
+      }
+    });
+  }
 
   seleccionar(candidata: Candidata) {
     this.selectedCandidata = candidata;
@@ -40,11 +78,23 @@ export class Incentivos {
   }
 
   preAutorizarAumento() {
+    if (!this.selectedCandidata) return;
+
     this.isSending = true;
-    // Simulamos el envío de la petición al gerente
-    setTimeout(() => {
-      this.isSending = false;
-      this.requestSent = true;
-    }, 1500);
+    const dto = {
+      montoCentavos: (this.selectedCandidata.limiteActual * 1.20) * 100,
+      motivo: 'Buen historial de crédito'
+    };
+
+    this.distribuidoresService.createCreditRaiseRequest(this.selectedCandidata.id, dto).subscribe({
+      next: () => {
+        this.isSending = false;
+        this.requestSent = true;
+      },
+      error: () => {
+        this.isSending = false;
+        // Optionally handle error UI here
+      }
+    });
   }
 }

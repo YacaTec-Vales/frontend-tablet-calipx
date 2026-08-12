@@ -11,7 +11,6 @@ import { PaginationComponent } from '../../../components/ui/pagination/paginatio
 
 @Component({
   selector: 'app-bandeja-coordinador',
-  standalone: true,
   imports: [CommonModule, RouterModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, PaginationComponent],
   templateUrl: './bandeja.html',
 })
@@ -35,7 +34,7 @@ export class Bandeja implements OnInit, OnDestroy {
     return all.slice(start, start + this.itemsPerPage());
   });
 
-  private pollingTimer: any;
+  private pollingTimer?: ReturnType<typeof setTimeout>;
   private isDestroyed = false;
 
   ngOnInit(): void {

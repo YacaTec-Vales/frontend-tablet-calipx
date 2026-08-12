@@ -14,7 +14,6 @@ import { ButtonComponent } from '../../components/ui/button/button';
  */
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [FormsModule, ButtonComponent],
   templateUrl: './login.html',
   styleUrl: './login.css',

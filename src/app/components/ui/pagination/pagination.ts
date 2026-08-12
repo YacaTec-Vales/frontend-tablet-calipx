@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-pagination',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="flex flex-col md:flex-row items-center justify-between gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">

@@ -7,7 +7,6 @@ import { InputComponent } from '../../../components/ui/input/input';
 
 @Component({
   selector: 'app-tokens',
-  standalone: true,
   imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent],
   templateUrl: './tokens.html'
 })
@@ -17,7 +16,7 @@ export class Tokens implements OnDestroy {
   
   activeToken: string | null = null;
   timeLeft = 0; // segundos
-  timerInterval: any;
+  timerInterval?: ReturnType<typeof setInterval>;
 
   generarToken() {
     this.isGenerating = true;

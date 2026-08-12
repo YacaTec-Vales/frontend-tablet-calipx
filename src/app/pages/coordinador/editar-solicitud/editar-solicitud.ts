@@ -8,7 +8,6 @@ import { ButtonComponent } from '../../../components/ui/button/button';
 
 @Component({
   selector: 'app-editar-solicitud-coordinador',
-  standalone: true,
   imports: [CommonModule, CardComponent, InputComponent, ButtonComponent],
   templateUrl: './editar-solicitud.html',
 })

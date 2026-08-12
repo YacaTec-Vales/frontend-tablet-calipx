@@ -1,15 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-card',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './card.html'
 })
 export class CardComponent {
-  @Input() title: string = '';
-  @Input() subtitle: string = '';
-  @Input() extraClasses: string = '';
-  @Input() noPadding: boolean = false;
+  readonly title = input<string>('');
+  readonly subtitle = input<string>('');
+  readonly extraClasses = input<string>('');
+  readonly noPadding = input<boolean>(false);
 }

@@ -9,7 +9,6 @@ import { BadgeComponent } from '../../../components/ui/badge/badge';
 
 @Component({
   selector: 'app-detalle-solicitud-coordinador',
-  standalone: true,
   imports: [CommonModule, CardComponent, ButtonComponent, BadgeComponent],
   templateUrl: './detalle-solicitud.html',
 })

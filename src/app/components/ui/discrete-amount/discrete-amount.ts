@@ -1,16 +1,15 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-discrete-amount',
-  standalone: true,
   imports: [CommonModule],
   providers: [CurrencyPipe],
   template: `
     <div class="flex items-center gap-3">
-      <span [class]="textClass">
+      <span [class]="textClass()">
         @if (isVisible()) {
-          {{ amount | currency:'MXN':'symbol-narrow':'1.2-2' }}
+          {{ amount() | currency:'MXN':'symbol-narrow':'1.2-2' }}
         } @else {
           $***.**
         }
@@ -39,8 +38,8 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
   `
 })
 export class DiscreteAmountComponent {
-  @Input({ required: true }) amount!: number;
-  @Input() textClass: string = 'text-2xl font-bold text-gray-900 dark:text-white';
+  readonly amount = input.required<number>();
+  readonly textClass = input<string>('text-2xl font-bold text-gray-900 dark:text-white');
   
   isVisible = signal(false);
 

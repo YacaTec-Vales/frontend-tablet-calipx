@@ -1,5 +1,15 @@
 import { Component, inject, computed, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+export interface AuditoriaFormData {
+  nombre?: string;
+  apellido_paterno?: string;
+  rfc?: string;
+  calle?: string;
+  numero?: string;
+  colonia?: string;
+  [key: string]: string | undefined;
+}
 import { FormsModule } from '@angular/forms';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
@@ -12,7 +22,6 @@ import { SolicitudResponse, UpdateSolicitudDto } from '../../../core/models/soli
 
 @Component({
   selector: 'app-auditoria',
-  standalone: true,
   imports: [CommonModule, FormsModule, InputComponent, ButtonComponent, CardComponent, TableComponent, BadgeComponent, PaginationComponent],
   templateUrl: './auditoria.html'
 })
@@ -24,8 +33,8 @@ export class Auditoria implements OnInit, OnDestroy {
   readonly errorMessage = signal<string | null>(null);
 
   readonly selectedSolicitud = signal<SolicitudResponse | null>(null);
-  formData: any = {};
-  originalData: any = {};
+  formData: AuditoriaFormData = {};
+  originalData: AuditoriaFormData = {};
   
   readonly showAuditLog = signal(false);
   readonly auditChanges = signal<{ field: string, old: string, new: string }[]>([]);
@@ -41,7 +50,7 @@ export class Auditoria implements OnInit, OnDestroy {
     return all.slice(start, start + this.itemsPerPage());
   });
 
-  private pollingTimer: any;
+  private pollingTimer?: ReturnType<typeof setTimeout>;
   private isDestroyed = false;
 
   ngOnInit() {
@@ -119,14 +128,12 @@ export class Auditoria implements OnInit, OnDestroy {
 
   revisarCambios() {
     const changes: { field: string, old: string, new: string }[] = [];
-    const fields = Object.keys(this.formData);
-    
-    fields.forEach(field => {
+    ['nombre', 'apellido_paterno', 'rfc', 'calle', 'numero', 'colonia'].forEach(field => {
       if (this.formData[field] !== this.originalData[field]) {
         changes.push({
-          field: field.toUpperCase(),
-          old: this.originalData[field],
-          new: this.formData[field]
+          field,
+          old: this.originalData[field] || '',
+          new: this.formData[field] || ''
         });
       }
     });

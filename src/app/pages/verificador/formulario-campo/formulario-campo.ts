@@ -6,7 +6,6 @@ import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { SolicitudesService } from '../../../core/services/solicitudes.service';
 import { UploadsService } from '../../../core/services/uploads.service';
-import { forkJoin, switchMap } from 'rxjs';
 import { SolicitudResponse, Dictamen, VerificarSolicitudDto } from '../../../core/models/solicitud.model';
 
 /**
@@ -115,28 +114,21 @@ export class FormularioCampo implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    const uploadFachada$ = this.uploadsService.uploadFile(this.fotoFachada, 'other');
-    const uploadComprobante$ = this.uploadsService.uploadFile(this.fotoComprobante, 'address_proof');
-    const uploadIdentificacion$ = this.uploadsService.uploadFile(this.fotoIdentificacion, 'ine');
+    // BYPASS DE UPLOADS (TEMPORAL PARA PRUEBAS)
+    const urls = [
+      'https://fake-url.com/fachada-mock.jpg',
+      'https://fake-url.com/comprobante-mock.jpg',
+      'https://fake-url.com/ine-mock.jpg',
+    ];
 
-    forkJoin([uploadFachada$, uploadComprobante$, uploadIdentificacion$]).pipe(
-      switchMap(([resFachada, resComprobante, resIdentificacion]) => {
-        const urls = [
-          resFachada.data.publicUrl,
-          resComprobante.data.publicUrl,
-          resIdentificacion.data.publicUrl,
-        ];
+    const dto: VerificarSolicitudDto = {
+      fotos_verificacion: urls,
+      comentarios_verificador: this.comentarios,
+      dictamen,
+      kill_switch: this.killSwitch(),
+    };
 
-        const dto: VerificarSolicitudDto = {
-          fotos_verificacion: urls,
-          comentarios_verificador: this.comentarios,
-          dictamen,
-          kill_switch: this.killSwitch(),
-        };
-
-        return this.solicitudesService.verificar(this.solicitudId(), dto);
-      })
-    ).subscribe({
+    this.solicitudesService.verificar(this.solicitudId(), dto).subscribe({
       next: () => {
         this.isSubmitting.set(false);
 

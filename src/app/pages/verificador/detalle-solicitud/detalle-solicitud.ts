@@ -4,7 +4,6 @@ import { ButtonComponent } from '../../../components/ui/button/button';
 
 @Component({
   selector: 'app-detalle-solicitud',
-  standalone: true,
   imports: [ButtonComponent],
   templateUrl: './detalle-solicitud.html',
   styleUrl: './detalle-solicitud.css'
