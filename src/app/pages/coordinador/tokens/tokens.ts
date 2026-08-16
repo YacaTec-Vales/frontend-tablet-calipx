@@ -13,14 +13,14 @@ import { InputComponent } from '../../../components/ui/input/input';
 export class Tokens implements OnDestroy {
   motivo = '';
   isGenerating = false;
-  
+
   activeToken: string | null = null;
   timeLeft = 0; // segundos
   timerInterval?: ReturnType<typeof setInterval>;
 
   generarToken() {
     this.isGenerating = true;
-    
+
     setTimeout(() => {
       // Generar token numérico de 6 dígitos
       this.activeToken = Math.floor(100000 + Math.random() * 900000).toString();

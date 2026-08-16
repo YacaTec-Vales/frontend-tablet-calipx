@@ -9,7 +9,7 @@ import { ButtonComponent } from '../../../components/ui/button/button';
   styleUrl: './detalle-solicitud.css'
 })
 export class DetalleSolicitud {
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
   isStarting = signal(false);
 
   iniciarValidacion() {

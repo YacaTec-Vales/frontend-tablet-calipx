@@ -35,7 +35,7 @@ export class Transferencias {
   actionType: 'approve' | 'reject' | null = null;
   motivoRechazo: string = '';
   isProcessing = false;
-  
+
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
@@ -58,7 +58,7 @@ export class Transferencias {
 
   procesar() {
     if (!this.selectedSolicitud) return;
-    
+
     this.isProcessing = true;
     this.errorMessage.set(null);
     this.successMessage.set(null);

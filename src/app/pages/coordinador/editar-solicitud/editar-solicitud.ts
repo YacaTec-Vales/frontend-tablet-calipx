@@ -23,7 +23,6 @@ export class EditarSolicitud implements OnInit {
 
   readonly successMessage = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
-  readonly requiresManagerAuth = signal(false);
 
   // Form signals
   readonly nombre = signal('');
@@ -82,8 +81,7 @@ export class EditarSolicitud implements OnInit {
       this.numero().length > 0 &&
       this.colonia().length > 0 &&
       this.codigoPostal().length === 5 &&
-      !this.isSubmitting() &&
-      !this.requiresManagerAuth()
+      !this.isSubmitting()
     );
   }
 
@@ -93,7 +91,6 @@ export class EditarSolicitud implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
     this.successMessage.set(null);
-    this.requiresManagerAuth.set(false);
 
     const dto = {
       datos_generales: {
@@ -118,10 +115,7 @@ export class EditarSolicitud implements OnInit {
       },
       error: (err) => {
         const code = err.error?.error?.code;
-        if (code === 'DISTRIBUIDORES.MODIFICATION_REQUIRES_AUTH') {
-          this.requiresManagerAuth.set(true);
-          this.errorMessage.set('Atención: Esta solicitud ya fue corregida previamente. Se requiere autorización de un Gerente para editarla nuevamente.');
-        } else if (code === 'DISTRIBUIDORES.NOT_EDITABLE') {
+        if (code === 'DISTRIBUIDORES.NOT_EDITABLE') {
           this.errorMessage.set('La solicitud ya fue autorizada o rechazada y no puede ser modificada.');
         } else if (code === 'DISTRIBUIDORES.VALIDATION') {
           this.errorMessage.set('Faltan campos o el formato es incorrecto.');

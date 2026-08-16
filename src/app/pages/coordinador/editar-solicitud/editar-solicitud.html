@@ -19,11 +19,6 @@
   @if (errorMessage()) {
   <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50 font-medium flex justify-between items-center" role="alert">
     <span>{{ errorMessage() }}</span>
-    @if (requiresManagerAuth()) {
-    <app-button variant="primary" size="sm" (onClick)="null">
-      Solicitar PIN de Gerente
-    </app-button>
-    }
   </div>
   }
 
@@ -42,42 +37,42 @@
         <!-- Nombre completo -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)"
-            name="nombre" maxlength="50" [disabled]="isSubmitting() || requiresManagerAuth()">
+            name="nombre" maxlength="50" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Apellido Paterno" placeholder="Ej. García" [value]="apellidoPaterno()"
             (valueChange)="apellidoPaterno.set($event)" name="apellidoPaterno" maxlength="50"
-            [disabled]="isSubmitting() || requiresManagerAuth()">
+            [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()"
             (valueChange)="apellidoMaterno.set($event)" name="apellidoMaterno" maxlength="50"
-            [disabled]="isSubmitting() || requiresManagerAuth()">
+            [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <!-- RFC -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC" [value]="rfc()"
-            (valueChange)="rfc.set($event)" name="rfc" maxlength="13" [disabled]="isSubmitting() || requiresManagerAuth()">
+            (valueChange)="rfc.set($event)" name="rfc" maxlength="13" [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <!-- Dirección -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <app-input label="Calle" placeholder="Ej. Av. Juárez" [value]="calle()" (valueChange)="calle.set($event)"
-            name="calle" maxlength="100" [disabled]="isSubmitting() || requiresManagerAuth()">
+            name="calle" maxlength="100" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Número" placeholder="Ej. 123" [value]="numero()" (valueChange)="numero.set($event)"
-            name="numero" maxlength="10" [disabled]="isSubmitting() || requiresManagerAuth()">
+            name="numero" maxlength="10" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Colonia" placeholder="Ej. Centro" [value]="colonia()" (valueChange)="colonia.set($event)"
-            name="colonia" maxlength="100" [disabled]="isSubmitting() || requiresManagerAuth()">
+            name="colonia" maxlength="100" [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <app-input label="Código Postal (5 dígitos)" placeholder="Ej. 44100" [value]="codigoPostal()"
             (valueChange)="codigoPostal.set($event)" name="codigoPostal" maxlength="5" inputmode="numeric"
-            [disabled]="isSubmitting() || requiresManagerAuth()">
+            [disabled]="isSubmitting()">
           </app-input>
         </div>
       </div>

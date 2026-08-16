@@ -34,7 +34,7 @@ export class Incentivos implements OnInit {
   selectedCandidata: Candidata | null = null;
   isSending = false;
   requestSent = false;
-  
+
   ngOnInit() {
     this.cargarDistribuidoras();
   }

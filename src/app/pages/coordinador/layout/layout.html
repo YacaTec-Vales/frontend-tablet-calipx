@@ -25,9 +25,15 @@
 
       <ul class="space-y-2 flex-1 px-3">
         <li>
-          <a routerLink="/coordinador/bandeja" routerLinkActive="bg-gray-100 dark:bg-gray-700 text-brand font-bold" [title]="!isSidebarOpen ? 'Bandeja' : ''" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group transition-colors overflow-hidden">
-            <svg aria-hidden="true" class="w-6 h-6 flex-shrink-0 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-brand dark:group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+          <a routerLink="/coordinador/bandeja" routerLinkActive="bg-gray-100 dark:bg-gray-700 text-brand font-bold"
+            [title]="!isSidebarOpen ? 'Bandeja' : ''"
+            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group transition-colors overflow-hidden">
+            <svg aria-hidden="true"
+              class="w-6 h-6 flex-shrink-0 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-brand dark:group-hover:text-white"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+              </path>
             </svg>
             <span *ngIf="isSidebarOpen" class="ml-3 transition-opacity duration-300">Bandeja</span>
           </a>
