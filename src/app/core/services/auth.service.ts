@@ -36,7 +36,7 @@ export class AuthService {
   readonly currentUser = signal<AuthUser | null>(this.getStoredUser());
 
   private getStoredUser(): AuthUser | null {
-    const userStr = localStorage.getItem(USER_KEY);
+    const userStr = sessionStorage.getItem(USER_KEY);
     try {
       return userStr ? JSON.parse(userStr) : null;
     } catch {
@@ -60,24 +60,24 @@ export class AuthService {
 
   /** Obtiene el access token almacenado */
   getAccessToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return sessionStorage.getItem(TOKEN_KEY);
   }
 
   /** Obtiene el refresh token almacenado */
   getRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_KEY);
+    return sessionStorage.getItem(REFRESH_KEY);
   }
 
   private saveSession(accessToken: string, refreshToken: string, user: AuthUser): void {
-    localStorage.setItem(TOKEN_KEY, accessToken);
-    localStorage.setItem(REFRESH_KEY, refreshToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    sessionStorage.setItem(TOKEN_KEY, accessToken);
+    sessionStorage.setItem(REFRESH_KEY, refreshToken);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   private clearTokens(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-    localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(REFRESH_KEY);
+    sessionStorage.removeItem(USER_KEY);
   }
 
   // ─── Auth endpoints ────────────────────────────────────
