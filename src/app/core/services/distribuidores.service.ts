@@ -42,4 +42,12 @@ export class DistribuidoresService {
   createCreditRaiseRequest(id: string, dto: CreateCreditRaiseDto): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/credit-raise-requests`, dto);
   }
+
+  /**
+   * GET /distribuidores/:id/credit-raise-requests
+   * Lista el historial de peticiones de aumento de credito de una distribuidora.
+   */
+  getRaiseRequests(id: string): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}/credit-raise-requests`);
+  }
 }

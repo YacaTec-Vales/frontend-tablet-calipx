@@ -1,0 +1,50 @@
+<div class="p-6 max-w-2xl mx-auto space-y-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Solicitar Aumento de Crédito</h2>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">
+        Envía una petición a gerencia para incrementar el límite de crédito de esta distribuidora.
+      </p>
+    </div>
+    <app-button variant="secondary" size="sm" (onClick)="volver()" [disabled]="isSubmitting()">
+      Cancelar
+    </app-button>
+  </div>
+
+  <app-card>
+    <div class="space-y-6">
+      
+      <app-input
+        label="Monto solicitado ($ MXN)"
+        type="number"
+        [(ngModel)]="monto"
+        placeholder="Ej: 5000"
+        hint="Ingresa el monto adicional sugerido."
+        [disabled]="isSubmitting()">
+      </app-input>
+
+      <app-input
+        label="Motivo o Justificación"
+        type="textarea"
+        [rows]="4"
+        [(ngModel)]="motivo"
+        placeholder="Explica detalladamente por qué se recomienda este aumento..."
+        hint="Mínimo 10 caracteres."
+        [disabled]="isSubmitting()">
+      </app-input>
+
+      <div *ngIf="errorMessage()" class="p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+        {{ errorMessage() }}
+      </div>
+
+      <div *ngIf="successMessage()" class="p-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+        {{ successMessage() }}
+      </div>
+
+      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="onSubmit()" [isLoading]="isSubmitting()" [disabled]="!canSubmit">
+        Enviar Solicitud a Gerencia
+      </app-button>
+
+    </div>
+  </app-card>
+</div>

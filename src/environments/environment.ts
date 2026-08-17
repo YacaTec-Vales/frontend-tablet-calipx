@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://utete.ddns.net:45000/api/v1',
+  apiUrl: 'https://apiv2.taquizaschavez.com.mx/api/v1',
 };
