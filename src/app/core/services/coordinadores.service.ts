@@ -19,7 +19,7 @@ export interface PaginatedDistribuidoresResponse {
 })
 export class CoordinadoresService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/coordinadores`;
+  private readonly apiUrl = `${environment.apiUrl}/coordinadores`;
 
   listarDistribuidoras(id: string): Observable<ApiResponse<PaginatedDistribuidoresResponse>> {
     return this.http.get<ApiResponse<PaginatedDistribuidoresResponse>>(`${this.apiUrl}/${id}/distribuidoras`);

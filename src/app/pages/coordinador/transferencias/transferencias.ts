@@ -1,37 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { InputComponent } from '../../../components/ui/input/input';
-import { ClientsService } from '../../../core/services/clients.service';
-import { inject, signal } from '@angular/core';
-
-interface SolicitudTransferencia {
-  id: string; // client id
-  cliente: string;
-  distribuidoraActual: string;
-  distribuidoraNuevaId: string; // the required newDistributorId UUID
-  distribuidoraNueva: string;
-  motivoCliente: string;
-  fecha: string;
-}
+import { AutorizacionesService, AuthorizationResponseDto } from '../../../core/services/autorizaciones.service';
 
 @Component({
   selector: 'app-transferencias',
   imports: [CommonModule, FormsModule, CardComponent, TableComponent, ButtonComponent, InputComponent],
   templateUrl: './transferencias.html'
 })
-export class Transferencias {
-  private clientsService = inject(ClientsService);
+export class Transferencias implements OnInit {
+  private autorizacionesService = inject(AutorizacionesService);
 
-  solicitudes: SolicitudTransferencia[] = [
-    { id: '11111111-1111-1111-1111-111111111111', cliente: 'Juan Pérez', distribuidoraActual: 'María López', distribuidoraNuevaId: '22222222-2222-2222-2222-222222222222', distribuidoraNueva: 'Sandra Castillo', motivoCliente: 'Cambio de domicilio', fecha: '2026-10-14' },
-    { id: '33333333-3333-3333-3333-333333333333', cliente: 'Ana Gómez', distribuidoraActual: 'Carmen Martínez', distribuidoraNuevaId: '44444444-4444-4444-4444-444444444444', distribuidoraNueva: 'María López', motivoCliente: 'Mejor trato', fecha: '2026-10-15' }
-  ];
+  solicitudes = signal<AuthorizationResponseDto[]>([]);
+  isLoading = signal(true);
 
-  selectedSolicitud: SolicitudTransferencia | null = null;
+  selectedSolicitud: AuthorizationResponseDto | null = null;
   actionType: 'approve' | 'reject' | null = null;
   motivoRechazo: string = '';
   isProcessing = false;
@@ -39,7 +26,43 @@ export class Transferencias {
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
-  seleccionar(solicitud: SolicitudTransferencia) {
+  ngOnInit() {
+    this.cargarSolicitudes();
+  }
+
+  cargarSolicitudes() {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+    this.autorizacionesService.getAutorizaciones().subscribe({
+      next: (res) => {
+        // Filtrar solo las transferencias pendientes
+        const pendientes = (res.data || []).filter(
+          a => a.authorizationType === 'TRANSFERENCIA_DISTRIBUIDOR' && a.status === 'PENDING'
+        );
+        this.solicitudes.set(pendientes);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Error al cargar las solicitudes de transferencia.');
+      }
+    });
+  }
+
+  // getters para el HTML, usando affectedEntity
+  getClienteNombre(solicitud: AuthorizationResponseDto): string {
+    return solicitud.affectedEntity?.clientName || solicitud.affectedEntity?.clienteNombre || 'Cliente Desconocido';
+  }
+
+  getDistribuidoraOrigen(solicitud: AuthorizationResponseDto): string {
+    return solicitud.affectedEntity?.oldDistributorName || solicitud.affectedEntity?.distribuidoraActual || 'Origen Desconocido';
+  }
+
+  getDistribuidoraDestino(solicitud: AuthorizationResponseDto): string {
+    return solicitud.affectedEntity?.newDistributorName || solicitud.affectedEntity?.distribuidoraNueva || 'Destino Desconocido';
+  }
+
+  seleccionar(solicitud: AuthorizationResponseDto) {
     this.selectedSolicitud = solicitud;
     this.actionType = null;
     this.motivoRechazo = '';
@@ -65,34 +88,53 @@ export class Transferencias {
 
     if (this.actionType === 'approve') {
       const dto = {
-        newDistributorId: this.selectedSolicitud.distribuidoraNuevaId,
-        reason: 'Aprobado por coordinador', // Or another input field if needed
-        notes: ''
+        notes: 'Aprobado por coordinador'
       };
 
-      this.clientsService.transferDistributor(this.selectedSolicitud.id, dto).subscribe({
+      this.autorizacionesService.approveAutorizacion(this.selectedSolicitud.id, dto).subscribe({
         next: () => {
-          this.solicitudes = this.solicitudes.filter(s => s.id !== this.selectedSolicitud?.id);
+          this.solicitudes.update(list => list.filter(s => s.id !== this.selectedSolicitud?.id));
           this.isProcessing = false;
           this.selectedSolicitud = null;
           this.actionType = null;
-          this.successMessage.set('Cliente transferido correctamente.');
+          this.successMessage.set('Transferencia aprobada correctamente.');
         },
         error: (err) => {
           this.isProcessing = false;
-          this.errorMessage.set(err.error?.message || 'Error al transferir al cliente. Es posible que el ID sea inválido (mock).');
+          let msg = err.error?.message || 'Error al aprobar la transferencia.';
+          if (err.error?.error?.details?.violations?.length) {
+            msg = err.error.error.details.violations[0];
+          } else if (Array.isArray(err.error?.message)) {
+            msg = err.error.message[0];
+          }
+          this.errorMessage.set(msg);
         }
       });
-    } else {
-      // Simulate reject (since no API for rejection is provided)
-      setTimeout(() => {
-        this.solicitudes = this.solicitudes.filter(s => s.id !== this.selectedSolicitud?.id);
-        this.isProcessing = false;
-        this.selectedSolicitud = null;
-        this.actionType = null;
-        this.motivoRechazo = '';
-        this.successMessage.set('Solicitud de transferencia rechazada.');
-      }, 1000);
+    } else if (this.actionType === 'reject') {
+      const dto = {
+        reason: this.motivoRechazo
+      };
+
+      this.autorizacionesService.rejectAutorizacion(this.selectedSolicitud.id, dto).subscribe({
+        next: () => {
+          this.solicitudes.update(list => list.filter(s => s.id !== this.selectedSolicitud?.id));
+          this.isProcessing = false;
+          this.selectedSolicitud = null;
+          this.actionType = null;
+          this.motivoRechazo = '';
+          this.successMessage.set('Solicitud de transferencia rechazada.');
+        },
+        error: (err) => {
+          this.isProcessing = false;
+          let msg = err.error?.message || 'Error al rechazar la transferencia.';
+          if (err.error?.error?.details?.violations?.length) {
+            msg = err.error.error.details.violations[0];
+          } else if (Array.isArray(err.error?.message)) {
+            msg = err.error.message[0];
+          }
+          this.errorMessage.set(msg);
+        }
+      });
     }
   }
 }

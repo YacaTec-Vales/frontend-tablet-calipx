@@ -24,3 +24,25 @@ export interface CreateCreditRaiseDto {
   montoCentavos: number;
   motivo: string;
 }
+
+export interface CreditRaiseRequest {
+  id: string;
+  distributorId: string;
+  branchId: string;
+  fromCreditLimitCents: number;
+  requestedAmountCents: number;
+  approvedAmountCents: number | null;
+  toCreditLimitCents: number | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  requestedBy: string;
+  decidedBy: string | null;
+  reason: string;
+  decisionNotes: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+}
+
+export interface DecideCreditRaiseDto {
+  montoCentavos?: number;
+  notas?: string;
+}

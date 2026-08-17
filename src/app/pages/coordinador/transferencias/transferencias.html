@@ -20,13 +20,14 @@
 
   <!-- Vista Lista -->
   <app-card *ngIf="!selectedSolicitud" title="Solicitudes Pendientes" [noPadding]="true">
-    <app-table [columns]="['ID', 'Cliente', 'Actual', 'Nueva', 'Fecha', 'Acción']" [isEmpty]="solicitudes.length === 0" emptyMessage="No hay solicitudes de transferencia pendientes.">
-      <tr *ngFor="let solicitud of solicitudes" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-        <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ solicitud.id }}</td>
-        <td class="px-6 py-4">{{ solicitud.cliente }}</td>
-        <td class="px-6 py-4 text-red-600 font-medium">{{ solicitud.distribuidoraActual }}</td>
-        <td class="px-6 py-4 text-green-600 font-medium">{{ solicitud.distribuidoraNueva }}</td>
-        <td class="px-6 py-4">{{ solicitud.fecha }}</td>
+    <div *ngIf="isLoading()" class="p-6 text-center text-gray-500">Cargando autorizaciones...</div>
+    <app-table *ngIf="!isLoading()" [columns]="['ID', 'Cliente', 'Actual', 'Nueva', 'Fecha', 'Acción']" [isEmpty]="solicitudes().length === 0" emptyMessage="No hay solicitudes de transferencia pendientes.">
+      <tr *ngFor="let solicitud of solicitudes()" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <td class="px-6 py-4 font-bold text-gray-900 dark:text-white" title="{{ solicitud.id }}">{{ solicitud.id | slice:0:8 }}...</td>
+        <td class="px-6 py-4">{{ getClienteNombre(solicitud) }}</td>
+        <td class="px-6 py-4 text-red-600 font-medium">{{ getDistribuidoraOrigen(solicitud) }}</td>
+        <td class="px-6 py-4 text-green-600 font-medium">{{ getDistribuidoraDestino(solicitud) }}</td>
+        <td class="px-6 py-4">{{ solicitud.createdAt | date:'shortDate' }}</td>
         <td class="px-6 py-4">
           <app-button variant="primary" size="sm" (onClick)="seleccionar(solicitud)">Evaluar</app-button>
         </td>
@@ -41,7 +42,7 @@
         
         <div>
           <p class="text-xs text-gray-500 uppercase font-bold">Cliente Final</p>
-          <p class="text-lg font-bold text-gray-900 dark:text-white">{{ selectedSolicitud.cliente }}</p>
+          <p class="text-lg font-bold text-gray-900 dark:text-white">{{ getClienteNombre(selectedSolicitud) }}</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
@@ -49,21 +50,21 @@
             <p class="text-xs text-gray-500 font-bold mb-1">De (Actual)</p>
             <p class="text-sm font-medium text-red-600 flex items-center gap-1">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              {{ selectedSolicitud.distribuidoraActual }}
+              {{ getDistribuidoraOrigen(selectedSolicitud) }}
             </p>
           </div>
           <div>
             <p class="text-xs text-gray-500 font-bold mb-1">Para (Nueva)</p>
             <p class="text-sm font-medium text-green-600 flex items-center gap-1">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              {{ selectedSolicitud.distribuidoraNueva }}
+              {{ getDistribuidoraDestino(selectedSolicitud) }}
             </p>
           </div>
         </div>
 
         <div>
           <p class="text-xs text-gray-500 uppercase font-bold">Motivo reportado por cliente:</p>
-          <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 italic">"{{ selectedSolicitud.motivoCliente }}"</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 italic">"{{ selectedSolicitud.justification || 'Sin motivo reportado' }}"</p>
         </div>
 
       </div>
