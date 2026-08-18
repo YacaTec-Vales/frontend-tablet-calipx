@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
@@ -10,8 +10,13 @@ export interface AuthorizationResponseDto {
   requesterId: string;
   authorizerId: string | null;
   affectedEntity: any; // JSON dinámico con los datos de la transferencia
+  resolvedNames?: {
+    clientName: string;
+    fromDistributorName: string;
+    toDistributorName: string;
+  };
   justification: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status: 'PENDING' | 'PENDIENTE' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
   metadata: any | null;
   createdAt: string;
   resolvedAt: string | null;
@@ -19,6 +24,7 @@ export interface AuthorizationResponseDto {
 
 export interface ApproveAuthorizationDto {
   notes?: string;
+  newDistributorId?: string;
 }
 
 export interface RejectAuthorizationDto {
@@ -38,12 +44,33 @@ export class AutorizacionesService {
     return this.http.get<ApiResponse<AuthorizationResponseDto[]>>(this.apiUrl);
   }
 
+  private mapBackendToResponse(data: any): AuthorizationResponseDto {
+    return data;
+  }
+
   /**
    * POST /api/v1/autorizaciones/{id}/aprobar
    * Aprueba una autorización.
    */
-  approveAutorizacion(id: string, dto: ApproveAuthorizationDto): Observable<ApiResponse<AuthorizationResponseDto>> {
-    return this.http.post<ApiResponse<AuthorizationResponseDto>>(`${this.apiUrl}/${id}/aprobar`, dto);
+  approveAutorizacion(id: string, payload: { notes?: string }): Observable<ApiResponse<AuthorizationResponseDto>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/aprobar`, payload).pipe(
+      map((res: any) => ({
+        ...res,
+        data: this.mapBackendToResponse(res.data)
+      }))
+    );
+  }
+
+  /**
+   * POST /autorizaciones/:id/aceptar-destino
+   */
+  acceptDestinationAutorizacion(id: string, payload: { notes?: string }): Observable<ApiResponse<AuthorizationResponseDto>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/aceptar-destino`, payload).pipe(
+      map((res: any) => ({
+        ...res,
+        data: this.mapBackendToResponse(res.data)
+      }))
+    );
   }
 
   /**
