@@ -21,12 +21,11 @@
   <!-- Vista Lista -->
   <app-card *ngIf="!selectedSolicitud" title="Solicitudes Pendientes" [noPadding]="true">
     <div *ngIf="isLoading()" class="p-6 text-center text-gray-500">Cargando autorizaciones...</div>
-    <app-table *ngIf="!isLoading()" [columns]="['ID', 'Cliente', 'Actual', 'Nueva', 'Fecha', 'Acción']" [isEmpty]="solicitudes().length === 0" emptyMessage="No hay solicitudes de transferencia pendientes.">
+    <app-table *ngIf="!isLoading()" [columns]="['ID', 'Cliente', 'Actual', 'Fecha', 'Acción']" [isEmpty]="solicitudes().length === 0" emptyMessage="No hay solicitudes de transferencia pendientes.">
       <tr *ngFor="let solicitud of solicitudes()" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
         <td class="px-6 py-4 font-bold text-gray-900 dark:text-white" title="{{ solicitud.id }}">{{ solicitud.id | slice:0:8 }}...</td>
         <td class="px-6 py-4">{{ getClienteNombre(solicitud) }}</td>
         <td class="px-6 py-4 text-red-600 font-medium">{{ getDistribuidoraOrigen(solicitud) }}</td>
-        <td class="px-6 py-4 text-green-600 font-medium">{{ getDistribuidoraDestino(solicitud) }}</td>
         <td class="px-6 py-4">{{ solicitud.createdAt | date:'shortDate' }}</td>
         <td class="px-6 py-4">
           <app-button variant="primary" size="sm" (onClick)="seleccionar(solicitud)">Evaluar</app-button>
@@ -45,21 +44,12 @@
           <p class="text-lg font-bold text-gray-900 dark:text-white">{{ getClienteNombre(selectedSolicitud) }}</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-          <div>
-            <p class="text-xs text-gray-500 font-bold mb-1">De (Actual)</p>
-            <p class="text-sm font-medium text-red-600 flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              {{ getDistribuidoraOrigen(selectedSolicitud) }}
-            </p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 font-bold mb-1">Para (Nueva)</p>
-            <p class="text-sm font-medium text-green-600 flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              {{ getDistribuidoraDestino(selectedSolicitud) }}
-            </p>
-          </div>
+        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <p class="text-xs text-gray-500 font-bold mb-1">De (Distribuidora Actual)</p>
+          <p class="text-sm font-medium text-red-600 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {{ getDistribuidoraOrigen(selectedSolicitud) }}
+          </p>
         </div>
 
         <div>
@@ -74,7 +64,7 @@
       
       <div *ngIf="!actionType" class="flex flex-col gap-4 mt-4">
         <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="setAction('approve')">
-          Aprobar Transferencia
+          Asignar y Aprobar Transferencia
         </app-button>
         <app-button variant="error" size="lg" [fullWidth]="true" (onClick)="setAction('reject')">
           Rechazar / Retener Cliente
@@ -82,13 +72,23 @@
       </div>
 
       <div *ngIf="actionType === 'approve'" class="mt-4 space-y-4 animate-fade-in">
-        <div class="p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400">
-          El cliente será desvinculado de su distribuidora actual y asignado a la nueva.
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Selecciona la Distribuidora Destino</label>
+          <select 
+            [(ngModel)]="selectedDistributorId" 
+            [disabled]="isProcessing"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="" disabled selected>-- Elige una distribuidora --</option>
+            <option *ngFor="let dist of distribuidorasAsignables()" [value]="dist.id">
+              {{ dist.distributorNumber }} - {{ dist.generalData?.['nombre'] }} {{ dist.generalData?.['apellido_paterno'] || '' }}
+            </option>
+          </select>
         </div>
-        <div class="flex gap-2">
+
+        <div class="flex gap-2 pt-2">
           <app-button variant="secondary" size="md" [fullWidth]="true" (onClick)="setAction(null)" [disabled]="isProcessing">Cancelar</app-button>
-          <app-button variant="primary" size="md" [fullWidth]="true" (onClick)="procesar()" [isLoading]="isProcessing" [disabled]="isProcessing">
-            Confirmar Aprobación
+          <app-button variant="primary" size="md" [fullWidth]="true" (onClick)="procesar()" [isLoading]="isProcessing" [disabled]="isProcessing || !selectedDistributorId">
+            Aprobar y Transferir
           </app-button>
         </div>
       </div>

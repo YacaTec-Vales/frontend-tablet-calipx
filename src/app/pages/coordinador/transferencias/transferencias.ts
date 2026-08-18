@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -6,71 +6,135 @@ import { TableComponent } from '../../../components/ui/table/table';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { InputComponent } from '../../../components/ui/input/input';
 import { AutorizacionesService, AuthorizationResponseDto } from '../../../core/services/autorizaciones.service';
+import { CoordinadoresService } from '../../../core/services/coordinadores.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { DistribuidorResponse } from '../../../core/models/distribuidor.model';
+
+/** Tipo extendido con nombres resueltos para la vista */
+interface TransferenciaView extends AuthorizationResponseDto {
+  clienteNombre: string;
+  distribuidoraOrigenNombre: string;
+  distribuidoraDestinoNombre: string;
+}
 
 @Component({
   selector: 'app-transferencias',
   imports: [CommonModule, FormsModule, CardComponent, TableComponent, ButtonComponent, InputComponent],
   templateUrl: './transferencias.html'
 })
-export class Transferencias implements OnInit {
+export class Transferencias implements OnInit, OnDestroy {
   private autorizacionesService = inject(AutorizacionesService);
+  private coordinadoresService = inject(CoordinadoresService);
+  private authService = inject(AuthService);
 
-  solicitudes = signal<AuthorizationResponseDto[]>([]);
+  solicitudes = signal<TransferenciaView[]>([]);
+  distribuidorasAsignables = signal<DistribuidorResponse[]>([]);
   isLoading = signal(true);
 
-  selectedSolicitud: AuthorizationResponseDto | null = null;
+  selectedSolicitud: TransferenciaView | null = null;
   actionType: 'approve' | 'reject' | null = null;
   motivoRechazo: string = '';
+  selectedDistributorId: string = '';
   isProcessing = false;
 
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
+  private pollingTimer?: ReturnType<typeof setTimeout>;
+  private isDestroyed = false;
+
   ngOnInit() {
     this.cargarSolicitudes();
+    this.cargarDistribuidoras();
   }
 
-  cargarSolicitudes() {
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
+  cargarDistribuidoras() {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    this.coordinadoresService.listarDistribuidoras(user.id).subscribe({
+      next: (res) => this.distribuidorasAsignables.set(res.data?.data || [])
+    });
+  }
+
+  ngOnDestroy() {
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+  }
+
+  cargarSolicitudes(isBackground = false) {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
+    if (!isBackground) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+    }
     this.autorizacionesService.getAutorizaciones().subscribe({
       next: (res) => {
-        // Filtrar solo las transferencias pendientes
         const pendientes = (res.data || []).filter(
-          a => a.authorizationType === 'TRANSFERENCIA_DISTRIBUIDOR' && a.status === 'PENDING'
+          a => a.authorizationType === 'TRANSFERENCIA_DISTRIBUIDOR' && (a.status === 'PENDING' || a.status === 'PENDIENTE')
         );
-        this.solicitudes.set(pendientes);
-        this.isLoading.set(false);
+
+        if (pendientes.length === 0) {
+          this.solicitudes.set([]);
+          this.isLoading.set(false);
+          return;
+        }
+
+        this.construirVista(pendientes, isBackground);
       },
       error: () => {
-        this.isLoading.set(false);
-        this.errorMessage.set('Error al cargar las solicitudes de transferencia.');
+        if (!isBackground) {
+          this.isLoading.set(false);
+          this.errorMessage.set('Error al cargar las solicitudes de transferencia.');
+        }
+        this.scheduleNextPoll();
       }
     });
   }
 
-  // getters para el HTML, usando affectedEntity
-  getClienteNombre(solicitud: AuthorizationResponseDto): string {
-    return solicitud.affectedEntity?.clientName || solicitud.affectedEntity?.clienteNombre || 'Cliente Desconocido';
+  private scheduleNextPoll() {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.cargarSolicitudes(true);
+    }, 15000);
   }
 
-  getDistribuidoraOrigen(solicitud: AuthorizationResponseDto): string {
-    return solicitud.affectedEntity?.oldDistributorName || solicitud.affectedEntity?.distribuidoraActual || 'Origen Desconocido';
+  private construirVista(pendientes: AuthorizationResponseDto[], isBackground = false) {
+    const vista: TransferenciaView[] = pendientes.map(p => ({
+      ...p,
+      clienteNombre: p.resolvedNames?.clientName || 'Cliente Desconocido',
+      distribuidoraOrigenNombre: p.resolvedNames?.fromDistributorName || 'Desconocido',
+      distribuidoraDestinoNombre: p.resolvedNames?.toDistributorName || 'Desconocido',
+    }));
+    this.solicitudes.set(vista);
+    if (!isBackground) this.isLoading.set(false);
+    this.scheduleNextPoll();
   }
 
-  getDistribuidoraDestino(solicitud: AuthorizationResponseDto): string {
-    return solicitud.affectedEntity?.newDistributorName || solicitud.affectedEntity?.distribuidoraNueva || 'Destino Desconocido';
+  getClienteNombre(solicitud: TransferenciaView): string {
+    return solicitud.clienteNombre;
   }
 
-  seleccionar(solicitud: AuthorizationResponseDto) {
+  getDistribuidoraOrigen(solicitud: TransferenciaView): string {
+    return solicitud.distribuidoraOrigenNombre;
+  }
+
+
+  seleccionar(solicitud: TransferenciaView) {
     this.selectedSolicitud = solicitud;
     this.actionType = null;
     this.motivoRechazo = '';
+    this.selectedDistributorId = '';
   }
 
   volverLista() {
     this.selectedSolicitud = null;
     this.actionType = null;
+    this.selectedDistributorId = '';
     this.errorMessage.set(null);
     this.successMessage.set(null);
   }
@@ -87,8 +151,15 @@ export class Transferencias implements OnInit {
     this.successMessage.set(null);
 
     if (this.actionType === 'approve') {
+      if (!this.selectedDistributorId) {
+        this.errorMessage.set('Debes seleccionar una distribuidora destino.');
+        this.isProcessing = false;
+        return;
+      }
+
       const dto = {
-        notes: 'Aprobado por coordinador'
+        notes: 'Aprobado y asignado por coordinador',
+        newDistributorId: this.selectedDistributorId
       };
 
       this.autorizacionesService.approveAutorizacion(this.selectedSolicitud.id, dto).subscribe({
@@ -97,7 +168,8 @@ export class Transferencias implements OnInit {
           this.isProcessing = false;
           this.selectedSolicitud = null;
           this.actionType = null;
-          this.successMessage.set('Transferencia aprobada correctamente.');
+          this.selectedDistributorId = '';
+          this.successMessage.set('Transferencia aprobada y asignada correctamente.');
         },
         error: (err) => {
           this.isProcessing = false;
@@ -138,3 +210,4 @@ export class Transferencias implements OnInit {
     }
   }
 }
+
