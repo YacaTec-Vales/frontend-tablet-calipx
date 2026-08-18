@@ -63,6 +63,23 @@ export const routes: Routes = [
           import('./pages/coordinador/bandeja/bandeja').then((m) => m.Bandeja),
       },
       {
+        path: 'distribuidoras',
+        loadComponent: () =>
+          import('./pages/coordinador/distribuidoras/distribuidoras').then((m) => m.Distribuidoras),
+      },
+      {
+        path: 'distribuidora-detalle/:id',
+        canActivate: [uuidGuard],
+        loadComponent: () =>
+          import('./pages/coordinador/distribuidora-detalle/distribuidora-detalle').then((m) => m.DistribuidoraDetalle),
+      },
+      {
+        path: 'solicitar-aumento/:id',
+        canActivate: [uuidGuard],
+        loadComponent: () =>
+          import('./pages/coordinador/solicitar-aumento/solicitar-aumento').then((m) => m.SolicitarAumento),
+      },
+      {
         path: 'reclutamiento',
         loadComponent: () =>
           import('./pages/coordinador/reclutamiento/reclutamiento').then((m) => m.Reclutamiento),
@@ -92,6 +109,12 @@ export const routes: Routes = [
         path: 'incentivos',
         loadComponent: () =>
           import('./pages/coordinador/incentivos/incentivos').then((m) => m.Incentivos),
+      },
+      {
+        path: 'seguimiento-aumento/:id',
+        canActivate: [uuidGuard],
+        loadComponent: () =>
+          import('./pages/coordinador/seguimiento-aumento/seguimiento-aumento').then((m) => m.SeguimientoAumento),
       },
       {
         path: 'transferencias',
