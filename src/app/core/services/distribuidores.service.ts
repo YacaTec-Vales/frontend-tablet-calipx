@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { DistribuidorResponse, CreditIncrementRequest, CreateCreditRaiseDto } from '../models/distribuidor.model';
+import { DistribuidorResponse, CreditIncrementRequest, CreateCreditRaiseDto, CreditRaiseRequest } from '../models/distribuidor.model';
 
 /**
  * Servicio que conecta con los endpoints de distribuidoras
@@ -39,15 +39,15 @@ export class DistribuidoresService {
    * POST /distribuidores/:id/credit-raise-requests
    * El Coordinador solicita un aumento de linea de credito que requiere aprobacion gerencial.
    */
-  createCreditRaiseRequest(id: string, dto: CreateCreditRaiseDto): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/credit-raise-requests`, dto);
+  createCreditRaiseRequest(id: string, dto: CreateCreditRaiseDto): Observable<ApiResponse<CreditRaiseRequest>> {
+    return this.http.post<ApiResponse<CreditRaiseRequest>>(`${this.apiUrl}/${id}/credit-raise-requests`, dto);
   }
 
   /**
    * GET /distribuidores/:id/credit-raise-requests
    * Lista el historial de peticiones de aumento de credito de una distribuidora.
    */
-  getRaiseRequests(id: string): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}/credit-raise-requests`);
+  getRaiseRequests(id: string): Observable<ApiResponse<CreditRaiseRequest[]>> {
+    return this.http.get<ApiResponse<CreditRaiseRequest[]>>(`${this.apiUrl}/${id}/credit-raise-requests`);
   }
 }

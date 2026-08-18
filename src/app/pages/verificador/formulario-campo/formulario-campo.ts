@@ -121,7 +121,10 @@ export class FormularioCampo implements OnInit {
 
     forkJoin([uploadFachada$, uploadComprobante$, uploadIdentificacion$]).subscribe({
       next: ([resFachada, resComprobante, resIdentificacion]) => {
-        const extractUrl = (res: any) => res?.data?.publicUrl || res?.publicUrl || '';
+        const extractUrl = (res: unknown) => {
+          const r = res as { data?: { publicUrl?: string }; publicUrl?: string };
+          return r?.data?.publicUrl || r?.publicUrl || '';
+        };
         
         // Parche para desarrollo local: class-validator rechaza 'localhost' por no tener TLD.
         // nip.io resuelve a la misma IP y tiene TLD valido (.io), lo que engaña al validador y permite cargar la imagen localmente.

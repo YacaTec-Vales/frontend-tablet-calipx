@@ -1,4 +1,5 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
+import { CreditRaiseRequest } from '../../../core/models/distribuidor.model';
 import { CommonModule, DatePipe, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DistribuidoresService } from '../../../core/services/distribuidores.service';
@@ -21,7 +22,7 @@ export class SeguimientoAumento implements OnInit {
   private location = inject(Location);
 
   distribuidoraId = signal<string>('');
-  requests = signal<any[]>([]);
+  requests = signal<CreditRaiseRequest[]>([]);
   isLoading = signal(true);
   isActionLoading = signal(false);
   errorMessage = signal<string | null>(null);
