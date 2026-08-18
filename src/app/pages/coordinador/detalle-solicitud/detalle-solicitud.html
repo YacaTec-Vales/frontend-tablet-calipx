@@ -17,7 +17,7 @@
     <div class="flex flex-col items-end gap-2">
       <app-badge [text]="formatEstado(solicitud()!.estado)"
         [variant]="getBadgeVariant(solicitud()!.estado)"></app-badge>
-      @if (solicitud()!.dictamen === 'NO_CUMPLE' && solicitud()!.estado !== 'RECHAZADA') {
+      @if (solicitud()!.dictamen === 'NO_CUMPLE' && solicitud()!.estado === 'DICTAMINADA') {
       <app-button variant="primary" size="sm" (onClick)="editar()">
         Corregir Datos
       </app-button>

@@ -12,13 +12,19 @@
   </div>
 
   <app-card [noPadding]="true">
-    <app-table [columns]="['Fecha', 'Monto Solicitado', 'Motivo', 'Estado', 'Aprobado', 'Acciones']">
+    <app-table [columns]="['Fecha', 'Monto Solicitado', 'Motivo', 'Estado', 'Aprobado']">
       <tr *ngFor="let solicitud of requests()" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
         <td class="px-6 py-4 whitespace-nowrap">{{ solicitud.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
         <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">${{ (solicitud.requestedAmountCents || 0) / 100 | number }}</td>
         <td class="px-6 py-4 max-w-xs truncate" [title]="solicitud.reason">{{ solicitud.reason || 'Sin motivo' }}</td>
         <td class="px-6 py-4">
           <app-badge [text]="solicitud.status" [variant]="getBadgeVariant(solicitud.status)"></app-badge>
+          <div *ngIf="solicitud.status === 'REJECTED' && solicitud.decisionNotes" class="text-xs text-red-600 mt-2 font-medium italic">
+            Nota del gerente: "{{ solicitud.decisionNotes }}"
+          </div>
+          <div *ngIf="solicitud.status === 'APPROVED' && solicitud.decisionNotes" class="text-xs text-green-700 mt-2 font-medium italic">
+            Nota del gerente: "{{ solicitud.decisionNotes }}"
+          </div>
         </td>
         <td class="px-6 py-4 font-bold text-green-600">
           <ng-container *ngIf="solicitud.approvedAmountCents; else noAprobado">
@@ -28,17 +34,10 @@
             <span class="text-gray-400">-</span>
           </ng-template>
         </td>
-        <td class="px-6 py-4 space-x-2 flex items-center">
-          <ng-container *ngIf="solicitud.status === 'PENDING'">
-            <app-button variant="primary" size="sm" (onClick)="aprobar(solicitud.id)" [disabled]="isActionLoading()">Aprobar</app-button>
-            <app-button variant="error" size="sm" (onClick)="rechazar(solicitud.id)" [disabled]="isActionLoading()">Rechazar</app-button>
-          </ng-container>
-          <span *ngIf="solicitud.status !== 'PENDING'" class="text-sm text-gray-400">Sin acciones</span>
-        </td>
       </tr>
 
       <tr *ngIf="requests().length === 0 && !isLoading()">
-        <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+        <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
           No hay historial de peticiones de aumento para esta distribuidora.
         </td>
       </tr>

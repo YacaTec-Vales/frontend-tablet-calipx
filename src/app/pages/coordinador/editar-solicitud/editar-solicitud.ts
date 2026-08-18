@@ -5,10 +5,11 @@ import { SolicitudesService } from '../../../core/services/solicitudes.service';
 import { CardComponent } from '../../../components/ui/card/card';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-editar-solicitud-coordinador',
-  imports: [CommonModule, CardComponent, InputComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, CardComponent, InputComponent, ButtonComponent],
   templateUrl: './editar-solicitud.html',
 })
 export class EditarSolicitud implements OnInit {
@@ -23,6 +24,7 @@ export class EditarSolicitud implements OnInit {
 
   readonly successMessage = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
+  readonly comentariosVerificador = signal<string | null>(null);
 
   // Form signals
   readonly nombre = signal('');
@@ -57,6 +59,7 @@ export class EditarSolicitud implements OnInit {
         this.numero.set(s.datos_generales.numero);
         this.colonia.set(s.datos_generales.colonia);
         this.codigoPostal.set(s.datos_generales.codigo_postal);
+        this.comentariosVerificador.set(s.comentarios_verificador || null);
 
         this.isLoaded.set(true);
         this.isLoading.set(false);
@@ -72,21 +75,27 @@ export class EditarSolicitud implements OnInit {
     this.router.navigate(['/coordinador/solicitud', this.solicitudId()]);
   }
 
+  getValidationErrors(): string[] {
+    const errors: string[] = [];
+    if (this.nombre().length === 0) errors.push('El nombre es requerido.');
+    if (this.apellidoPaterno().length === 0) errors.push('El apellido paterno es requerido.');
+    if (this.rfc().length !== 13) errors.push('El RFC debe tener exactamente 13 caracteres.');
+    if (this.calle().length === 0) errors.push('La calle es requerida.');
+    if (this.numero().length === 0) errors.push('El número es requerido.');
+    if (this.colonia().length === 0) errors.push('La colonia es requerida.');
+    if (this.codigoPostal().length !== 5) errors.push('El código postal debe tener 5 dígitos.');
+    return errors;
+  }
+
   canSubmit(): boolean {
-    return (
-      this.nombre().length > 0 &&
-      this.apellidoPaterno().length > 0 &&
-      this.rfc().length === 13 &&
-      this.calle().length > 0 &&
-      this.numero().length > 0 &&
-      this.colonia().length > 0 &&
-      this.codigoPostal().length === 5 &&
-      !this.isSubmitting()
-    );
+    return this.getValidationErrors().length === 0 && !this.isSubmitting();
   }
 
   onSubmit(): void {
-    if (!this.canSubmit()) return;
+    if (!this.canSubmit()) {
+      this.errorMessage.set('Por favor corrige los siguientes errores: ' + this.getValidationErrors().join(' '));
+      return;
+    }
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -115,9 +124,9 @@ export class EditarSolicitud implements OnInit {
       },
       error: (err) => {
         const code = err.error?.error?.code;
-        if (code === 'DISTRIBUIDORES.NOT_EDITABLE') {
+        if (code === 'DISTRIBUIDOR.SOLICITUD.NOT_EDITABLE' || code === 'DISTRIBUIDORES.NOT_EDITABLE') {
           this.errorMessage.set('La solicitud ya fue autorizada o rechazada y no puede ser modificada.');
-        } else if (code === 'DISTRIBUIDORES.VALIDATION') {
+        } else if (code === 'DISTRIBUIDOR.SOLICITUD.VALIDATION' || code === 'DISTRIBUIDORES.VALIDATION') {
           this.errorMessage.set('Faltan campos o el formato es incorrecto.');
         } else {
           this.errorMessage.set(err.error?.message || 'Error al actualizar la solicitud');

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -11,6 +11,7 @@ import { CreditRaiseService } from '../../../core/services/credit-raise.service'
 import { AuthService } from '../../../core/services/auth.service';
 import { CreditRaiseRequest } from '../../../core/models/distribuidor.model';
 import { InputComponent } from '../../../components/ui/input/input';
+import { Router } from '@angular/router';
 
 interface Candidata {
   id: string;
@@ -25,11 +26,12 @@ interface Candidata {
   imports: [CommonModule, ReactiveFormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent],
   templateUrl: './incentivos.html'
 })
-export class Incentivos implements OnInit {
+export class Incentivos implements OnInit, OnDestroy {
   private coordinadoresService = inject(CoordinadoresService);
   private distribuidoresService = inject(DistribuidoresService);
   private creditRaiseService = inject(CreditRaiseService);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   candidatas = signal<Candidata[]>([]);
   isLoading = signal(true);
@@ -40,20 +42,40 @@ export class Incentivos implements OnInit {
   requestSent = signal(false);
   isLoadingRequests = signal(false);
   solicitudDetalle = signal<any | null>(null);
+  lastRejectedRequest = signal<any | null>(null);
   formError = signal<string | null>(null);
 
   form: FormGroup | null = null;
+
+  private pollingTimer?: ReturnType<typeof setTimeout>;
+  private isDestroyed = false;
 
   ngOnInit() {
     this.cargarDistribuidoras();
   }
 
-  cargarDistribuidoras() {
+  ngOnDestroy() {
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+  }
+
+  cargarDistribuidoras(isBackground = false) {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
     const user = this.authService.currentUser();
     if (!user) {
       this.errorMessage.set('No hay sesión activa.');
-      this.isLoading.set(false);
+      if (!isBackground) this.isLoading.set(false);
       return;
+    }
+
+    if (!isBackground) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
     }
 
     this.coordinadoresService.listarDistribuidoras(user.id).subscribe({
@@ -67,13 +89,24 @@ export class Incentivos implements OnInit {
           puntaje: dist.status === 'ACTIVA' ? 'Excelente' : 'Bueno'
         }));
         this.candidatas.set(candidatasMap);
-        this.isLoading.set(false);
+        if (!isBackground) this.isLoading.set(false);
+        this.scheduleNextPoll();
       },
       error: (err) => {
-        this.errorMessage.set('Error al cargar las distribuidoras candidatas.');
-        this.isLoading.set(false);
+        if (!isBackground) {
+          this.errorMessage.set('Error al cargar las distribuidoras candidatas.');
+          this.isLoading.set(false);
+        }
+        this.scheduleNextPoll();
       }
     });
+  }
+
+  private scheduleNextPoll() {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.cargarDistribuidoras(true);
+    }, 15000);
   }
 
   seleccionar(candidata: Candidata) {
@@ -81,12 +114,20 @@ export class Incentivos implements OnInit {
     this.requestSent.set(false);
     this.isLoadingRequests.set(true);
     this.solicitudDetalle.set(null);
+    this.lastRejectedRequest.set(null);
     this.formError.set(null);
 
     this.distribuidoresService.getRaiseRequests(candidata.id).subscribe({
       next: (res) => {
         const requests = res.data || [];
         const pendingReq = requests.find((r: any) => r.status === 'PENDING');
+        
+        // Buscar la solicitud rechazada más reciente
+        const rejectedReqs = requests.filter((r: any) => r.status === 'REJECTED');
+        if (rejectedReqs.length > 0) {
+          const lastRejected = rejectedReqs.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+          this.lastRejectedRequest.set(lastRejected);
+        }
         
         if (pendingReq) {
           this.solicitudDetalle.set(pendingReq);
@@ -106,6 +147,10 @@ export class Incentivos implements OnInit {
 
   volverLista() {
     this.selectedCandidata = null;
+  }
+
+  verHistorialPeticiones(id: string) {
+    this.router.navigate(['/coordinador/seguimiento-aumento', id]);
   }
 
   preAutorizarAumento() {

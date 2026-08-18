@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CoordinadoresService } from '../../../core/services/coordinadores.service';
@@ -14,7 +14,7 @@ import { ButtonComponent } from '../../../components/ui/button/button';
   imports: [CommonModule, RouterModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent],
   templateUrl: './distribuidoras.html'
 })
-export class Distribuidoras implements OnInit {
+export class Distribuidoras implements OnInit, OnDestroy {
   private coordinadoresService = inject(CoordinadoresService);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -23,28 +23,57 @@ export class Distribuidoras implements OnInit {
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
 
+  private pollingTimer?: ReturnType<typeof setTimeout>;
+  private isDestroyed = false;
+
   ngOnInit() {
     this.loadDistribuidoras();
   }
 
-  loadDistribuidoras() {
+  ngOnDestroy() {
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+  }
+
+  loadDistribuidoras(isBackground = false) {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
     const user = this.authService.currentUser();
     if (!user) {
       this.errorMessage.set('No hay sesión activa.');
-      this.isLoading.set(false);
+      if (!isBackground) this.isLoading.set(false);
       return;
+    }
+
+    if (!isBackground) {
+      this.isLoading.set(true);
     }
 
     this.coordinadoresService.listarDistribuidoras(user.id).subscribe({
       next: (res) => {
         this.distribuidoras.set(res.data?.data || []);
-        this.isLoading.set(false);
+        if (!isBackground) this.isLoading.set(false);
+        this.scheduleNextPoll();
       },
       error: () => {
-        this.errorMessage.set('Error al cargar las distribuidoras.');
-        this.isLoading.set(false);
+        if (!isBackground) {
+          this.errorMessage.set('Error al cargar las distribuidoras.');
+          this.isLoading.set(false);
+        }
+        this.scheduleNextPoll();
       }
     });
+  }
+
+  private scheduleNextPoll() {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.loadDistribuidoras(true);
+    }, 15000);
   }
 
   verDetalle(id: string) {

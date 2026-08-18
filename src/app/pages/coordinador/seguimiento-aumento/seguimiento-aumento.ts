@@ -1,5 +1,5 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DistribuidoresService } from '../../../core/services/distribuidores.service';
 import { CreditRaiseService } from '../../../core/services/credit-raise.service';
@@ -18,6 +18,7 @@ export class SeguimientoAumento implements OnInit {
   private router = inject(Router);
   private distribuidoresService = inject(DistribuidoresService);
   private creditRaiseService = inject(CreditRaiseService);
+  private location = inject(Location);
 
   distribuidoraId = signal<string>('');
   requests = signal<any[]>([]);
@@ -50,7 +51,7 @@ export class SeguimientoAumento implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/coordinador/distribuidora-detalle', this.distribuidoraId()]);
+    this.location.back();
   }
 
   getBadgeVariant(estado: string): 'success' | 'warning' | 'error' | 'info' {
@@ -59,38 +60,6 @@ export class SeguimientoAumento implements OnInit {
       case 'PENDING': return 'warning';
       case 'REJECTED': return 'error';
       default: return 'info';
-    }
-  }
-
-  aprobar(id: string) {
-    if (confirm('¿Estás seguro de aprobar esta solicitud por el monto total?')) {
-      this.isActionLoading.set(true);
-      this.creditRaiseService.approve(id, {}).subscribe({
-        next: () => {
-          this.isActionLoading.set(false);
-          this.loadRequests(this.distribuidoraId()!);
-        },
-        error: (err) => {
-          this.isActionLoading.set(false);
-          this.errorMessage.set('Error al aprobar la solicitud.');
-        }
-      });
-    }
-  }
-
-  rechazar(id: string) {
-    if (confirm('¿Estás seguro de rechazar esta solicitud?')) {
-      this.isActionLoading.set(true);
-      this.creditRaiseService.reject(id, {}).subscribe({
-        next: () => {
-          this.isActionLoading.set(false);
-          this.loadRequests(this.distribuidoraId()!);
-        },
-        error: (err) => {
-          this.isActionLoading.set(false);
-          this.errorMessage.set('Error al rechazar la solicitud.');
-        }
-      });
     }
   }
 }

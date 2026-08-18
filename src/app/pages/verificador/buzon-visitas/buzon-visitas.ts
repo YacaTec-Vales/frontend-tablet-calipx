@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -20,7 +20,7 @@ import { SolicitudResponse } from '../../../core/models/solicitud.model';
   imports: [CardComponent, TableComponent, BadgeComponent, ButtonComponent, DatePipe],
   templateUrl: './buzon-visitas.html',
 })
-export class BuzonVisitas implements OnInit {
+export class BuzonVisitas implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly solicitudesService = inject(SolicitudesService);
 
@@ -39,25 +39,52 @@ export class BuzonVisitas implements OnInit {
   /** Indica si hay solicitudes cargadas */
   readonly isEmpty = computed(() => this.solicitudes().length === 0 && !this.isLoading());
 
+  private pollingTimer?: ReturnType<typeof setTimeout>;
+  private isDestroyed = false;
+
   ngOnInit(): void {
     this.loadSolicitudes();
   }
 
+  ngOnDestroy(): void {
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+  }
+
   /** Carga solicitudes en estado EN_VERIFICACION desde el backend */
-  loadSolicitudes(): void {
-    this.isLoading.set(true);
-    this.errorMessage.set('');
+  loadSolicitudes(isBackground = false): void {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
+    if (!isBackground) {
+      this.isLoading.set(true);
+      this.errorMessage.set('');
+    }
 
     this.solicitudesService.list({ estado: 'EN_VERIFICACION' }).subscribe({
       next: (response) => {
         this.solicitudes.set(response.data);
-        this.isLoading.set(false);
+        if (!isBackground) this.isLoading.set(false);
+        this.scheduleNextPoll();
       },
       error: (err) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(err.error?.message ?? 'Error al cargar las solicitudes.');
+        if (!isBackground) {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message ?? 'Error al cargar las solicitudes.');
+        }
+        this.scheduleNextPoll();
       },
     });
+  }
+
+  private scheduleNextPoll(): void {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.loadSolicitudes(true);
+    }, 15000);
   }
 
   /**

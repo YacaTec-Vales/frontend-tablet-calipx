@@ -9,6 +9,7 @@ export interface DistribuidorResponse {
   creditLimitCents: number;
   creditAvailableCents: number;
   status: 'ACTIVA' | 'MOROSA' | 'DESHABILITADA' | 'BAJA_VOLUNTARIA';
+  generalData?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
 }
