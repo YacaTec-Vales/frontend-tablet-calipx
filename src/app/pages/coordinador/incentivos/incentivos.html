@@ -2,7 +2,8 @@
   <div class="flex items-center justify-between mb-2">
     <div>
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Incentivos</h2>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Revisa el historial de las distribuidoras y autoriza aumentos de crédito.</p>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Revisa el historial de las distribuidoras y autoriza aumentos de
+        crédito.</p>
     </div>
 
     <app-button *ngIf="selectedCandidata" variant="secondary" size="sm" (onClick)="volverLista()">
@@ -11,20 +12,30 @@
   </div>
 
   <!-- Vista Lista -->
-  <app-card *ngIf="!selectedCandidata" title="Distribuidoras Candidatas" subtitle="Con historial limpio y buen comportamiento de pago" [noPadding]="true">
+  <app-card *ngIf="!selectedCandidata" title="Distribuidoras Candidatas"
+    subtitle="Con historial limpio y buen comportamiento de pago" [noPadding]="true">
     <app-table [columns]="['ID', 'Nombre', 'Límite Actual', 'Comportamiento', 'Acciones']">
-      <tr *ngFor="let candidata of candidatas" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <tr *ngFor="let candidata of candidatas()"
+        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
         <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ candidata.id }}</td>
         <td class="px-6 py-4">{{ candidata.nombre }}</td>
         <td class="px-6 py-4 font-bold text-green-600">${{ candidata.limiteActual | number }}</td>
         <td class="px-6 py-4">
-          <app-badge [text]="candidata.puntaje" [variant]="candidata.puntaje === 'Excelente' ? 'success' : 'info'"></app-badge>
+          <app-badge [text]="candidata.puntaje"
+            [variant]="candidata.puntaje === 'Excelente' ? 'success' : 'info'"></app-badge>
         </td>
-        <td class="px-6 py-4">
-          <app-button variant="outline" size="sm" (onClick)="seleccionar(candidata)">Ver Historial</app-button>
+        <td class="px-6 py-4 flex gap-2">
+          <app-button variant="outline" size="sm" (onClick)="seleccionar(candidata)">Ver Detalles / Solicitar</app-button>
+          <app-button variant="secondary" size="sm" (onClick)="verHistorialPeticiones(candidata.id)">Historial</app-button>
         </td>
       </tr>
     </app-table>
+
+    <div *ngIf="isLoading()" class="p-6 text-center text-gray-500">Cargando distribuidoras...</div>
+    <div *ngIf="errorMessage()"
+      class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+      {{ errorMessage() }}
+    </div>
   </app-card>
 
   <!-- Vista Detalle e Incentivo -->
@@ -43,33 +54,75 @@
           <span class="text-gray-500 font-bold">Retrasos en pagos:</span>
           <span class="text-green-600 font-bold">0 Días</span>
         </div>
+        
+        <div class="pt-4">
+          <app-button variant="outline" size="sm" [fullWidth]="true" (onClick)="verHistorialPeticiones(selectedCandidata.id)">
+            Ver Historial de Peticiones de Aumento
+          </app-button>
+        </div>
       </div>
     </app-card>
 
-    <app-card title="Pre-autorizar Aumento" subtitle="Enviar petición a Gerencia" extraClasses="border-t-4 border-t-brand">
-      
-      <div *ngIf="requestSent" class="p-6 text-center">
+    <app-card title="Solicitar Aumento" subtitle="Enviar petición a Gerencia"
+      extraClasses="border-t-4 border-t-brand">
+
+      <div *ngIf="isLoadingRequests()" class="p-6 text-center text-gray-500">
+        Verificando estado de la distribuidora...
+      </div>
+
+      <div *ngIf="!isLoadingRequests() && solicitudDetalle() as solicitud" class="p-6 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100 text-yellow-600 mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Aumento en Trámite</h3>
+        <p class="text-sm text-gray-500 mt-2">Ya existe una petición de aumento de crédito pendiente de aprobación para esta distribuidora.</p>
+        
+        <div class="mt-4 text-left bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+           <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Monto Solicitado:</strong> ${{ solicitud.requestedAmountCents / 100 | number }}</p>
+           <p class="text-sm mt-1 text-gray-700 dark:text-gray-300"><strong>Motivo:</strong> {{ solicitud.reason }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoadingRequests() && !solicitudDetalle() && requestSent()" class="p-6 text-center">
         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 mb-4">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
         </div>
         <h3 class="text-lg font-bold text-gray-900 dark:text-white">Petición Enviada</h3>
         <p class="text-sm text-gray-500 mt-2">El gerente recibirá la notificación para aprobar el aumento en su próxima sesión.</p>
       </div>
 
-      <div *ngIf="!requestSent" class="space-y-4">
-        <p class="text-sm text-gray-600 dark:text-gray-300">
-          La distribuidora califica para un aumento del <strong>20%</strong> sobre su línea de crédito actual basado en su historial de pagos limpio.
-        </p>
+      <div *ngIf="!isLoadingRequests() && !solicitudDetalle() && !requestSent() && form" class="space-y-4" [formGroup]="form">
         
-        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg flex justify-between items-center mt-2">
-          <div>
-            <p class="text-xs text-gray-500">Nuevo límite sugerido:</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">${{ selectedCandidata.limiteActual * 1.20 | number }}</p>
+        <!-- Alerta de rechazo previo -->
+        <div *ngIf="lastRejectedRequest() as rejected" class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-400 border border-yellow-200" role="alert">
+          <div class="flex items-start gap-2">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
+              <span class="font-bold">La última petición de aumento ({{ rejected.createdAt | date:'dd/MM/yyyy' }}) fue rechazada.</span>
+              <p class="mt-1">Motivo del gerente: <span class="italic font-medium">"{{ rejected.decisionNotes || 'Sin motivo reportado' }}"</span></p>
+            </div>
           </div>
         </div>
 
-        <app-button variant="primary" size="md" [fullWidth]="true" (onClick)="preAutorizarAumento()" [disabled]="isSending">
-          {{ isSending ? 'Enviando petición...' : 'Pre-autorizar Aumento' }}
+        <div *ngIf="formError()" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+          {{ formError() }}
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+          La distribuidora califica para solicitar un aumento. Completa los datos para enviar la petición al gerente.
+        </p>
+
+        <div class="space-y-4 mt-4">
+          <app-input label="Nuevo Límite Solicitado ($)" type="number" formControlName="monto" hint="Límite máximo: $10,000,000,000"></app-input>
+          <app-input label="Motivo / Justificación" type="textarea" [rows]="3" formControlName="motivo"></app-input>
+        </div>
+
+        <app-button variant="primary" size="md" [fullWidth]="true" (onClick)="preAutorizarAumento()"
+          [disabled]="isSending() || form.invalid">
+          {{ isSending() ? 'Enviando petición...' : 'Solicitar Aumento a Gerencia' }}
         </app-button>
       </div>
     </app-card>

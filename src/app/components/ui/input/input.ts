@@ -1,10 +1,9 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, input, output, forwardRef, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-input',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './input.html',
   providers: [
@@ -16,41 +15,57 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/f
   ]
 })
 export class InputComponent implements ControlValueAccessor {
-  @Input() label: string = '';
-  @Input() type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'file' = 'text';
-  @Input() placeholder: string = '';
-  @Input() id: string = `input-${Math.random().toString(36).substring(2, 9)}`;
-  @Input() disabled: boolean = false;
-  @Input() rows: number = 4; // Solo para textarea
-  @Input() hint: string = '';
+  readonly label = input<string>('');
+  readonly type = input<'text' | 'email' | 'password' | 'number' | 'textarea' | 'file' | 'date'>('text');
+  readonly placeholder = input<string>('');
+  readonly id = input<string>(`input-${Math.random().toString(36).substring(2, 9)}`);
+  readonly disabled = input<boolean>(false);
+  readonly rows = input<number>(4); // Solo para textarea
+  readonly hint = input<string>('');
+  readonly maxlength = input<number | string | undefined>();
+  readonly inputmode = input<string | undefined>();
+  readonly isInvalid = input<boolean>(false);
+  readonly errorMessage = input<string>('');
 
-  value: string = '';
+  /** Permite binding directo con [value] */
+  readonly value = model<string>('');
+
   fileName: string = '';
 
-  onChange: any = () => {};
-  onTouch: any = () => {};
+  onChange: (val: unknown) => void = () => { };
+  onTouch: () => void = () => { };
 
-  writeValue(value: any): void {
-    this.value = value || '';
+  writeValue(val: unknown): void {
+    this.value.set(typeof val === 'string' ? val : '');
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (val: unknown) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouch = fn;
   }
 
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled;
+    // Cannot mutate a read-only input, typically forms disable logic is handled via CVA, 
+    // but mixing CVA and standard inputs requires care. We'll ignore it as the parent form handles it.
   }
 
   onInput(event: Event) {
     const inputElement = event.target as HTMLInputElement | HTMLTextAreaElement;
-    this.value = inputElement.value;
-    this.onChange(this.value);
+    this.value.set(inputElement.value);
+    this.onChange(this.value());
     this.onTouch();
+  }
+
+  onKeyPress(event: KeyboardEvent) {
+    if (this.type() === 'number') {
+      // Prevenir 'e', '+', '-', '.' si queremos numeros puros
+      if (['e', 'E', '+', '-', '.'].includes(event.key)) {
+        event.preventDefault();
+      }
+    }
   }
 
   onFileChange(event: Event) {

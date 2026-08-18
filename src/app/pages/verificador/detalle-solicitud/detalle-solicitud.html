@@ -1,60 +1,72 @@
-<div class="space-y-6 pb-24">
+<div class="space-y-6 pb-24" *ngIf="solicitud()">
   <div class="flex flex-col gap-2">
     <div class="flex items-center gap-3">
-      <span class="bg-yellow-100 text-yellow-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Visita Pendiente</span>
-      <span class="text-gray-500 text-sm dark:text-gray-400">Folio: YCT-83921</span>
+      <span
+        class="bg-yellow-100 text-yellow-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+        Visita Pendiente
+      </span>
+      <span class="text-gray-500 text-sm dark:text-gray-400">Folio: {{ solicitud()?.folio || solicitud()?.id?.slice(0, 8) }}</span>
     </div>
-    <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Juan Carlos Martínez</h2>
+    <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+      {{ solicitud()?.datos_generales?.nombre }} 
+      {{ solicitud()?.datos_generales?.apellido_paterno }} 
+      {{ solicitud()?.datos_generales?.apellido_materno }}
+    </h2>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    
+
     <!-- Info general -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">Información General</h3>
+    <app-card title="Información General">
       <dl class="space-y-4">
         <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Teléfono Celular</dt>
-          <dd class="text-base font-semibold text-gray-900 dark:text-white">81 8392 0192</dd>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">RFC</dt>
+          <dd class="text-base font-semibold text-gray-900 dark:text-white">{{ solicitud()?.datos_generales?.rfc }}</dd>
         </div>
         <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">CURP</dt>
-          <dd class="text-base font-semibold text-gray-900 dark:text-white">MACA820921HNLXXX02</dd>
-        </div>
-        <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Distribuidora Asociada</dt>
-          <dd class="text-base font-semibold text-gray-900 dark:text-white">Dist. Norte (Ana García)</dd>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha de Nacimiento</dt>
+          <dd class="text-base font-semibold text-gray-900 dark:text-white">{{ solicitud()?.datos_generales?.fecha_nacimiento }}</dd>
         </div>
       </dl>
-    </div>
+    </app-card>
 
     <!-- Direccion -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">Dirección de Visita</h3>
+    <app-card title="Dirección de Visita">
       <dl class="space-y-4">
         <div>
           <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Calle y Número</dt>
-          <dd class="text-base font-semibold text-gray-900 dark:text-white">Av. Reforma 123, Int. 4</dd>
+          <dd class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ solicitud()?.datos_generales?.calle }} {{ solicitud()?.datos_generales?.numero }}
+          </dd>
         </div>
         <div>
           <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Colonia y C.P.</dt>
-          <dd class="text-base font-semibold text-gray-900 dark:text-white">Centro, Monterrey. C.P. 64000</dd>
-        </div>
-        <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Referencias del Coordinador</dt>
-          <dd class="text-base text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mt-1 border border-gray-200 dark:border-gray-600">
-            Casa de dos pisos color blanca con portón negro. Tocar timbre.
+          <dd class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ solicitud()?.datos_generales?.colonia }}, {{ solicitud()?.datos_generales?.ciudad }}. C.P. {{ solicitud()?.datos_generales?.codigo_postal }}
           </dd>
         </div>
       </dl>
-    </div>
+    </app-card>
 
   </div>
 
-  <div class="fixed bottom-0 left-0 z-40 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] dark:bg-gray-800 dark:border-gray-700 flex justify-center">
-    <button routerLink="/verificador/formulario-campo" type="button" class="flex-1 hover:opacity-90 focus:ring-4 focus:ring-brand-300 font-bold rounded-lg text-lg px-5 py-4 text-center shadow-md transition-transform active:scale-[0.98]" style="background-color: var(--color-brand); color: white; border: 1px solid var(--color-brand);">
+  <div *ngIf="errorMessage()" class="mt-4 p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+    {{ errorMessage() }}
+  </div>
+
+  <div
+    class="fixed bottom-0 left-0 z-40 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] dark:bg-gray-800 dark:border-gray-700 flex justify-center">
+    <app-button variant="primary" size="lg" [fullWidth]="true" [isLoading]="isStarting()"
+      (onClick)="iniciarValidacion()">
       Iniciar Validación en Sitio
-    </button>
+    </app-button>
   </div>
+</div>
 
+<div *ngIf="isLoading()" class="flex justify-center items-center h-64">
+  <div class="text-gray-500 dark:text-gray-400">Cargando datos de la solicitud...</div>
+</div>
+
+<div *ngIf="!isLoading() && !solicitud() && errorMessage()" class="p-6 text-center text-red-500">
+  {{ errorMessage() }}
 </div>

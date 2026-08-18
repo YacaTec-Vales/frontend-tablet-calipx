@@ -1,9 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
 import { ButtonComponent } from '../../../components/ui/button/button';
+import { CoordinadoresService } from '../../../core/services/coordinadores.service';
+import { DistribuidoresService } from '../../../core/services/distribuidores.service';
+import { CreditRaiseService } from '../../../core/services/credit-raise.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { CreditRaiseRequest } from '../../../core/models/distribuidor.model';
+import { InputComponent } from '../../../components/ui/input/input';
+import { Router } from '@angular/router';
 
 interface Candidata {
   id: string;
@@ -15,36 +23,165 @@ interface Candidata {
 
 @Component({
   selector: 'app-incentivos',
-  standalone: true,
-  imports: [CommonModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent],
   templateUrl: './incentivos.html'
 })
-export class Incentivos {
-  candidatas: Candidata[] = [
-    { id: 'DIST-001', nombre: 'María López', limiteActual: 10000, valesPagados: 45, puntaje: 'Excelente' },
-    { id: 'DIST-004', nombre: 'Juana Hernández', limiteActual: 5000, valesPagados: 30, puntaje: 'Bueno' },
-    { id: 'DIST-008', nombre: 'Sandra Castillo', limiteActual: 12000, valesPagados: 90, puntaje: 'Excelente' },
-  ];
+export class Incentivos implements OnInit, OnDestroy {
+  private coordinadoresService = inject(CoordinadoresService);
+  private distribuidoresService = inject(DistribuidoresService);
+  private creditRaiseService = inject(CreditRaiseService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  candidatas = signal<Candidata[]>([]);
+  isLoading = signal(true);
+  errorMessage = signal<string | null>(null);
 
   selectedCandidata: Candidata | null = null;
-  isSending = false;
-  requestSent = false;
+  isSending = signal(false);
+  requestSent = signal(false);
+  isLoadingRequests = signal(false);
+  solicitudDetalle = signal<any | null>(null);
+  lastRejectedRequest = signal<any | null>(null);
+  formError = signal<string | null>(null);
+
+  form: FormGroup | null = null;
+
+  private pollingTimer?: ReturnType<typeof setTimeout>;
+  private isDestroyed = false;
+
+  ngOnInit() {
+    this.cargarDistribuidoras();
+  }
+
+  ngOnDestroy() {
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+  }
+
+  cargarDistribuidoras(isBackground = false) {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.errorMessage.set('No hay sesión activa.');
+      if (!isBackground) this.isLoading.set(false);
+      return;
+    }
+
+    if (!isBackground) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+    }
+
+    this.coordinadoresService.listarDistribuidoras(user.id).subscribe({
+      next: (res) => {
+        const d = res.data?.data || [];
+        const candidatasMap = d.map((dist: any) => ({
+          id: dist.id,
+          nombre: `Distribuidora ${dist.distributorNumber}`,
+          limiteActual: (dist.creditLimitCents || 0) / 100,
+          valesPagados: 0, // Mocked
+          puntaje: dist.status === 'ACTIVA' ? 'Excelente' : 'Bueno'
+        }));
+        this.candidatas.set(candidatasMap);
+        if (!isBackground) this.isLoading.set(false);
+        this.scheduleNextPoll();
+      },
+      error: (err) => {
+        if (!isBackground) {
+          this.errorMessage.set('Error al cargar las distribuidoras candidatas.');
+          this.isLoading.set(false);
+        }
+        this.scheduleNextPoll();
+      }
+    });
+  }
+
+  private scheduleNextPoll() {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.cargarDistribuidoras(true);
+    }, 15000);
+  }
 
   seleccionar(candidata: Candidata) {
     this.selectedCandidata = candidata;
-    this.requestSent = false;
+    this.requestSent.set(false);
+    this.isLoadingRequests.set(true);
+    this.solicitudDetalle.set(null);
+    this.lastRejectedRequest.set(null);
+    this.formError.set(null);
+
+    this.distribuidoresService.getRaiseRequests(candidata.id).subscribe({
+      next: (res) => {
+        const requests = res.data || [];
+        const pendingReq = requests.find((r: any) => r.status === 'PENDING');
+        
+        // Buscar la solicitud rechazada más reciente
+        const rejectedReqs = requests.filter((r: any) => r.status === 'REJECTED');
+        if (rejectedReqs.length > 0) {
+          const lastRejected = rejectedReqs.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+          this.lastRejectedRequest.set(lastRejected);
+        }
+        
+        if (pendingReq) {
+          this.solicitudDetalle.set(pendingReq);
+        } else {
+          this.form = new FormGroup({
+            monto: new FormControl(Math.round(candidata.limiteActual * 0.20), [Validators.required, Validators.min(1), Validators.max(10000000000)]),
+            motivo: new FormControl('Buen comportamiento de pago y aumento de cartera', [Validators.required, Validators.maxLength(500)])
+          });
+        }
+        this.isLoadingRequests.set(false);
+      },
+      error: () => {
+        this.isLoadingRequests.set(false);
+      }
+    });
   }
 
   volverLista() {
     this.selectedCandidata = null;
   }
 
+  verHistorialPeticiones(id: string) {
+    this.router.navigate(['/coordinador/seguimiento-aumento', id]);
+  }
+
   preAutorizarAumento() {
-    this.isSending = true;
-    // Simulamos el envío de la petición al gerente
-    setTimeout(() => {
-      this.isSending = false;
-      this.requestSent = true;
-    }, 1500);
+    if (!this.form || this.form.invalid || !this.selectedCandidata) return;
+
+    this.isSending.set(true);
+    this.formError.set(null);
+
+    const dto = {
+      montoCentavos: this.form.value.monto * 100,
+      motivo: this.form.value.motivo
+    };
+
+    this.distribuidoresService.createCreditRaiseRequest(this.selectedCandidata.id, dto).subscribe({
+      next: () => {
+        this.isSending.set(false);
+        this.requestSent.set(true);
+      },
+      error: (err) => {
+        this.isSending.set(false);
+        let msg = 'Error al solicitar el aumento. Intenta de nuevo.';
+        
+        // El backend de NestJS a veces manda los detalles en err.error.error.details.violations
+        if (err.error?.error?.details?.violations?.length) {
+          msg = err.error.error.details.violations[0];
+        } else if (err.error?.message) {
+          msg = Array.isArray(err.error.message) ? err.error.message[0] : err.error.message;
+        }
+        
+        this.formError.set(msg);
+      }
+    });
   }
 }

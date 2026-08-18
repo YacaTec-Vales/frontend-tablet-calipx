@@ -1,52 +1,49 @@
 <div class="w-full">
-  <label *ngIf="label && type !== 'file'" [for]="id" class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">
-    {{ label }}
+  <label *ngIf="label() && type() !== 'file'" [for]="id()" class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">
+    {{ label() }}
   </label>
 
-  <ng-container [ngSwitch]="type">
-    
+  <ng-container [ngSwitch]="type()">
+
     <!-- Textarea -->
-    <textarea *ngSwitchCase="'textarea'"
-      [id]="id"
-      [rows]="rows"
-      [placeholder]="placeholder"
-      [disabled]="disabled"
-      [value]="value"
-      (input)="onInput($event)"
-      (blur)="onTouch()"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-brand focus:border-brand block w-full p-3 shadow-sm font-medium dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+    <textarea *ngSwitchCase="'textarea'" [id]="id()" [rows]="rows()" [placeholder]="placeholder()" [disabled]="disabled()"
+      [value]="value()" [attr.maxlength]="maxlength() || null" (input)="onInput($event)" (blur)="onTouch()"
+      [class]="(isInvalid() ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-brand focus:border-brand') + ' bg-gray-50 border text-gray-900 text-sm rounded-lg block w-full p-3 shadow-sm font-medium dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors'">
     </textarea>
 
     <!-- File Input -->
     <div *ngSwitchCase="'file'">
-      <label *ngIf="label" class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">{{ label }}</label>
+      <label *ngIf="label()" class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">{{ label() }}</label>
       <div class="flex items-center justify-center w-full">
-          <label [for]="id" [class.cursor-not-allowed]="disabled" [class.opacity-50]="disabled" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-              <div class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-500 dark:text-gray-400">
-                  <svg class="w-8 h-8 mb-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                  </svg>
-                  <p class="mb-2 text-sm font-bold text-center px-4" *ngIf="!fileName"><span class="font-extrabold text-brand dark:text-brand-light">Sube un archivo</span> o tómalo con la cámara</p>
-                  <p class="mb-2 text-sm font-bold text-center px-4 text-brand dark:text-brand-light" *ngIf="fileName">{{ fileName }}</p>
-                  <p class="text-xs text-center">JPEG, PNG o PDF (Max. 5MB)</p>
-              </div>
-              <input [id]="id" [disabled]="disabled" type="file" class="hidden" (change)="onFileChange($event)" />
-          </label>
+        <label [for]="id()" [class.cursor-not-allowed]="disabled()" [class.opacity-50]="disabled()"
+          class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+          <div class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-500 dark:text-gray-400">
+            <svg class="w-8 h-8 mb-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 20 16">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+            </svg>
+            <p class="mb-2 text-sm font-bold text-center px-4" *ngIf="!fileName"><span
+                class="font-extrabold text-brand dark:text-brand-light">Sube un archivo</span> o tómalo con la cámara
+            </p>
+            <p class="mb-2 text-sm font-bold text-center px-4 text-brand dark:text-brand-light" *ngIf="fileName">{{
+              fileName }}</p>
+            <p class="text-xs text-center">JPEG, PNG o PDF (Max. 5MB)</p>
+          </div>
+          <input [id]="id()" [disabled]="disabled()" type="file" class="hidden" (change)="onFileChange($event)" />
+        </label>
       </div>
     </div>
 
     <!-- Default Inputs (text, email, password, number) -->
-    <input *ngSwitchDefault
-      [type]="type"
-      [id]="id"
-      [placeholder]="placeholder"
-      [disabled]="disabled"
-      [value]="value"
-      (input)="onInput($event)"
-      (blur)="onTouch()"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-brand focus:border-brand block w-full p-2.5 shadow-sm font-medium dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors" />
+    <input *ngSwitchDefault [type]="type()" [id]="id()" [placeholder]="placeholder()" [disabled]="disabled()" [value]="value()"
+      [attr.maxlength]="maxlength() || null" [attr.inputmode]="inputmode()" (keypress)="onKeyPress($event)"
+      (input)="onInput($event)" (blur)="onTouch()"
+      [class]="(isInvalid() ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-brand focus:border-brand') + ' bg-gray-50 border text-gray-900 text-sm rounded-lg block w-full p-2.5 shadow-sm font-medium dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors'" />
 
   </ng-container>
 
-  <p *ngIf="hint" class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ hint }}</p>
+  <p *ngIf="isInvalid()" class="mt-2 text-xs font-bold text-red-600">{{ errorMessage() }}</p>
+
+  <p *ngIf="hint() && !isInvalid()" class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ hint() }}</p>
 </div>

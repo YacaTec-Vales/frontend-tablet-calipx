@@ -2,26 +2,63 @@
   <div class="flex items-center justify-between mb-2">
     <div>
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Bandeja de Visitas</h2>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Listado de pre-solicitudes físicas asignadas para verificación de campo hoy.</p>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Listado de solicitudes en verificación asignadas para revisión de
+        campo.</p>
     </div>
+    <app-button variant="secondary" size="sm" (onClick)="loadSolicitudes()">
+      Actualizar
+    </app-button>
   </div>
 
+  @if (errorMessage()) {
+  <div class="p-4 text-sm text-red-800 bg-red-50 rounded-lg font-bold" role="alert">
+    {{ errorMessage() }}
+  </div>
+  }
+
+  @if (isLoading()) {
+  <div class="flex justify-center items-center py-16">
+    <svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      aria-label="Cargando solicitudes">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+  </div>
+  } @else {
   <app-card title="Ruta Asignada" [noPadding]="true">
-    <app-table [columns]="['Folio', 'Prospecto', 'Dirección', 'Fecha Límite', 'Estado', 'Acción']" [isEmpty]="solicitudes.length === 0" emptyMessage="No tienes visitas pendientes.">
-      <tr *ngFor="let solicitud of solicitudes" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-        <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ solicitud.folio }}</td>
-        <td class="px-6 py-4 font-medium">{{ solicitud.nombre }}</td>
-        <td class="px-6 py-4 text-gray-500">{{ solicitud.direccion }}</td>
-        <td class="px-6 py-4">{{ solicitud.fechaAsignada }}</td>
+    <app-table [columns]="['Folio', 'Prospecto', 'Dirección', 'Fecha', 'Estado', 'Acción']" [isEmpty]="isEmpty()"
+      emptyMessage="No tienes visitas pendientes.">
+      @for (solicitud of solicitudes(); track solicitud.id) {
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ solicitud.folio ?? solicitud.id.slice(0, 8) }}
+        </td>
+        <td class="px-6 py-4 font-medium">{{ solicitud.datos_generales.nombre }} {{
+          solicitud.datos_generales.apellido_paterno }}</td>
+        <td class="px-6 py-4 text-gray-500">{{ solicitud.datos_generales.calle }} {{ solicitud.datos_generales.numero
+          }}, {{ solicitud.datos_generales.colonia }}</td>
+        <td class="px-6 py-4">{{ solicitud.created_at | date:'dd/MM/yyyy' }}</td>
         <td class="px-6 py-4">
-          <app-badge [text]="solicitud.estado" variant="warning"></app-badge>
+          <app-badge [text]="formatEstado(solicitud.estado)" [variant]="getBadgeVariant(solicitud.estado)"></app-badge>
         </td>
         <td class="px-6 py-4">
-          <app-button variant="primary" size="sm" (onClick)="iniciarVisita(solicitud.folio)">
-            Iniciar Visita
+          @if (solicitud.verificador_id) {
+          <app-button variant="primary" size="sm" (onClick)="iniciarVisita(solicitud)">
+            Continuar
           </app-button>
+          } @else {
+          <app-button variant="primary" size="sm" (onClick)="tomarSolicitud(solicitud)"
+            [disabled]="takingId() === solicitud.id">
+            @if (takingId() === solicitud.id) {
+            Tomando...
+            } @else {
+            Tomar y Visitar
+            }
+          </app-button>
+          }
         </td>
       </tr>
+      }
     </app-table>
   </app-card>
+  }
 </div>

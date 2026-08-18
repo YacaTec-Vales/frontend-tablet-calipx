@@ -1,97 +1,183 @@
-import { Component } from '@angular/core';
+import { Component, inject, computed, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+export interface AuditoriaFormData {
+  nombre?: string;
+  apellido_paterno?: string;
+  rfc?: string;
+  calle?: string;
+  numero?: string;
+  colonia?: string;
+  [key: string]: string | undefined;
+}
 import { FormsModule } from '@angular/forms';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
-
-interface Distribuidora {
-  id: string;
-  nombre: string;
-  telefono: string;
-  correo: string;
-  direccion: string;
-  estado: 'Activa' | 'Inactiva';
-}
+import { PaginationComponent } from '../../../components/ui/pagination/pagination';
+import { SolicitudesService } from '../../../core/services/solicitudes.service';
+import { SolicitudResponse, UpdateSolicitudDto } from '../../../core/models/solicitud.model';
 
 @Component({
   selector: 'app-auditoria',
-  standalone: true,
-  imports: [CommonModule, FormsModule, InputComponent, ButtonComponent, CardComponent, TableComponent, BadgeComponent],
+  imports: [CommonModule, FormsModule, InputComponent, ButtonComponent, CardComponent, TableComponent, BadgeComponent, PaginationComponent],
   templateUrl: './auditoria.html'
 })
-export class Auditoria {
-  distribuidoras: Distribuidora[] = [
-    { id: 'DIST-001', nombre: 'María López', telefono: '5551234567', correo: 'maria@ejemplo.com', direccion: 'Calle Roma 123, Centro', estado: 'Activa' },
-    { id: 'DIST-002', nombre: 'Carmen Martínez', telefono: '5559876543', correo: 'carmen@ejemplo.com', direccion: 'Av. Las Palmas 45, Sur', estado: 'Activa' },
-    { id: 'DIST-003', nombre: 'Lucía Torres', telefono: '5557778888', correo: 'lucia@ejemplo.com', direccion: 'Blvd. Independencia 99', estado: 'Inactiva' }
-  ];
+export class Auditoria implements OnInit, OnDestroy {
+  private readonly solicitudesService = inject(SolicitudesService);
 
-  selectedDistribuidora: Distribuidora | null = null;
-  formData: any = {};
-  originalData: any = {};
+  readonly solicitudes = signal<SolicitudResponse[]>([]);
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+
+  readonly selectedSolicitud = signal<SolicitudResponse | null>(null);
+  formData: AuditoriaFormData = {};
+  originalData: AuditoriaFormData = {};
   
-  showAuditLog = false;
-  auditChanges: { field: string, old: string, new: string }[] = [];
-  isSubmitting = false;
+  readonly showAuditLog = signal(false);
+  readonly auditChanges = signal<{ field: string, old: string, new: string }[]>([]);
+  readonly isSubmitting = signal(false);
 
-  seleccionar(dist: Distribuidora) {
-    this.selectedDistribuidora = dist;
-    // Copiamos los datos para edición
-    this.formData = { ...dist };
-    this.originalData = { ...dist };
-    this.showAuditLog = false;
-    this.auditChanges = [];
+  // Pagination
+  readonly itemsPerPage = signal(10);
+  readonly currentPage = signal(1);
+
+  readonly paginatedSolicitudes = computed(() => {
+    const all = this.solicitudes();
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    return all.slice(start, start + this.itemsPerPage());
+  });
+
+  private pollingTimer?: ReturnType<typeof setTimeout>;
+  private isDestroyed = false;
+
+  ngOnInit() {
+    this.loadSolicitudes();
+  }
+
+  ngOnDestroy() {
+    this.isDestroyed = true;
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+  }
+
+  loadSolicitudes(isBackground = false) {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
+
+    if (!isBackground) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+    }
+    this.solicitudesService.list().subscribe({
+      next: (res) => {
+        // Filtramos solo las solicitudes en un estado auditable (ej. EN_VERIFICACION o DICTAMINADA)
+        // Para que la bandeja no se sature de solicitudes finalizadas.
+        const auditables = res.data.filter(s => s.estado === 'EN_VERIFICACION' || s.estado === 'DICTAMINADA');
+        this.solicitudes.set(auditables);
+        if (!isBackground) this.isLoading.set(false);
+        this.scheduleNextPoll();
+      },
+      error: (err) => {
+        if (!isBackground) {
+          this.errorMessage.set(err.error?.message || 'Error al cargar las solicitudes');
+          this.isLoading.set(false);
+        }
+        this.scheduleNextPoll();
+      }
+    });
+  }
+
+  private scheduleNextPoll() {
+    if (this.isDestroyed) return;
+    this.pollingTimer = setTimeout(() => {
+      this.loadSolicitudes(true);
+    }, 15000);
+  }
+
+  seleccionar(solicitud: SolicitudResponse) {
+    this.selectedSolicitud.set(solicitud);
+    this.errorMessage.set(null);
+    
+    // Extraemos solo lo que se puede auditar/editar
+    const d = solicitud.datos_generales;
+    const editableData = {
+      nombre: d.nombre,
+      apellido_paterno: d.apellido_paterno,
+      rfc: d.rfc,
+      calle: d.calle,
+      numero: d.numero,
+      colonia: d.colonia
+    };
+
+    this.formData = { ...editableData };
+    this.originalData = { ...editableData };
+    this.showAuditLog.set(false);
+    this.auditChanges.set([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   volverLista() {
-    this.selectedDistribuidora = null;
+    this.selectedSolicitud.set(null);
+    this.errorMessage.set(null);
   }
 
   revisarCambios() {
-    this.auditChanges = [];
-    const fields = ['nombre', 'telefono', 'correo', 'direccion'];
-    
-    fields.forEach(field => {
+    const changes: { field: string, old: string, new: string }[] = [];
+    ['nombre', 'apellido_paterno', 'rfc', 'calle', 'numero', 'colonia'].forEach(field => {
       if (this.formData[field] !== this.originalData[field]) {
-        this.auditChanges.push({
-          field: field.toUpperCase(),
-          old: this.originalData[field],
-          new: this.formData[field]
+        changes.push({
+          field,
+          old: this.originalData[field] || '',
+          new: this.formData[field] || ''
         });
       }
     });
 
-    if (this.auditChanges.length > 0) {
-      this.showAuditLog = true;
+    this.auditChanges.set(changes);
+
+    if (changes.length > 0) {
+      this.showAuditLog.set(true);
     } else {
-      alert("No hay cambios que guardar.");
+      this.errorMessage.set("No hay cambios que guardar.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   cancelarGuardado() {
-    this.showAuditLog = false;
+    this.showAuditLog.set(false);
   }
 
   confirmarGuardado() {
-    this.isSubmitting = true;
+    const solicitud = this.selectedSolicitud();
+    if (!solicitud) return;
     
-    setTimeout(() => {
-      // Aplicar cambios a la lista principal
-      const index = this.distribuidoras.findIndex(d => d.id === this.selectedDistribuidora!.id);
-      if (index !== -1) {
-        this.distribuidoras[index] = { ...this.formData };
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    
+    const dto: UpdateSolicitudDto = {
+      datos_generales: {
+        ...solicitud.datos_generales,
+        ...this.formData
+      } as any // Permitimos enviar campos parciales sobre datos_generales
+    };
+    
+    this.solicitudesService.update(solicitud.id, dto).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        this.showAuditLog.set(false);
+        this.selectedSolicitud.set(null); // Vuelve a la lista
+        this.loadSolicitudes(); // Recarga la lista
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(err.error?.message || 'Error al guardar los cambios de auditoría');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-      
-      this.isSubmitting = false;
-      this.showAuditLog = false;
-      this.selectedDistribuidora = null; // Vuelve a la lista
-      
-      // Simulando registro de log de auditoría en backend
-      console.log('--- LOG DE AUDITORÍA CREADO ---');
-      console.log('Cambios:', this.auditChanges);
-    }, 1500);
+    });
   }
 }

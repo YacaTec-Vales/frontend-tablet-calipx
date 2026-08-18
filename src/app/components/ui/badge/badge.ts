@@ -1,22 +1,21 @@
-import { Component, Input } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export type BadgeVariant = 'success' | 'error' | 'warning' | 'info' | 'default';
 
 @Component({
   selector: 'app-badge',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './badge.html'
 })
 export class BadgeComponent {
-  @Input() text: string = '';
-  @Input() variant: BadgeVariant = 'default';
+  readonly text = input<string>('');
+  readonly variant = input<BadgeVariant>('default');
 
-  get classes(): string {
+  readonly classes = computed(() => {
     const base = 'text-xs font-bold px-2.5 py-0.5 rounded border inline-flex items-center justify-center';
     
-    switch (this.variant) {
+    switch (this.variant()) {
       case 'success':
         return `${base} bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-800`;
       case 'error':
@@ -29,5 +28,5 @@ export class BadgeComponent {
       default:
         return `${base} bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600`;
     }
-  }
+  });
 }

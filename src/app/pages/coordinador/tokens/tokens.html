@@ -2,42 +2,45 @@
   <div class="flex items-center justify-between mb-2">
     <div>
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Centro de Autorizaciones</h2>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Generación de Tokens de seguridad para operaciones en Caja o Conciliación.</p>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Generación de Tokens de seguridad para operaciones en Caja o
+        Conciliación.</p>
     </div>
   </div>
 
   <app-card title="Generador de Token" [noPadding]="false">
-    
+
     <!-- Formulario para pedir el Token -->
     <div *ngIf="!activeToken" class="space-y-6 mt-4">
       <div class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300">
-        <span class="font-bold">Importante:</span> Los tokens generados son de un solo uso y tienen una vigencia de 5 minutos. Asegúrate de compartirlos de manera segura con el cajero o personal autorizado.
+        <span class="font-bold">Importante:</span> Los tokens generados son de un solo uso y tienen una vigencia de 5
+        minutos. Asegúrate de compartirlos de manera segura con el cajero o personal autorizado.
       </div>
 
-      <app-input 
-        label="Motivo de la Autorización" 
-        type="textarea"
-        [rows]="3"
-        placeholder="Ej: Modificación de fecha de pago por falla en sistema..."
-        [(ngModel)]="motivo"
+      <app-input label="Motivo de la Autorización" type="textarea" [rows]="3"
+        placeholder="Ej: Modificación de fecha de pago por falla en sistema..." [(ngModel)]="motivo" maxlength="200"
         [disabled]="isGenerating">
       </app-input>
 
-      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="generarToken()" [disabled]="isGenerating || !motivo">
-        {{ isGenerating ? 'Generando código seguro...' : 'Generar Token' }}
+      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="generarToken()" [isLoading]="isGenerating"
+        [disabled]="isGenerating || !motivo">
+        Generar Token
       </app-button>
     </div>
 
     <!-- Token Generado Activo -->
     <div *ngIf="activeToken" class="text-center py-8">
       <p class="text-sm text-gray-500 uppercase font-bold mb-2">Tu código de autorización es:</p>
-      
-      <div class="inline-block bg-gray-50 dark:bg-gray-800 border-2 border-brand dark:border-brand-light rounded-xl px-12 py-6 mb-4">
+
+      <div
+        class="inline-block bg-gray-50 dark:bg-gray-800 border-2 border-brand dark:border-brand-light rounded-xl px-12 py-6 mb-4">
         <span class="text-5xl font-black tracking-[0.2em] text-brand dark:text-brand-light">{{ activeToken }}</span>
       </div>
 
       <div class="flex items-center justify-center gap-2 text-red-600 font-bold mb-8">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
         Expira en: {{ formatTime }}
       </div>
 
@@ -46,7 +49,7 @@
           Copiar Token
         </app-button>
       </div>
-      
+
       <p class="text-xs text-gray-500 mt-6 max-w-md mx-auto">Motivo ligado: "{{ motivo }}"</p>
     </div>
 

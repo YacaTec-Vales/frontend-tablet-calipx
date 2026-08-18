@@ -1,0 +1,42 @@
+<div class="p-6 max-w-6xl mx-auto space-y-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Mis Distribuidoras</h2>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">
+        Listado de distribuidoras bajo tu coordinación.
+      </p>
+    </div>
+  </div>
+
+  <app-card [noPadding]="true">
+    <app-table [columns]="['Número', 'Límite Crédito', 'Disponible', 'Estado', 'Acciones']">
+      <tr *ngFor="let d of distribuidoras()" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ d.distributorNumber }}</td>
+        <td class="px-6 py-4">${{ (d.creditLimitCents / 100).toFixed(2) }}</td>
+        <td class="px-6 py-4">${{ (d.creditAvailableCents / 100).toFixed(2) }}</td>
+        <td class="px-6 py-4">
+          <app-badge [text]="d.status" [variant]="getBadgeVariant(d.status)"></app-badge>
+        </td>
+        <td class="px-6 py-4">
+          <app-button variant="outline" size="sm" (onClick)="verDetalle(d.id)">Ver Detalle</app-button>
+        </td>
+      </tr>
+
+      <!-- Estado vacío -->
+      <tr *ngIf="distribuidoras().length === 0 && !isLoading()">
+        <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+          No tienes distribuidoras asignadas actualmente.
+        </td>
+      </tr>
+    </app-table>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading()" class="flex justify-center items-center p-8">
+      <div class="text-gray-500 dark:text-gray-400">Cargando distribuidoras...</div>
+    </div>
+  </app-card>
+
+  <div *ngIf="errorMessage()" class="p-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400">
+    {{ errorMessage() }}
+  </div>
+</div>

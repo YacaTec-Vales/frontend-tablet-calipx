@@ -1,16 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, RouterLink, CommonModule],
+  imports: [RouterOutlet, CommonModule],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })
 export class Layout implements OnInit {
   currentRoute: string = '';
+  private readonly authService = inject(AuthService);
 
   constructor(private router: Router) {}
 
@@ -28,5 +30,10 @@ export class Layout implements OnInit {
 
   goBack() {
     this.router.navigate(['/verificador/buzon-visitas']);
+  }
+
+  logout(event: Event) {
+    event.preventDefault();
+    this.authService.logout();
   }
 }

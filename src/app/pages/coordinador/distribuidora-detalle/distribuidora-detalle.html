@@ -1,0 +1,56 @@
+<div class="p-6 max-w-4xl mx-auto space-y-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Detalle de Distribuidora</h2>
+      <p class="text-gray-500 dark:text-gray-400 mt-1" *ngIf="distribuidora()">
+        Distribuidora #{{ distribuidora()?.distributorNumber }}
+      </p>
+    </div>
+    <app-button variant="secondary" size="sm" (onClick)="volver()">
+      Volver a la lista
+    </app-button>
+  </div>
+
+  <div *ngIf="isLoading()" class="flex justify-center items-center h-40">
+    <div class="text-gray-500 dark:text-gray-400">Cargando datos...</div>
+  </div>
+
+  <div *ngIf="errorMessage()" class="p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+    {{ errorMessage() }}
+  </div>
+
+  <div *ngIf="distribuidora() && !isLoading()" class="space-y-6">
+    <app-card title="Información Financiera">
+      <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Límite de Crédito</dt>
+          <dd class="text-2xl font-bold text-gray-900 dark:text-white">
+            ${{ (distribuidora()!.creditLimitCents / 100).toFixed(2) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Crédito Disponible</dt>
+          <dd class="text-2xl font-bold text-green-600">
+            ${{ (distribuidora()!.creditAvailableCents / 100).toFixed(2) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado</dt>
+          <dd class="mt-1">
+            <app-badge [text]="distribuidora()!.status" [variant]="getBadgeVariant(distribuidora()!.status)"></app-badge>
+          </dd>
+        </div>
+      </dl>
+    </app-card>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="solicitarAumento()">
+        Solicitar Aumento de Límite
+      </app-button>
+      
+      <app-button variant="outline" size="lg" [fullWidth]="true" (onClick)="verHistorialAumentos()">
+        Ver Historial de Peticiones
+      </app-button>
+    </div>
+  </div>
+</div>

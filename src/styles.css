@@ -1,26 +1,19 @@
-/* You can add global styles to this file, and also import other style files */
+@import "frontend-global-styles/global-theme.css";
+@source "./";
 
-@import "../../frontend-global-styles/global-theme.css";
+@layer utilities {
+  /* Map Flowbite primary classes directly to Brand variables to guarantee rendering */
+  .bg-primary-600 { background-color: var(--color-brand-600) !important; }
+  .bg-primary-700 { background-color: var(--color-brand-700) !important; }
+  .hover\:bg-primary-800:hover { background-color: var(--color-brand-800) !important; }
+  .focus\:ring-primary-300:focus { --tw-ring-color: var(--color-brand-300) !important; }
+  
+  .text-primary-700 { color: var(--color-brand-700) !important; }
+  .border-primary-700 { border-color: var(--color-brand-700) !important; }
+  .hover\:text-primary-700:hover { color: var(--color-brand-700) !important; }
 
-@source "./app";
-
-:root {
-  --color-brand: #600C0C;
-  --color-brand-strong: #400808;
-}
-
-.bg-brand {
-  background-color: var(--color-brand) !important;
-}
-.hover\:bg-brand-strong:hover {
-  background-color: var(--color-brand-strong) !important;
-}
-.text-brand {
-  color: var(--color-brand) !important;
-}
-.border-brand {
-  border-color: var(--color-brand) !important;
-}
-.ring-brand {
-  --tw-ring-color: var(--color-brand) !important;
+  /* Error classes mapping */
+  .bg-red-600 { background-color: var(--color-danger, #e11d48) !important; }
+  .bg-red-700 { background-color: var(--color-danger-strong, #be123c) !important; }
+  .hover\:bg-red-800:hover { background-color: var(--color-danger-strong, #be123c) !important; }
 }

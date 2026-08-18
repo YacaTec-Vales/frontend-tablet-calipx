@@ -7,21 +7,20 @@ import { InputComponent } from '../../../components/ui/input/input';
 
 @Component({
   selector: 'app-tokens',
-  standalone: true,
   imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent],
   templateUrl: './tokens.html'
 })
 export class Tokens implements OnDestroy {
   motivo = '';
   isGenerating = false;
-  
+
   activeToken: string | null = null;
   timeLeft = 0; // segundos
-  timerInterval: any;
+  timerInterval?: ReturnType<typeof setInterval>;
 
   generarToken() {
     this.isGenerating = true;
-    
+
     setTimeout(() => {
       // Generar token numérico de 6 dígitos
       this.activeToken = Math.floor(100000 + Math.random() * 900000).toString();

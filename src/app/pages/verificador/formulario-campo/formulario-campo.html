@@ -2,41 +2,36 @@
   <div class="flex items-center justify-between mb-2">
     <div>
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Verificación en Campo</h2>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Levantamiento de evidencia y dictamen. Folio Asignado: <strong class="text-gray-800 dark:text-white">{{ folio }}</strong></p>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Levantamiento de evidencia y dictamen. Folio Asignado: <strong
+          class="text-gray-800 dark:text-white">{{ solicitudId() }}</strong></p>
     </div>
 
-    <app-button variant="secondary" size="sm" (onClick)="volver()" [disabled]="isSubmitting">
+    <app-button variant="secondary" size="sm" (onClick)="volver()" [disabled]="isSubmitting()">
       Cancelar Visita
     </app-button>
   </div>
 
-  <div *ngIf="successMessage" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 font-medium animate-fade-in" role="alert">
-    {{ successMessage }} Volviendo a la bandeja...
+  @if (successMessage()) {
+  <div
+    class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 font-medium animate-fade-in"
+    role="alert">
+    {{ successMessage() }} Volviendo a la bandeja...
   </div>
+  }
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Panel Izquierdo: Evidencia -->
     <app-card title="1. Evidencia Fotográfica" subtitle="Toma las fotos requeridas desde la tablet">
       <div class="space-y-6 mt-4">
-        <app-input 
-          label="Foto de la Fachada" 
-          type="file"
-          [(ngModel)]="fotoFachada"
-          [disabled]="isSubmitting">
+        <app-input label="Foto de la Fachada" type="file" [(ngModel)]="fotoFachada" [disabled]="isSubmitting()">
         </app-input>
 
-        <app-input 
-          label="Comprobante de Domicilio" 
-          type="file"
-          [(ngModel)]="fotoComprobante"
-          [disabled]="isSubmitting">
+        <app-input label="Comprobante de Domicilio" type="file" [(ngModel)]="fotoComprobante"
+          [disabled]="isSubmitting()">
         </app-input>
 
-        <app-input 
-          label="Identificación Oficial (INE)" 
-          type="file"
-          [(ngModel)]="fotoIdentificacion"
-          [disabled]="isSubmitting">
+        <app-input label="Identificación Oficial (INE)" type="file" [(ngModel)]="fotoIdentificacion"
+          [disabled]="isSubmitting()">
         </app-input>
       </div>
     </app-card>
@@ -44,28 +39,34 @@
     <!-- Panel Derecho: Dictamen -->
     <app-card title="2. Módulo de Dictamen" subtitle="Observaciones físicas y resolución final">
       <div class="mt-4 flex flex-col h-full space-y-6">
-        
+
         <div class="flex-grow">
-          <app-input 
-            label="Comentarios del Verificador" 
-            type="textarea"
-            [rows]="8"
+          <app-input label="Comentarios del Verificador" type="textarea" [rows]="8"
             placeholder="Describe las condiciones del domicilio, si coincide con las fotos, comentarios de vecinos, etc."
-            hint="Mínimo 5 caracteres para habilitar los botones de dictamen."
-            [(ngModel)]="comentarios"
-            [disabled]="isSubmitting">
+            hint="Mínimo 5 caracteres para habilitar los botones de dictamen." [(ngModel)]="comentarios"
+            maxlength="500"
+            [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <div class="pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-4">
           <p class="text-xs text-center text-gray-500 font-bold uppercase mb-2">Resolución Final</p>
-          
-          <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('VERIFICADA')" [disabled]="isSubmitting || !canSubmit">
-            {{ isSubmitting ? 'Procesando...' : 'Aprobar (VERIFICADA)' }}
+
+          <!-- Kill Switch Toggle -->
+          <label class="inline-flex items-center cursor-pointer justify-center mb-2">
+            <input type="checkbox" class="sr-only peer" [ngModel]="killSwitch()" (ngModelChange)="killSwitch.set($event)">
+            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
+            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Activar Kill Switch (Fraude)</span>
+          </label>
+
+          <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('CUMPLE')"
+            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit">
+            Aprobar (VERIFICADA)
           </app-button>
-          
-          <app-button variant="error" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('RECHAZADA')" [disabled]="isSubmitting || !canSubmit">
-            {{ isSubmitting ? 'Procesando...' : 'Rechazar Solicitud' }}
+
+          <app-button variant="error" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('NO_CUMPLE')"
+            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit">
+            Rechazar Solicitud
           </app-button>
         </div>
 
