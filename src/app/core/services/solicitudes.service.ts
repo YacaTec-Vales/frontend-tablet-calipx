@@ -10,6 +10,8 @@ import {
   VerificarSolicitudDto,
   SolicitudResponse,
   EstadoSolicitud,
+  DatosGenerales,
+  DatosAdicionales
 } from '../models/solicitud.model';
 
 /** Filtros opcionales para GET /solicitudes */
@@ -57,8 +59,8 @@ export class SolicitudesService {
       id: backendObj['id'] as string,
       folio: backendObj['folio'] as string | undefined,
       estado: backendObj['status'] as SolicitudResponse['estado'], // status -> estado
-      datos_generales: backendObj['generalData'] as any,
-      datos_adicionales: backendObj['additionalData'] as any,
+      datos_generales: backendObj['generalData'] as DatosGenerales,
+      datos_adicionales: backendObj['additionalData'] as DatosAdicionales,
       coordinador_id: backendObj['coordinatorId'] as string,
       verificador_id: backendObj['verifierId'] as string | undefined,
       branch_id: backendObj['branchId'] as string,
@@ -76,7 +78,7 @@ export class SolicitudesService {
    */
   create(dto: CreateSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
     const payload = this.mapCreateDtoToBackend(dto);
-    return this.http.post<ApiResponse<any>>(this.apiUrl, payload).pipe(
+    return this.http.post<ApiResponse<Record<string, unknown>>>(this.apiUrl, payload).pipe(
       map(res => ({
         ...res,
         data: this.mapBackendToResponse(res.data)
@@ -92,7 +94,7 @@ export class SolicitudesService {
     if (dto.datos_generales) payload['generalData'] = dto.datos_generales;
     if (dto.datos_adicionales) payload['additionalData'] = dto.datos_adicionales;
 
-    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/${id}`, payload).pipe(
+    return this.http.patch<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}`, payload).pipe(
       map(res => ({
         ...res,
         data: this.mapBackendToResponse(res.data)
@@ -116,7 +118,7 @@ export class SolicitudesService {
       params = params.set('limit', filters.limit.toString());
     }
 
-    return this.http.get<ApiResponse<any[]>>(this.apiUrl, { params }).pipe(
+    return this.http.get<ApiResponse<Record<string, unknown>[]>>(this.apiUrl, { params }).pipe(
       map(res => ({
         ...res,
         data: (res.data || []).map(item => this.mapBackendToResponse(item))
@@ -128,7 +130,7 @@ export class SolicitudesService {
    * GET /solicitudes/:id
    */
   getById(id: string): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}`).pipe(
       map(res => ({
         ...res,
         data: this.mapBackendToResponse(res.data)
@@ -140,7 +142,7 @@ export class SolicitudesService {
    * POST /solicitudes/:id/tomar
    */
   tomar(id: string): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/tomar`, {}).pipe(
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}/tomar`, {}).pipe(
       map(res => ({
         ...res,
         data: this.mapBackendToResponse(res.data)
@@ -152,7 +154,7 @@ export class SolicitudesService {
    * POST /solicitudes/:id/verificar
    */
   verificar(id: string, dto: VerificarSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/verificar`, dto).pipe(
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}/verificar`, dto).pipe(
       map(res => ({
         ...res,
         data: this.mapBackendToResponse(res.data)

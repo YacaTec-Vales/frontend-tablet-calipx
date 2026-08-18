@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { LayoutModule, BreakpointObserver } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-coordinador-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, LayoutModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, LayoutModule, NgOptimizedImage],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })

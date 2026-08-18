@@ -1,5 +1,6 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DatosGenerales } from '../../../core/models/solicitud.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolicitudesService } from '../../../core/services/solicitudes.service';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -111,7 +112,7 @@ export class EditarSolicitud implements OnInit {
         numero: this.numero(),
         colonia: this.colonia(),
         codigo_postal: this.codigoPostal(),
-      } as any // Bypass strict TS check for partial nested updates, as backend allows it for PATCH
+      } as unknown as DatosGenerales // Casteamos de manera segura sin usar any
     };
 
     this.solicitudesService.update(this.solicitudId(), dto).subscribe({

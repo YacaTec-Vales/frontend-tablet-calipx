@@ -9,7 +9,7 @@ export interface AuthorizationResponseDto {
   authorizationType: 'TRANSFERENCIA_DISTRIBUIDOR' | 'MODIFICACION_CLIENTE' | 'INCREMENTO_CREDITO' | 'CONCILIACION_MANUAL';
   requesterId: string;
   authorizerId: string | null;
-  affectedEntity: any; // JSON dinámico con los datos de la transferencia
+  affectedEntity: unknown; // JSON dinámico con los datos de la transferencia
   resolvedNames?: {
     clientName: string;
     fromDistributorName: string;
@@ -17,7 +17,7 @@ export interface AuthorizationResponseDto {
   };
   justification: string;
   status: 'PENDING' | 'PENDIENTE' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  metadata: any | null;
+  metadata: unknown | null;
   createdAt: string;
   resolvedAt: string | null;
 }
@@ -44,8 +44,8 @@ export class AutorizacionesService {
     return this.http.get<ApiResponse<AuthorizationResponseDto[]>>(this.apiUrl);
   }
 
-  private mapBackendToResponse(data: any): AuthorizationResponseDto {
-    return data;
+  private mapBackendToResponse(data: unknown): AuthorizationResponseDto {
+    return data as AuthorizationResponseDto;
   }
 
   /**
@@ -53,8 +53,8 @@ export class AutorizacionesService {
    * Aprueba una autorización.
    */
   approveAutorizacion(id: string, payload: { notes?: string }): Observable<ApiResponse<AuthorizationResponseDto>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/aprobar`, payload).pipe(
-      map((res: any) => ({
+    return this.http.post<ApiResponse<AuthorizationResponseDto>>(`${this.apiUrl}/${id}/aprobar`, payload).pipe(
+      map((res) => ({
         ...res,
         data: this.mapBackendToResponse(res.data)
       }))
@@ -65,8 +65,8 @@ export class AutorizacionesService {
    * POST /autorizaciones/:id/aceptar-destino
    */
   acceptDestinationAutorizacion(id: string, payload: { notes?: string }): Observable<ApiResponse<AuthorizationResponseDto>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/aceptar-destino`, payload).pipe(
-      map((res: any) => ({
+    return this.http.post<ApiResponse<AuthorizationResponseDto>>(`${this.apiUrl}/${id}/aceptar-destino`, payload).pipe(
+      map((res) => ({
         ...res,
         data: this.mapBackendToResponse(res.data)
       }))

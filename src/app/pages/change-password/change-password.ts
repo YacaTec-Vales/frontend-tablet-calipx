@@ -38,10 +38,11 @@ import { ApiErrorResponse } from '../../core/models/api-response.model';
           <div>
             <label for="currentPassword" class="block mb-2 text-sm font-bold text-gray-900">Contraseña actual</label>
             <input
+              #currentInput
               type="password"
               id="currentPassword"
               [value]="currentPassword()"
-              (input)="currentPassword.set($any($event.target).value)"
+              (input)="currentPassword.set(currentInput.value)"
               class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold"
               required
               [disabled]="isLoading()"
@@ -50,10 +51,11 @@ import { ApiErrorResponse } from '../../core/models/api-response.model';
           <div>
             <label for="newPassword" class="block mb-2 text-sm font-bold text-gray-900">Nueva contraseña</label>
             <input
+              #newInput
               type="password"
               id="newPassword"
               [value]="newPassword()"
-              (input)="newPassword.set($any($event.target).value)"
+              (input)="newPassword.set(newInput.value)"
               class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold"
               required
               [disabled]="isLoading()"
@@ -62,10 +64,11 @@ import { ApiErrorResponse } from '../../core/models/api-response.model';
           <div>
             <label for="confirmPassword" class="block mb-2 text-sm font-bold text-gray-900">Confirmar nueva contraseña</label>
             <input
+              #confirmInput
               type="password"
               id="confirmPassword"
               [value]="confirmPassword()"
-              (input)="confirmPassword.set($any($event.target).value)"
+              (input)="confirmPassword.set(confirmInput.value)"
               class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold"
               required
               [disabled]="isLoading()"

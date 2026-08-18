@@ -1,4 +1,5 @@
 import { Component, inject, computed, OnInit, OnDestroy, signal } from '@angular/core';
+import { DatosGenerales } from '../../../core/models/solicitud.model';
 import { CommonModule } from '@angular/common';
 
 export interface AuditoriaFormData {
@@ -163,7 +164,7 @@ export class Auditoria implements OnInit, OnDestroy {
       datos_generales: {
         ...solicitud.datos_generales,
         ...this.formData
-      } as any // Permitimos enviar campos parciales sobre datos_generales
+      } as unknown as DatosGenerales // Casteamos para cumplir con el DTO sin usar any
     };
     
     this.solicitudesService.update(solicitud.id, dto).subscribe({

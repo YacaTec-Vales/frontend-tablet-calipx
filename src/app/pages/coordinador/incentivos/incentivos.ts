@@ -41,8 +41,8 @@ export class Incentivos implements OnInit, OnDestroy {
   isSending = signal(false);
   requestSent = signal(false);
   isLoadingRequests = signal(false);
-  solicitudDetalle = signal<any | null>(null);
-  lastRejectedRequest = signal<any | null>(null);
+  solicitudDetalle = signal<CreditRaiseRequest | null>(null);
+  lastRejectedRequest = signal<CreditRaiseRequest | null>(null);
   formError = signal<string | null>(null);
 
   form: FormGroup | null = null;
@@ -81,7 +81,7 @@ export class Incentivos implements OnInit, OnDestroy {
     this.coordinadoresService.listarDistribuidoras(user.id).subscribe({
       next: (res) => {
         const d = res.data?.data || [];
-        const candidatasMap = d.map((dist: any) => ({
+        const candidatasMap = d.map((dist: { id: string; distributorNumber: string; creditLimitCents?: number; status: string }) => ({
           id: dist.id,
           nombre: `Distribuidora ${dist.distributorNumber}`,
           limiteActual: (dist.creditLimitCents || 0) / 100,
@@ -120,12 +120,12 @@ export class Incentivos implements OnInit, OnDestroy {
     this.distribuidoresService.getRaiseRequests(candidata.id).subscribe({
       next: (res) => {
         const requests = res.data || [];
-        const pendingReq = requests.find((r: any) => r.status === 'PENDING');
+        const pendingReq = requests.find((r: CreditRaiseRequest) => r.status === 'PENDING');
         
         // Buscar la solicitud rechazada más reciente
-        const rejectedReqs = requests.filter((r: any) => r.status === 'REJECTED');
+        const rejectedReqs = requests.filter((r: CreditRaiseRequest) => r.status === 'REJECTED');
         if (rejectedReqs.length > 0) {
-          const lastRejected = rejectedReqs.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+          const lastRejected = rejectedReqs.sort((a: CreditRaiseRequest, b: CreditRaiseRequest) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
           this.lastRejectedRequest.set(lastRejected);
         }
         

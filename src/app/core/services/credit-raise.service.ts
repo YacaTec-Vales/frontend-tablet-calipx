@@ -11,10 +11,10 @@ export class CreditRaiseService {
   private readonly apiUrl = `${environment.apiUrl}/credit-raise-requests`;
 
   getPendingRequests(): Observable<ApiResponse<CreditRaiseRequest[]>> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/pending`).pipe(
+    return this.http.get<ApiResponse<CreditRaiseRequest[]>>(`${this.apiUrl}/pending`).pipe(
       map(res => ({
         ...res,
-        data: res.data?.data || res.data || []
+        data: (res.data as unknown as { data?: CreditRaiseRequest[] })?.data || res.data || []
       }))
     );
   }
