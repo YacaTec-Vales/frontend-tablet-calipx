@@ -1,8 +1,7 @@
 <section class="relative min-h-screen flex font-sans bg-gray-100 overflow-hidden">
   <!-- Background Image (Visible full on mobile, left half on desktop) -->
   <div class="absolute inset-0 z-0 md:relative md:w-1/2 md:flex-shrink-0 lg:w-[55%]">
-    <img src="/Gemini_Generated_Image_91y1x91y1x91y1x9.png" alt="Fondo"
-      class="absolute inset-0 w-full h-full object-cover grayscale opacity-70" />
+    <img ngSrc="/Gemini_Generated_Image_91y1x91y1x91y1x9.png" alt="Fondo" priority fill class="object-cover grayscale opacity-70" />
     <div class="absolute inset-0 bg-gray-900/50 mix-blend-multiply"></div>
   </div>
 
@@ -14,7 +13,7 @@
 
       <!-- Logo & Title -->
       <div class="flex flex-col items-center text-center">
-        <img src="/logo-yt.svg" class="w-56 mb-4 drop-shadow-sm" alt="YacaTec Logo">
+        <img ngSrc="/logo-yt.svg" priority width="224" height="64" class="w-56 mb-4 drop-shadow-sm" alt="YacaTec Logo">
         <h2 class="text-xl font-bold mt-2 text-gray-900">Panel de control</h2>
       </div>
 

@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiErrorResponse } from '../../core/models/api-response.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonComponent } from '../../components/ui/button/button';
+import { NgOptimizedImage } from '@angular/common';
 
 /**
  * Pagina de login para la tablet Calipx.
@@ -14,7 +15,7 @@ import { ButtonComponent } from '../../components/ui/button/button';
  */
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, ButtonComponent],
+  imports: [FormsModule, ButtonComponent, NgOptimizedImage],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
