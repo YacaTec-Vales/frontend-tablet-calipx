@@ -2,7 +2,7 @@ name: Frontend CI
 
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, 'release/**']
   push:
     branches: [develop, main, 'release/**']
 
@@ -54,4 +54,3 @@ jobs:
       - name: Build
         working-directory: frontend-tablet-calipx
         run: npm run build
-        continue-on-error: true
