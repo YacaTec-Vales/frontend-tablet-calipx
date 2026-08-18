@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -114,46 +115,70 @@ export class FormularioCampo implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    // BYPASS DE UPLOADS (TEMPORAL PARA PRUEBAS)
-    const urls = [
-      'https://fake-url.com/fachada-mock.jpg',
-      'https://fake-url.com/comprobante-mock.jpg',
-      'https://fake-url.com/ine-mock.jpg',
-    ];
+    const uploadFachada$ = this.uploadsService.uploadFile(this.fotoFachada, 'other');
+    const uploadComprobante$ = this.uploadsService.uploadFile(this.fotoComprobante, 'address_proof');
+    const uploadIdentificacion$ = this.uploadsService.uploadFile(this.fotoIdentificacion, 'ine');
 
-    const dto: VerificarSolicitudDto = {
-      fotos_verificacion: urls,
-      comentarios_verificador: this.comentarios,
-      dictamen,
-      kill_switch: this.killSwitch(),
-    };
+    forkJoin([uploadFachada$, uploadComprobante$, uploadIdentificacion$]).subscribe({
+      next: ([resFachada, resComprobante, resIdentificacion]) => {
+        const extractUrl = (res: any) => res?.data?.publicUrl || res?.publicUrl || '';
+        
+        // Parche para desarrollo local: class-validator rechaza 'localhost' por no tener TLD.
+        // nip.io resuelve a la misma IP y tiene TLD valido (.io), lo que engaña al validador y permite cargar la imagen localmente.
+        const fixLocalhostUrl = (url: string) => url.replace('http://localhost', 'http://127.0.0.1.nip.io');
+        
+        const urls = [
+          fixLocalhostUrl(encodeURI(extractUrl(resFachada))),
+          fixLocalhostUrl(encodeURI(extractUrl(resComprobante))),
+          fixLocalhostUrl(encodeURI(extractUrl(resIdentificacion)))
+        ];
 
-    this.solicitudesService.verificar(this.solicitudId(), dto).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
+        // Validar que las URLs sean validas (no vacias y que empiecen con http)
+        if (urls.some(u => !u || !u.startsWith('http'))) {
+          this.isSubmitting.set(false);
+          this.errorMessage.set('Error interno: El servidor de archivos no devolvió URLs válidas. ' + JSON.stringify(urls));
+          return;
+        }
 
-        const dictamenLabel = dictamen === 'CUMPLE' ? 'CUMPLE' : 'NO CUMPLE';
-        this.successMessage.set(
-          `Dictamen "${dictamenLabel}" enviado exitosamente.`
-        );
+        const dto: VerificarSolicitudDto = {
+          fotos_verificacion: urls,
+          comentarios_verificador: this.comentarios,
+          dictamen,
+          kill_switch: this.killSwitch(),
+        };
 
-        // Volver al buzon tras un breve delay
-        setTimeout(() => {
-          this.volver();
-        }, 2000);
+        this.solicitudesService.verificar(this.solicitudId(), dto).subscribe({
+          next: () => {
+            this.isSubmitting.set(false);
+
+            const dictamenLabel = dictamen === 'CUMPLE' ? 'CUMPLE' : 'NO CUMPLE';
+            this.successMessage.set(
+              `Dictamen "${dictamenLabel}" enviado exitosamente.`
+            );
+
+            // Volver al buzon tras un breve delay
+            setTimeout(() => {
+              this.volver();
+            }, 2000);
+          },
+          error: (err) => {
+            this.isSubmitting.set(false);
+            const code = err.error?.error?.code;
+
+            if (code === 'DISTRIBUIDORES.NOT_IN_VERIFICATION') {
+              this.errorMessage.set('Esta solicitud ya no está en verificación.');
+            } else if (code === 'DISTRIBUIDORES.VERIFIER_NO_BRANCH') {
+              this.errorMessage.set('No tienes una sucursal asignada. Contacta al administrador.');
+            } else {
+              this.errorMessage.set(`Error 400. URLs enviadas: ${JSON.stringify(urls)}. Mensaje: ${err.error?.message}`);
+            }
+          },
+        });
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        const code = err.error?.error?.code;
-
-        if (code === 'DISTRIBUIDORES.NOT_IN_VERIFICATION') {
-          this.errorMessage.set('Esta solicitud ya no está en verificación.');
-        } else if (code === 'DISTRIBUIDORES.VERIFIER_NO_BRANCH') {
-          this.errorMessage.set('No tienes una sucursal asignada. Contacta al administrador.');
-        } else {
-          this.errorMessage.set(err.error?.message ?? 'Error al subir los archivos o enviar el dictamen.');
-        }
-      },
+        this.errorMessage.set('Error al subir las fotografías. Intenta de nuevo.');
+      }
     });
   }
 
