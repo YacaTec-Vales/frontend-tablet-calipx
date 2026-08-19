@@ -1,7 +1,8 @@
 <section class="relative min-h-screen flex font-sans bg-gray-100 overflow-hidden">
   <!-- Background Image (Visible full on mobile, left half on desktop) -->
   <div class="absolute inset-0 z-0 md:relative md:w-1/2 md:flex-shrink-0 lg:w-[55%]">
-    <img ngSrc="/Gemini_Generated_Image_91y1x91y1x91y1x9.png" alt="Fondo" priority fill class="object-cover grayscale opacity-70" />
+    <img ngSrc="/Gemini_Generated_Image_91y1x91y1x91y1x9.png" alt="Fondo" priority fill
+      class="object-cover grayscale opacity-70" />
     <div class="absolute inset-0 bg-gray-900/50 mix-blend-multiply"></div>
   </div>
 
@@ -18,10 +19,17 @@
       </div>
 
       @if (error()) {
-      <div class="p-3 text-sm text-red-800 bg-red-50 rounded-lg font-bold flex justify-between items-center" role="alert">
+      <div class="p-3 text-sm text-red-800 bg-red-50 rounded-lg font-bold flex justify-between items-center"
+        role="alert">
         <span>{{ error() }}</span>
-        <button type="button" class="text-red-800 hover:text-red-900 bg-transparent hover:bg-red-200 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" (click)="clearError()">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+        <button type="button"
+          class="text-red-800 hover:text-red-900 bg-transparent hover:bg-red-200 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+          (click)="clearError()">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"></path>
+          </svg>
         </button>
       </div>
       }
@@ -42,7 +50,8 @@
             placeholder="••••••••" required [disabled]="isLoading()" autocomplete="current-password">
         </div>
 
-        <app-button type="submit" variant="primary" size="lg" [fullWidth]="true" [isLoading]="isLoading()" [disabled]="isLoading()" class="mt-4">
+        <app-button type="submit" variant="primary" size="lg" [fullWidth]="true" [isLoading]="isLoading()"
+          [disabled]="isLoading()" class="mt-4">
           Panel de control
         </app-button>
       </form>
