@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.development';
 import { ApiResponse } from '../models/api-response.model';
 
 export interface DocumentResponse {
@@ -26,7 +26,7 @@ export class UploadsService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('documentType', documentType);
-    
+
     return this.http.post<ApiResponse<DocumentResponse>>(this.apiUrl, formData);
   }
 }

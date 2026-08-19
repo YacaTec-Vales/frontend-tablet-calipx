@@ -123,11 +123,7 @@ export const routes: Routes = [
             (m) => m.Transferencias,
           ),
       },
-      {
-        path: 'tokens',
-        loadComponent: () =>
-          import('./pages/coordinador/tokens/tokens').then((m) => m.Tokens),
-      },
+
     ],
   },
 
