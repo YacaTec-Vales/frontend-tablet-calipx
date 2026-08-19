@@ -1,19 +1,25 @@
 <div class="h-screen flex flex-col bg-gray-50 dark:bg-gray-900 font-sans">
-  
+
   <!-- Tablet App Bar -->
   <header class="bg-brand text-white shadow-md flex justify-between items-center shrink-0 h-16 px-4">
     <div class="flex items-center gap-3">
-      <button *ngIf="!isRoot()" (click)="goBack()" class="p-2 -ml-2 rounded-full hover:bg-brand-strong transition-colors focus:ring-4 focus:ring-brand-300">
-        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <button *ngIf="!isRoot()" (click)="goBack()"
+        class="p-2 -ml-2 rounded-full hover:bg-brand-strong transition-colors focus:ring-4 focus:ring-brand-300">
+        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="2" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
         </svg>
       </button>
       <h1 class="text-xl font-bold tracking-tight">App Verificador</h1>
     </div>
-    
-    <button type="button" class="text-white hover:bg-brand-strong focus:ring-4 focus:outline-none focus:ring-brand-300 rounded-full p-2" (click)="logout($event)">
-      <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+
+    <button type="button"
+      class="text-white hover:bg-brand-strong focus:ring-4 focus:outline-none focus:ring-brand-300 rounded-full p-2"
+      (click)="logout($event)">
+      <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
       </svg>
     </button>
   </header>

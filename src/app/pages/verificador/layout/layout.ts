@@ -14,7 +14,7 @@ export class Layout implements OnInit {
   currentRoute: string = '';
   private readonly authService = inject(AuthService);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit() {
     this.router.events.pipe(
