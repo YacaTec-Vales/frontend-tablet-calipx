@@ -5,6 +5,7 @@
       <p class="text-gray-500 dark:text-gray-400 mt-1">Captura de solicitud para nueva distribuidora (12 campos
         generales + datos adicionales).</p>
     </div>
+    <app-button variant="secondary" type="button" (onClick)="fillTestData()">Rellenar Prueba</app-button>
   </div>
 
   @if (successMessage()) {
@@ -21,12 +22,44 @@
 
   <form class="space-y-6" (ngSubmit)="onSubmit()">
 
-    <!-- Datos Generales (12 campos) -->
-    <app-card title="1. Datos Generales" subtitle="Información personal del prospecto (12 campos requeridos)">
+    <!-- Stepper Visual -->
+    <div class="mb-8">
+      <div class="flex justify-between items-center relative">
+        <!-- Progress bar line -->
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-gray-700 z-0 rounded"></div>
+        <!-- Steps -->
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 z-0 rounded transition-all duration-300" [style.width]="((currentStep() - 1) / (totalSteps - 1) * 100) + '%'"></div>
+        
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div class="relative z-10 flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors duration-300"
+              [class]="currentStep() >= i ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400 dark:bg-gray-800 dark:border-gray-600'">
+              {{ i }}
+            </div>
+            <span class="text-xs font-medium mt-2 absolute top-full w-24 text-center -ml-8"
+              [class]="currentStep() === i ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
+              @switch (i) {
+                @case (1) { Generales }
+                @case (2) { Domicilio }
+                @case (3) { Vehículos }
+                @case (4) { Laborales }
+                @case (5) { Créditos }
+                @case (6) { Familiares }
+              }
+            </span>
+          </div>
+        }
+      </div>
+      <div class="h-8"></div> <!-- Spacing for absolute text -->
+    </div>
+
+    <!-- Step 1: Datos Generales (13 campos) -->
+    @if (currentStep() === 1) {
+    <app-card title="1. Datos Generales" subtitle="Información personal del prospecto (13 campos requeridos)">
       <div class="space-y-6 mt-4">
 
-        <!-- Nombre completo -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Nombre completo y correo -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)"
             name="nombre" [disabled]="isSubmitting()">
           </app-input>
@@ -36,13 +69,24 @@
           <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()"
             (valueChange)="apellidoMaterno.set($event)" name="apellidoMaterno" [disabled]="isSubmitting()">
           </app-input>
+          <app-input label="Correo Electrónico" type="email" placeholder="Ej. ana@correo.com" [value]="correo()"
+            (valueChange)="correo.set($event)" name="correo" [disabled]="isSubmitting()">
+          </app-input>
         </div>
 
-        <!-- RFC y Fecha nacimiento -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Identificación y Contacto -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC"
-            hint="Formato: 4 letras + 6 dígitos + 3 alfanuméricos" [value]="rfc()" (valueChange)="rfc.set($event)"
+            hint="4 letras + 6 dígitos + 3 alfa" [value]="rfc()" (valueChange)="rfc.set($event)"
             name="rfc" [disabled]="isSubmitting()">
+          </app-input>
+          <app-input label="CURP (18 caracteres)" placeholder="GAMA800101HDFRRC08"
+            hint="18 caracteres" [value]="curp()" (valueChange)="curp.set($event)"
+            name="curp" [disabled]="isSubmitting()">
+          </app-input>
+          <app-input label="Teléfono" type="tel" placeholder="Ej. 8711234567"
+            hint="10 dígitos" [value]="phone()" (valueChange)="phone.set($event)"
+            name="phone" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Fecha de Nacimiento" type="date" [value]="fechaNacimiento()"
             (valueChange)="fechaNacimiento.set($event)" name="fechaNacimiento" [disabled]="isSubmitting()">
@@ -91,8 +135,10 @@
 
       </div>
     </app-card>
+    }
 
-    <!-- Datos Adicionales: Domicilio -->
+    <!-- Step 2: Datos Adicionales: Domicilio -->
+    @if (currentStep() === 2) {
     <app-card title="2. Datos del Domicilio" subtitle="Información sobre la vivienda del prospecto">
       <div class="space-y-6 mt-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -131,16 +177,173 @@
         </div>
       </div>
     </app-card>
+    }
 
-    <!-- Botón de envío -->
-    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 dark:border-gray-700 mt-6 pt-6">
-      <app-button type="submit" variant="primary" [disabled]="!canSubmit()">
-        @if (isSubmitting()) {
-        Creando solicitud...
-        } @else {
-        Generar Solicitud
+    <!-- Step 3: Vehículos -->
+    @if (currentStep() === 3) {
+    <app-card title="3. Vehículos" subtitle="Máximo 5 vehículos. Opcional.">
+      <div class="space-y-4 mt-4">
+        @if (vehiculos().length > 0) {
+          <div class="space-y-2 mb-4">
+            @for (veh of vehiculos(); track $index) {
+              <div class="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {{ veh.marca }} {{ veh.modelo }} ({{ veh.anio }}) - Placas: {{ veh.placas || 'N/A' }}
+                </span>
+                <button type="button" (click)="removeVehiculo($index)" class="text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+              </div>
+            }
+          </div>
         }
-      </app-button>
+        
+        @if (vehiculos().length < 5) {
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            <app-input label="Marca" placeholder="Ej. Nissan" [value]="newVehiculoMarca()" (valueChange)="newVehiculoMarca.set($event)" name="v_marca" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Modelo" placeholder="Ej. Versa" [value]="newVehiculoModelo()" (valueChange)="newVehiculoModelo.set($event)" name="v_modelo" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Año" type="number" placeholder="Ej. 2020" [value]="newVehiculoAnio()?.toString() ?? ''" (valueChange)="newVehiculoAnio.set(+$event || undefined)" name="v_anio" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Placas (Opcional)" placeholder="Ej. XYZ-123" [value]="newVehiculoPlacas()" (valueChange)="newVehiculoPlacas.set($event)" name="v_placas" [disabled]="isSubmitting()"></app-input>
+            <div class="md:col-span-4 flex justify-end">
+              <app-button type="button" variant="secondary" size="sm" (onClick)="addVehiculo()">+ Agregar Vehículo</app-button>
+            </div>
+          </div>
+        }
+      </div>
+    </app-card>
+    }
+
+    <!-- Step 4: Referencias Laborales -->
+    @if (currentStep() === 4) {
+    <app-card title="4. Referencias Laborales" subtitle="Historial laboral del prospecto (Máx 10).">
+      <div class="space-y-4 mt-4">
+        @if (referenciasLaborales().length > 0) {
+          <div class="space-y-2 mb-4">
+            @for (ref of referenciasLaborales(); track $index) {
+              <div class="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {{ ref.establecimiento }} ({{ ref.antiguedad_anios }} años) - {{ ref.carta_laboral_presentada ? 'Con carta' : 'Sin carta' }}
+                </span>
+                <button type="button" (click)="removeReferencia($index)" class="text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+              </div>
+            }
+          </div>
+        }
+        
+        @if (referenciasLaborales().length < 10) {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            <app-input label="Establecimiento" placeholder="Ej. Soriana" [value]="newRefEstablecimiento()" (valueChange)="newRefEstablecimiento.set($event)" name="r_est" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Dirección" placeholder="Ej. Blvd. Independencia" [value]="newRefDireccion()" (valueChange)="newRefDireccion.set($event)" name="r_dir" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Antigüedad (Años)" type="number" placeholder="Ej. 3" [value]="newRefAntiguedad()?.toString() ?? ''" (valueChange)="newRefAntiguedad.set(+$event || undefined)" name="r_ant" [disabled]="isSubmitting()"></app-input>
+            <div class="flex items-center gap-2 h-10">
+              <input type="checkbox" id="r_carta" [checked]="newRefCarta()" (change)="newRefCarta.set(!newRefCarta())" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+              <label for="r_carta" class="text-sm font-medium text-gray-900 dark:text-gray-300">Entregó Carta Laboral</label>
+            </div>
+            <div class="md:col-span-2 flex justify-end">
+              <app-button type="button" variant="secondary" size="sm" (onClick)="addReferencia()">+ Agregar Referencia</app-button>
+            </div>
+          </div>
+        }
+      </div>
+    </app-card>
+    }
+
+    <!-- Step 5: Limites Credito -->
+    @if (currentStep() === 5) {
+    <app-card title="5. Límites de Crédito" subtitle="Créditos activos en otras instituciones (Máx 10).">
+      <div class="space-y-4 mt-4">
+        @if (limitesCredito().length > 0) {
+          <div class="space-y-2 mb-4">
+            @for (lim of limitesCredito(); track $index) {
+              <div class="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {{ lim.institucion }} - {{ lim.monto_centavos / 100 | currency:'MXN' }}
+                </span>
+                <button type="button" (click)="removeLimite($index)" class="text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+              </div>
+            }
+          </div>
+        }
+        
+        @if (limitesCredito().length < 10) {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            <app-input label="Institución" placeholder="Ej. Coppel" [value]="newLimiteInstitucion()" (valueChange)="newLimiteInstitucion.set($event)" name="l_inst" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Monto en Centavos" type="number" placeholder="Ej. 1500000" [value]="newLimiteMonto()?.toString() ?? ''" (valueChange)="newLimiteMonto.set(+$event || undefined)" name="l_monto" [disabled]="isSubmitting()"></app-input>
+            <div class="md:col-span-2 flex justify-end">
+              <app-button type="button" variant="secondary" size="sm" (onClick)="addLimite()">+ Agregar Límite</app-button>
+            </div>
+          </div>
+        }
+      </div>
+    </app-card>
+    }
+
+    <!-- Step 6: Familiares -->
+    @if (currentStep() === 6) {
+    <app-card title="6. Familiares" subtitle="Contactos familiares (Máx 10).">
+      <div class="space-y-4 mt-4">
+        @if (familiares().length > 0) {
+          <div class="space-y-2 mb-4">
+            @for (fam of familiares(); track $index) {
+              <div class="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {{ fam.nombre }} ({{ fam.parentesco }}, {{ fam.edad }} años) - Contacto: {{ fam.referencia_contacto }}
+                </span>
+                <button type="button" (click)="removeFamiliar($index)" class="text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+              </div>
+            }
+          </div>
+        }
+        
+        @if (familiares().length < 10) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            <div>
+              <label class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">Parentesco</label>
+              <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                [value]="newFamiliarParentesco()" (change)="newFamiliarParentesco.set($any($event.target).value)" [disabled]="isSubmitting()">
+                <option value="">Selecciona</option>
+                <option value="CONYUGE">Cónyuge</option>
+                <option value="HIJO">Hijo</option>
+                <option value="HIJA">Hija</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            <app-input label="Nombre" placeholder="Ej. Juan Pérez" [value]="newFamiliarNombre()" (valueChange)="newFamiliarNombre.set($event)" name="f_nom" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Edad" type="number" placeholder="Ej. 30" [value]="newFamiliarEdad()?.toString() ?? ''" (valueChange)="newFamiliarEdad.set(+$event || undefined)" name="f_edad" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Puesto / Ocupación" placeholder="Ej. Empleado" [value]="newFamiliarPuesto()" (valueChange)="newFamiliarPuesto.set($event)" name="f_pues" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Lugar de Trabajo / Estudio" placeholder="Ej. CFE" [value]="newFamiliarLugar()" (valueChange)="newFamiliarLugar.set($event)" name="f_lug" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Referencia de Contacto" placeholder="Tel o correo" [value]="newFamiliarContacto()" (valueChange)="newFamiliarContacto.set($event)" name="f_con" [disabled]="isSubmitting()"></app-input>
+            <div class="md:col-span-2 lg:col-span-3 flex justify-end">
+              <app-button type="button" variant="secondary" size="sm" (onClick)="addFamiliar()">+ Agregar Familiar</app-button>
+            </div>
+          </div>
+        }
+      </div>
+    </app-card>
+    }
+
+    <!-- Botones de Navegación del Wizard -->
+    <div class="pt-4 flex justify-between gap-3 border-t border-gray-100 dark:border-gray-700 mt-6 pt-6">
+      <div>
+        @if (currentStep() > 1) {
+          <app-button type="button" variant="secondary" (onClick)="prevStep()">
+            &larr; Atrás
+          </app-button>
+        }
+      </div>
+      <div>
+        @if (currentStep() < totalSteps) {
+          <app-button type="button" variant="primary" (onClick)="nextStep()" [disabled]="!canAdvanceStep()">
+            Siguiente &rarr;
+          </app-button>
+        } @else {
+          <app-button type="submit" variant="primary" [disabled]="!canSubmit()">
+            @if (isSubmitting()) {
+            Creando solicitud...
+            } @else {
+            Terminar y Generar Solicitud
+            }
+          </app-button>
+        }
+      </div>
     </div>
 
   </form>

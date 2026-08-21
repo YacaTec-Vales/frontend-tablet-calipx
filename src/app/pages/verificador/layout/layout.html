@@ -13,15 +13,22 @@
       <h1 class="text-xl font-bold tracking-tight">App Verificador</h1>
     </div>
 
-    <button type="button"
-      class="text-white hover:bg-brand-strong focus:ring-4 focus:outline-none focus:ring-brand-300 rounded-full p-2"
-      (click)="logout($event)">
-      <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke-width="2" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-      </svg>
-    </button>
+    <div class="flex items-center gap-2">
+      <a routerLink="/verificador/seguridad" class="text-white hover:bg-brand-strong focus:ring-4 focus:outline-none focus:ring-brand-300 rounded-full p-2" title="Configuración de Seguridad">
+        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+      </a>
+      <button type="button"
+        class="text-white hover:bg-brand-strong focus:ring-4 focus:outline-none focus:ring-brand-300 rounded-full p-2"
+        (click)="logout($event)" title="Cerrar Sesión">
+        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+        </svg>
+      </button>
+    </div>
   </header>
 
   <!-- Main Content Area -->

@@ -6,10 +6,33 @@
         {{ selectedSolicitud() ? 'Editando información y generando rastro de auditoría' : 'Selecciona una solicitud para revisar y editar sus datos.' }}
       </p>
     </div>
-    
-    <app-button *ngIf="selectedSolicitud()" variant="secondary" size="sm" (onClick)="volverLista()">
-      Volver a la Lista
-    </app-button>
+    <div class="flex gap-2">
+      <!-- Search Input -->
+      <div class="relative w-64">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+        </div>
+        <input type="text" 
+          [value]="searchQuery()" 
+          (input)="searchQuery.set($any($event.target).value)"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+          placeholder="Buscar folio, nombre...">
+      </div>
+
+      <select *ngIf="!selectedSolicitud()"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        [value]="currentFilter()" (change)="currentFilter.set($any($event.target).value)">
+        <option value="">Todos los estados</option>
+        <option value="EN_VERIFICACION">En Verificación</option>
+        <option value="DICTAMINADA">Dictaminada</option>
+      </select>
+
+      <app-button *ngIf="selectedSolicitud()" variant="secondary" size="sm" (onClick)="volverLista()">
+        Volver a la Lista
+      </app-button>
+    </div>
   </div>
 
   @if (errorMessage()) {
@@ -43,14 +66,14 @@
         </tr>
       </app-table>
       
-      @if (solicitudes().length === 0) {
+      @if (filteredSolicitudes().length === 0) {
         <div class="p-8 text-center text-gray-500">
           No hay solicitudes pendientes de auditoría en este momento.
         </div>
       }
-      <div class="p-4 border-t border-gray-200 dark:border-gray-700" *ngIf="solicitudes().length > 0">
+      <div class="p-4 border-t border-gray-200 dark:border-gray-700" *ngIf="filteredSolicitudes().length > 0">
         <app-pagination
-          [totalItems]="solicitudes().length"
+          [totalItems]="filteredSolicitudes().length"
           [(itemsPerPage)]="itemsPerPage"
           [(currentPage)]="currentPage">
         </app-pagination>

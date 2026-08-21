@@ -35,9 +35,25 @@ export class BuzonVisitas implements OnInit, OnDestroy {
 
   /** ID de la solicitud que se esta tomando */
   readonly takingId = signal<string | null>(null);
+  
+  readonly searchQuery = signal('');
+
+  readonly filteredSolicitudes = computed(() => {
+    let all = this.solicitudes();
+    const search = this.searchQuery().toLowerCase().trim();
+    
+    if (search) {
+      all = all.filter(s => {
+        const text = `${s.folio || ''} ${s.datos_generales.nombre} ${s.datos_generales.apellido_paterno} ${s.datos_generales.apellido_materno} ${s.datos_generales.curp || ''}`.toLowerCase();
+        return text.includes(search);
+      });
+    }
+    
+    return all;
+  });
 
   /** Indica si hay solicitudes cargadas */
-  readonly isEmpty = computed(() => this.solicitudes().length === 0 && !this.isLoading());
+  readonly isEmpty = computed(() => this.filteredSolicitudes().length === 0 && !this.isLoading());
 
   private pollingTimer?: ReturnType<typeof setTimeout>;
   private isDestroyed = false;

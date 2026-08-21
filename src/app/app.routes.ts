@@ -47,6 +47,11 @@ export const routes: Routes = [
             (m) => m.DetalleSolicitud,
           ),
       },
+      {
+        path: 'seguridad',
+        loadComponent: () =>
+          import('./pages/shared/seguridad/seguridad').then((m) => m.Seguridad),
+      },
     ],
   },
 
@@ -123,7 +128,11 @@ export const routes: Routes = [
             (m) => m.Transferencias,
           ),
       },
-
+      {
+        path: 'seguridad',
+        loadComponent: () =>
+          import('./pages/shared/seguridad/seguridad').then((m) => m.Seguridad),
+      },
     ],
   },
 

@@ -6,7 +6,7 @@ import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, RouterLink, CommonModule],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })

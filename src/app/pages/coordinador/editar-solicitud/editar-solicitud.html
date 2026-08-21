@@ -3,11 +3,12 @@
     <app-button variant="secondary" size="sm" (onClick)="volver()">
       &larr; Cancelar
     </app-button>
-    <div>
+    <div class="flex-1">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Corregir Solicitud</h2>
       <p class="text-gray-500 dark:text-gray-400 mt-1">Modifica los datos para subsanar los errores señalados por el
         verificador.</p>
     </div>
+    <app-button variant="secondary" type="button" (onClick)="forceSubmitTestData()">Fuerza Bruta (Destrabar)</app-button>
   </div>
 
   @if (successMessage()) {
@@ -42,8 +43,8 @@
 
     <app-card title="Datos a corregir" subtitle="Edita solo la información necesaria">
       <div class="space-y-6 mt-4">
-        <!-- Nombre completo -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Nombre completo y correo -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)"
             name="nombre" maxlength="50" [disabled]="isSubmitting()">
           </app-input>
@@ -55,12 +56,21 @@
             (valueChange)="apellidoMaterno.set($event)" name="apellidoMaterno" maxlength="50"
             [disabled]="isSubmitting()">
           </app-input>
+          <app-input label="Correo Electrónico" type="email" placeholder="Ej. ana@correo.com" [value]="correo()"
+            (valueChange)="correo.set($event)" name="correo" maxlength="100" [disabled]="isSubmitting()">
+          </app-input>
         </div>
 
-        <!-- RFC -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Identificación y Contacto -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC" [value]="rfc()"
             (valueChange)="rfc.set($event)" name="rfc" maxlength="13" [disabled]="isSubmitting()">
+          </app-input>
+          <app-input label="CURP (18 caracteres)" placeholder="GAMA800101HDFRRC08" [value]="curp()"
+            (valueChange)="curp.set($event)" name="curp" maxlength="18" [disabled]="isSubmitting()">
+          </app-input>
+          <app-input label="Teléfono" type="tel" placeholder="10 dígitos" [value]="phone()"
+            (valueChange)="phone.set($event)" name="phone" maxlength="10" [disabled]="isSubmitting()">
           </app-input>
         </div>
 

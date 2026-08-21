@@ -16,7 +16,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/f
 })
 export class InputComponent implements ControlValueAccessor {
   readonly label = input<string>('');
-  readonly type = input<'text' | 'email' | 'password' | 'number' | 'textarea' | 'file' | 'date'>('text');
+  readonly type = input<'text' | 'email' | 'password' | 'number' | 'textarea' | 'file' | 'date' | 'tel'>('text');
   readonly placeholder = input<string>('');
   readonly id = input<string>(`input-${Math.random().toString(36).substring(2, 9)}`);
   readonly disabled = input<boolean>(false);

@@ -21,6 +21,8 @@ export class DetalleSolicitud implements OnInit {
   readonly isLoading = signal(true);
   readonly errorMessage = signal<string | null>(null);
 
+  readonly currentTab = signal<'GENERALES' | 'DOMICILIO' | 'VEHICULOS' | 'LABORALES' | 'CREDITOS' | 'FAMILIARES'>('GENERALES');
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {

@@ -23,6 +23,7 @@ export class Bandeja implements OnInit, OnDestroy {
   readonly errorMessage = signal<string | null>(null);
 
   readonly currentFilter = signal<EstadoSolicitud | ''>('');
+  readonly searchQuery = signal('');
 
   // Pagination
   readonly itemsPerPage = signal(10);
@@ -31,9 +32,19 @@ export class Bandeja implements OnInit, OnDestroy {
   readonly filteredSolicitudes = computed(() => {
     let all = this.solicitudes();
     const filter = this.currentFilter();
+    const search = this.searchQuery().toLowerCase().trim();
+    
     if (filter) {
       all = all.filter(s => s.estado === filter);
     }
+    
+    if (search) {
+      all = all.filter(s => {
+        const text = `${s.folio || ''} ${s.datos_generales.nombre} ${s.datos_generales.apellido_paterno} ${s.datos_generales.apellido_materno} ${s.datos_generales.curp || ''}`.toLowerCase();
+        return text.includes(search);
+      });
+    }
+    
     return all;
   });
 

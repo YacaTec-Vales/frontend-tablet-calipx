@@ -45,8 +45,30 @@ export class Auditoria implements OnInit, OnDestroy {
   readonly itemsPerPage = signal(10);
   readonly currentPage = signal(1);
 
+  readonly searchQuery = signal('');
+  readonly currentFilter = signal<string>('');
+
+  readonly filteredSolicitudes = computed(() => {
+    const search = this.searchQuery().toLowerCase().trim();
+    const filter = this.currentFilter();
+    let all = this.solicitudes();
+
+    if (filter) {
+      all = all.filter(s => s.estado === filter);
+    }
+
+    if (search) {
+      all = all.filter(s => {
+        const text = `${s.folio || ''} ${s.datos_generales.nombre} ${s.datos_generales.apellido_paterno} ${s.datos_generales.rfc || ''}`.toLowerCase();
+        return text.includes(search);
+      });
+    }
+
+    return all;
+  });
+
   readonly paginatedSolicitudes = computed(() => {
-    const all = this.solicitudes();
+    const all = this.filteredSolicitudes();
     const start = (this.currentPage() - 1) * this.itemsPerPage();
     return all.slice(start, start + this.itemsPerPage());
   });

@@ -6,23 +6,49 @@
         crédito.</p>
     </div>
 
-    <app-button *ngIf="selectedCandidata" variant="secondary" size="sm" (onClick)="volverLista()">
-      Volver a Candidatas
-    </app-button>
+    <div class="flex gap-2">
+      <!-- Search Input -->
+      <div class="relative w-64" *ngIf="!selectedCandidata">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+        </div>
+        <input type="text" 
+          [value]="searchQuery()" 
+          (input)="searchQuery.set($any($event.target).value)"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+          placeholder="Buscar distribuidora...">
+      </div>
+
+      <select *ngIf="!selectedCandidata"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        [value]="currentFilter()" (change)="currentFilter.set($any($event.target).value)">
+        <option value="">Todos los comportamientos</option>
+        <option value="Excelente">Excelente (Activa)</option>
+        <option value="Con Atrasos">Con Atrasos (Morosa)</option>
+        <option value="Deshabilitada">Deshabilitada</option>
+        <option value="Baja Voluntaria">Baja Voluntaria</option>
+      </select>
+
+      <app-button *ngIf="selectedCandidata" variant="secondary" size="sm" (onClick)="volverLista()">
+        Volver a Candidatas
+      </app-button>
+    </div>
   </div>
 
   <!-- Vista Lista -->
   <app-card *ngIf="!selectedCandidata" title="Distribuidoras Candidatas"
     subtitle="Con historial limpio y buen comportamiento de pago" [noPadding]="true">
-    <app-table [columns]="['ID', 'Nombre', 'Límite Actual', 'Comportamiento', 'Acciones']">
-      <tr *ngFor="let candidata of candidatas()"
+    <app-table [columns]="['ID', 'Nombre', 'Límite Actual', 'Comportamiento', 'Acciones']" [isEmpty]="filteredCandidatas().length === 0" emptyMessage="No hay distribuidoras candidatas.">
+      <tr *ngFor="let candidata of filteredCandidatas()"
         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
         <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ candidata.id }}</td>
         <td class="px-6 py-4">{{ candidata.nombre }}</td>
         <td class="px-6 py-4 font-bold text-green-600">${{ candidata.limiteActual | number }}</td>
         <td class="px-6 py-4">
           <app-badge [text]="candidata.puntaje"
-            [variant]="candidata.puntaje === 'Excelente' ? 'success' : 'info'"></app-badge>
+            [variant]="getBadgeVariant(candidata.puntaje)"></app-badge>
         </td>
         <td class="px-6 py-4 flex gap-2">
           <app-button variant="outline" size="sm" (onClick)="seleccionar(candidata)">Ver Detalles / Solicitar</app-button>
