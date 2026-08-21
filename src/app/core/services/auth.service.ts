@@ -13,6 +13,7 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   UserRole,
+  LoginResponseDto,
 } from '../models/auth.model';
 
 const TOKEN_KEY = 'calipx_access_token';
@@ -42,6 +43,11 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  updateCurrentUser(user: AuthUser): void {
+    this.currentUser.set(user);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   /** Indica si hay un usuario autenticado con token valido */
@@ -86,11 +92,38 @@ export class AuthService {
    * POST /auth/login
    * Autentica al usuario y almacena tokens JWT.
    */
-  login(credentials: LoginRequest): Observable<ApiResponse<TokenResponse>> {
+  login(credentials: LoginRequest): Observable<ApiResponse<LoginResponseDto>> {
     this.isLoading.set(true);
 
     return this.http
-      .post<ApiResponse<TokenResponse>>(`${this.apiUrl}/auth/login`, credentials)
+      .post<ApiResponse<LoginResponseDto>>(`${this.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap((response) => {
+          if (!response.data.mfaRequired && response.data.accessToken && response.data.refreshToken && response.data.user) {
+            this.saveSession(response.data.accessToken, response.data.refreshToken, response.data.user);
+            this.currentUser.set(response.data.user);
+          }
+          this.isLoading.set(false);
+        }),
+        catchError((error) => {
+          this.isLoading.set(false);
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  /**
+   * POST /auth/mfa-verify
+   * Verifica el codigo TOTP despues de un login exitoso que requeria MFA.
+   */
+  mfaVerify(mfaToken: string, code: string): Observable<ApiResponse<TokenResponse>> {
+    this.isLoading.set(true);
+    return this.http
+      .post<ApiResponse<TokenResponse>>(
+        `${this.apiUrl}/auth/mfa-verify`, 
+        { code },
+        { headers: { Authorization: `Bearer ${mfaToken}` } }
+      )
       .pipe(
         tap((response) => {
           const { accessToken, refreshToken, user } = response.data;

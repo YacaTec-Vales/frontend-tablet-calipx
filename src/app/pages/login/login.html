@@ -18,45 +18,112 @@
         <h2 class="text-xl font-bold mt-2 text-gray-900">Panel de control</h2>
       </div>
 
-      @if (error()) {
-      <div class="p-3 text-sm text-red-800 bg-red-50 rounded-lg font-bold flex justify-between items-center"
-        role="alert">
-        <span>{{ error() }}</span>
-        <button type="button"
-          class="text-red-800 hover:text-red-900 bg-transparent hover:bg-red-200 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-          (click)="clearError()">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd"
-              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-              clip-rule="evenodd"></path>
+      @if (alert()) {
+      <div
+        [class]="alert()?.type === 'error' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-green-50 text-green-600 border-green-200'"
+        class="p-4 rounded-lg mb-6 text-sm border flex items-center gap-2"
+      >
+        @if (alert()?.type === 'error') {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-        </button>
+        }
+        @if (alert()?.type === 'success') {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        }
+        {{ alert()?.message }}
       </div>
       }
 
-      <!-- Form -->
-      <form class="space-y-6" (submit)="onSubmit($event)">
-        <div>
-          <label for="email" class="block mb-2 text-sm font-extrabold text-gray-900">Email</label>
-          <input type="text" name="email" id="email" [value]="email()" (input)="email.set($any($event.target).value)"
-            class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold transition-all"
-            placeholder="usuario@empresa.com" required [disabled]="isLoading()" autocomplete="username">
-        </div>
-        <div>
-          <label for="password" class="block mb-2 text-sm font-extrabold text-gray-900">Contraseña</label>
-          <input type="password" name="password" id="password" [value]="password()"
-            (input)="password.set($any($event.target).value)"
-            class="bg-gray-200 border-0 text-gray-900 text-lg rounded-xl focus:ring-4 focus:ring-brand-300 block w-full p-4 font-semibold transition-all"
-            placeholder="••••••••" required [disabled]="isLoading()" autocomplete="current-password">
-        </div>
+      @if (!isMfaRequired()) {
+        <form class="space-y-6" (submit)="onSubmit($event)">
+          <app-input
+            id="email"
+            label="Correo Electrónico"
+            type="email"
+            placeholder="ejemplo@empresa.com"
+            [(value)]="email"
+          ></app-input>
 
-        <app-button type="submit" variant="primary" size="lg" [fullWidth]="true" [isLoading]="isLoading()"
-          [disabled]="isLoading()" class="mt-4">
-          Panel de control
-        </app-button>
-      </form>
+          <div class="space-y-2">
+            <app-input
+              id="password"
+              label="Contraseña"
+              [type]="showPassword() ? 'text' : 'password'"
+              placeholder="••••••••"
+              [(value)]="password"
+            ></app-input>
+          </div>
 
-      <div class="mt-8 pt-6 border-t border-gray-200">
+          <app-button
+            type="submit"
+            [disabled]="isLoading()"
+            class="w-full"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (isLoading()) {
+              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Iniciando sesión...
+              } @else {
+              Entrar
+              }
+            </span>
+          </app-button>
+        </form>
+      }
+
+      @if (isMfaRequired()) {
+        <form class="space-y-6" (submit)="onSubmit($event)">
+          <div class="text-center mb-4">
+            <div class="bg-brand-100 text-brand-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">Verificación de dos pasos</h3>
+            <p class="text-sm text-gray-500 mt-2">Ingresa el código de 6 dígitos generado por tu aplicación autenticadora.</p>
+          </div>
+
+          <app-input
+            id="mfaCode"
+            label="Código de seguridad"
+            type="text"
+            placeholder="123456"
+            [maxlength]="6"
+            [(value)]="mfaCode"
+          ></app-input>
+
+          <app-button
+            type="submit"
+            [disabled]="isLoading() || mfaCode().length < 6"
+            class="w-full"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (isLoading()) {
+              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Verificando...
+              } @else {
+              Verificar
+              }
+            </span>
+          </app-button>
+          
+          <button type="button" class="w-full text-sm text-gray-500 hover:text-brand transition-colors text-center mt-4" (click)="isMfaRequired.set(false); mfaCode.set(''); alert.set(null)">
+            Volver
+          </button>
+        </form>
+      }
+
+      <!-- Acceso rápido para pruebas -->
+      <div class="mt-8 pt-8 border-t border-gray-100">
         <h4 class="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wider text-center">Accesos de prueba</h4>
         <div class="mt-4 flex gap-2">
           <span

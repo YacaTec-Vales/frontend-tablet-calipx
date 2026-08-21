@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiErrorResponse } from '../../core/models/api-response.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonComponent } from '../../components/ui/button/button';
+import { InputComponent } from '../../components/ui/input/input';
 import { NgOptimizedImage } from '@angular/common';
 
 /**
@@ -15,40 +16,91 @@ import { NgOptimizedImage } from '@angular/common';
  */
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, ButtonComponent, NgOptimizedImage],
+  imports: [FormsModule, ButtonComponent, InputComponent, NgOptimizedImage],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  readonly isLoading = this.authService.isLoading;
+  readonly isMfaRequired = signal(false);
+  readonly mfaToken = signal('');
 
+  // Login form
   readonly email = signal('');
   readonly password = signal('');
-  readonly error = signal('');
-  readonly isLoading = computed(() => this.authService.isLoading());
+  readonly showPassword = signal(false);
 
-  onSubmit(event: Event): void {
+  // MFA form
+  readonly mfaCode = signal('');
+
+  readonly alert = signal<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  onSubmit(event: Event) {
     event.preventDefault();
-    this.error.set('');
+    this.alert.set(null);
 
-    const emailValue = this.email();
-    const passwordValue = this.password();
+    if (this.isMfaRequired()) {
+      // Flujo de MFA Verify
+      if (this.mfaCode().length < 6) {
+        this.alert.set({
+          type: 'error',
+          message: 'Ingresa el código de 6 dígitos completo',
+        });
+        return;
+      }
 
-    if (!emailValue || !passwordValue) {
-      this.error.set('Ingresa tu email y contraseña.');
+      this.authService.mfaVerify(this.mfaToken(), this.mfaCode()).subscribe({
+        next: () => {
+          this.alert.set({
+            type: 'success',
+            message: 'Inicio de sesión exitoso',
+          });
+          const user = this.authService.currentUser();
+          this.redirectUser(user?.role);
+        },
+        error: (err) => {
+          this.alert.set({
+            type: 'error',
+            message: err.error?.message || 'Código incorrecto. Intenta nuevamente.',
+          });
+          this.mfaCode.set('');
+        },
+      });
+      return;
+    }
+
+    // Flujo normal de Login
+    if (!this.email() || !this.password()) {
+      this.alert.set({
+        type: 'error',
+        message: 'Por favor completa todos los campos',
+      });
       return;
     }
 
     this.authService
       .login({
-        usernameOrEmail: emailValue,
-        password: passwordValue,
+        usernameOrEmail: this.email(),
+        password: this.password(),
         rememberMe: true,
       })
       .subscribe({
-        next: () => {
-          this.redirectByRole();
+        next: (response) => {
+          if (response.data.mfaRequired && response.data.mfaToken) {
+            this.isMfaRequired.set(true);
+            this.mfaToken.set(response.data.mfaToken);
+            this.alert.set(null);
+            return;
+          }
+
+          this.alert.set({
+            type: 'success',
+            message: 'Inicio de sesión exitoso',
+          });
+          const user = this.authService.currentUser();
+          this.redirectUser(user?.role);
         },
         error: (err: HttpErrorResponse) => {
           this.handleLoginError(err);
@@ -57,16 +109,16 @@ export class Login {
   }
 
   /** Redirige segun el rol del usuario autenticado */
-  private redirectByRole(): void {
+  private redirectUser(role: string | undefined | null): void {
     // Si debe cambiar contrasena, el authGuard lo redirigira
     if (this.authService.mustChangePassword()) {
       this.router.navigate(['/change-password']);
       return;
     }
 
-    const role = this.authService.userRole();
+    const effectiveRole = role || this.authService.userRole();
 
-    switch (role) {
+    switch (effectiveRole) {
       case 'VERIFICADOR':
         this.router.navigate(['/verificador']);
         break;
@@ -74,7 +126,7 @@ export class Login {
         this.router.navigate(['/coordinador']);
         break;
       default:
-        this.error.set(`El rol "${role}" no tiene acceso desde esta tablet.`);
+        this.alert.set({ type: 'error', message: `El rol "${effectiveRole}" no tiene acceso desde esta tablet.` });
         this.authService.logout();
         break;
     }
@@ -87,29 +139,29 @@ export class Login {
 
     switch (code) {
       case 'AUTH.INVALID_CREDENTIALS':
-        this.error.set('Email o contraseña incorrectos.');
+        this.alert.set({ type: 'error', message: 'Email o contraseña incorrectos.' });
         break;
       case 'AUTH.USER_INACTIVE':
-        this.error.set('Tu cuenta está desactivada. Contacta al administrador.');
+        this.alert.set({ type: 'error', message: 'Tu cuenta está desactivada. Contacta al administrador.' });
         break;
       case 'AUTH.LOCKED':
-        this.error.set('Tu cuenta está bloqueada por demasiados intentos. Intenta más tarde.');
+        this.alert.set({ type: 'error', message: 'Tu cuenta está bloqueada por demasiados intentos. Intenta más tarde.' });
         break;
       case 'AUTH.PASSWORD_NOT_SET':
-        this.error.set('Tu cuenta no tiene contraseña configurada. Contacta al administrador.');
+        this.alert.set({ type: 'error', message: 'Tu cuenta no tiene contraseña configurada. Contacta al administrador.' });
         break;
       default:
         if (err.status === 0) {
-          this.error.set('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+          this.alert.set({ type: 'error', message: 'No se pudo conectar con el servidor. Verifica tu conexión a internet.' });
         } else {
-          this.error.set(body?.message ?? 'Error inesperado. Intenta de nuevo.');
+          this.alert.set({ type: 'error', message: body?.message ?? 'Error inesperado. Intenta de nuevo.' });
         }
         break;
     }
   }
 
   clearError(): void {
-    this.error.set('');
+    this.alert.set(null);
   }
 
   /** Atajos de prueba para desarrollo */

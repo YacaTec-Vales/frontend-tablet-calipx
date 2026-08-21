@@ -45,7 +45,6 @@ export interface ReferenciaLaboral {
 export interface LimiteCreditoOtraRelacion {
   institucion: string;
   monto_centavos: number;
-  carta_acredita: boolean;
 }
 
 export interface Familiar {
@@ -62,9 +61,12 @@ export interface Familiar {
 /** 12 campos de datos_generales para POST /solicitudes */
 export interface DatosGenerales {
   nombre: string;
+  correo: string;
   apellido_paterno: string;
   apellido_materno: string;
   rfc: string;
+  curp: string;
+  phone: string;
   fecha_nacimiento: string;
   calle: string;
   numero: string;

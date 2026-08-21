@@ -12,6 +12,14 @@ export interface TokenResponse {
   user: AuthUser;
 }
 
+export interface LoginResponseDto {
+  accessToken?: string;
+  refreshToken?: string;
+  user?: AuthUser;
+  mfaRequired?: boolean;
+  mfaToken?: string;
+}
+
 /** Usuario autenticado devuelto por GET /auth/me y login */
 export interface AuthUser {
   id: string;

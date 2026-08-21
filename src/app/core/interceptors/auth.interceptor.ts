@@ -7,6 +7,7 @@ import { throwError } from 'rxjs';
 /** Rutas publicas que NO necesitan Authorization header */
 const PUBLIC_PATHS = [
   '/auth/login',
+  '/auth/mfa-verify',
   '/auth/refresh',
   '/auth/forgot-password',
   '/auth/reset-password',
@@ -46,7 +47,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authReq = req.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`,
-      'x-client-app': 'Calipx',
+      'x-client-app': 'Calipx'
     },
   });
 
