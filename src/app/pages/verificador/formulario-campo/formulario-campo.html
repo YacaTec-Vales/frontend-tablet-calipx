@@ -283,16 +283,118 @@
     <!-- Panel Izquierdo: Evidencia -->
     <app-card title="1. Evidencia Fotográfica" subtitle="Toma las fotos requeridas desde la tablet">
       <div class="space-y-6 mt-4">
-        <app-input label="Foto de la Fachada" type="file" [(ngModel)]="fotoFachada" [disabled]="isSubmitting()">
-        </app-input>
+        
+        <!-- Foto de Fachada -->
+        <div>
+          <span class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Foto de la Fachada</span>
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-800 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            @if (previewFachada()) {
+              <div class="mb-4 flex justify-center">
+                <img [src]="previewFachada()" alt="Preview Fachada" class="max-h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 object-contain">
+              </div>
+            } @else {
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            }
+            
+            <div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center">
+              <label class="relative cursor-pointer rounded-md font-semibold text-brand focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 hover:text-brand-light">
+                <span>{{ fotoFachada() ? 'Cambiar Fachada' : 'Tomar / Subir Fachada' }}</span>
+                <input type="file" class="sr-only" accept="image/*" (change)="onFotoSelected($event, 'fachada')" [disabled]="isSubmitting()">
+              </label>
+              <p class="pl-1">obligatoria</p>
+            </div>
+            <p class="text-xs leading-5 text-gray-500 mt-2">Formatos aceptados: Imágenes (.jpg, .png)</p>
+            
+            @if (fotoFachada()) {
+              <p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Archivo: {{ fotoFachada()!.name }}
+              </p>
+            } @else {
+              <p class="mt-4 text-sm font-medium text-red-500 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Requerido para dictaminar
+              </p>
+            }
+          </div>
+        </div>
 
-        <app-input label="Comprobante de Domicilio" type="file" [(ngModel)]="fotoComprobante"
-          [disabled]="isSubmitting()">
-        </app-input>
+        <!-- Foto de Comprobante -->
+        <div>
+          <span class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Comprobante de Domicilio</span>
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-800 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            @if (previewComprobante()) {
+              <div class="mb-4 flex justify-center">
+                <img [src]="previewComprobante()" alt="Preview Comprobante" class="max-h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 object-contain">
+              </div>
+            } @else {
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            }
+            
+            <div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center">
+              <label class="relative cursor-pointer rounded-md font-semibold text-brand focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 hover:text-brand-light">
+                <span>{{ fotoComprobante() ? 'Cambiar Comprobante' : 'Tomar / Subir Comprobante' }}</span>
+                <input type="file" class="sr-only" accept="image/*" (change)="onFotoSelected($event, 'comprobante')" [disabled]="isSubmitting()">
+              </label>
+              <p class="pl-1">obligatorio</p>
+            </div>
+            <p class="text-xs leading-5 text-gray-500 mt-2">Formatos aceptados: Imágenes (.jpg, .png)</p>
+            
+            @if (fotoComprobante()) {
+              <p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Archivo: {{ fotoComprobante()!.name }}
+              </p>
+            } @else {
+              <p class="mt-4 text-sm font-medium text-red-500 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Requerido para dictaminar
+              </p>
+            }
+          </div>
+        </div>
 
-        <app-input label="Identificación Oficial (INE)" type="file" [(ngModel)]="fotoIdentificacion"
-          [disabled]="isSubmitting()">
-        </app-input>
+        <!-- Identificación (INE) -->
+        <div>
+          <span class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Identificación Oficial (INE)</span>
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-800 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            @if (previewIdentificacion()) {
+              <div class="mb-4 flex justify-center">
+                <img [src]="previewIdentificacion()" alt="Preview INE" class="max-h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 object-contain">
+              </div>
+            } @else {
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            }
+            
+            <div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center">
+              <label class="relative cursor-pointer rounded-md font-semibold text-brand focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 hover:text-brand-light">
+                <span>{{ fotoIdentificacion() ? 'Cambiar INE' : 'Tomar / Subir INE' }}</span>
+                <input type="file" class="sr-only" accept="image/*" (change)="onFotoSelected($event, 'identificacion')" [disabled]="isSubmitting()">
+              </label>
+              <p class="pl-1">obligatoria</p>
+            </div>
+            <p class="text-xs leading-5 text-gray-500 mt-2">Formatos aceptados: Imágenes (.jpg, .png)</p>
+            
+            @if (fotoIdentificacion()) {
+              <p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Archivo: {{ fotoIdentificacion()!.name }}
+              </p>
+            } @else {
+              <p class="mt-4 text-sm font-medium text-red-500 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Requerido para dictaminar
+              </p>
+            }
+          </div>
+        </div>
+
       </div>
     </app-card>
 
@@ -312,15 +414,15 @@
         <div class="pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-4">
           <p class="text-xs text-center text-gray-500 font-bold uppercase mb-2">Resolución Final</p>
 
-          <!-- Kill Switch Toggle -->
+          <!-- Rechazo Definitivo Toggle -->
           <label class="inline-flex items-center cursor-pointer justify-center mb-2">
-            <input type="checkbox" class="sr-only peer" [ngModel]="killSwitch()" (ngModelChange)="killSwitch.set($event)">
+            <input type="checkbox" class="sr-only peer" [ngModel]="rechazoDefinitivo()" (ngModelChange)="rechazoDefinitivo.set($event)">
             <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
-            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Activar Kill Switch (Fraude)</span>
+            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Rechazo Definitivo (Bloqueo por Fraude)</span>
           </label>
 
           <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('CUMPLE')"
-            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit">
+            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit || rechazoDefinitivo()">
             Aprobar (VERIFICADA)
           </app-button>
 
