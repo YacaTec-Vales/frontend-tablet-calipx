@@ -28,9 +28,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isPublic = PUBLIC_PATHS.some((path) => req.url.includes(path));
 
   if (isPublic) {
-    // Rutas publicas solo necesitan el header x-client-app
+    // Rutas publicas solo necesitan el header x-client-app y x-origin
     const publicReq = req.clone({
-      setHeaders: { 'x-client-app': 'Calipx' },
+      setHeaders: { 
+        'x-client-app': 'Calipx'
+      },
     });
     return next(publicReq);
   }

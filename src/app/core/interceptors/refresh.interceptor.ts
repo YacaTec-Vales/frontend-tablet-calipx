@@ -52,6 +52,13 @@ function handleRefresh(
   isRefreshing = true;
   refreshSubject$.next(null);
 
+  // Si no hay refresh token (ej: change-password revoco todas las sesiones), no intentar
+  if (!authService.getRefreshToken()) {
+    isRefreshing = false;
+    authService.logout();
+    return throwError(() => new HttpErrorResponse({ status: 401, statusText: 'No refresh token' }));
+  }
+
   return authService.refresh().pipe(
     switchMap((response) => {
       isRefreshing = false;

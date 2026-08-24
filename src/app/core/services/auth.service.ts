@@ -207,7 +207,9 @@ export class AuthService {
         tap((response) => {
           // El backend devuelve nuevos tokens tras cambiar contrasena
           if (response.data?.accessToken) {
-            this.saveSession(response.data.accessToken, response.data.refreshToken, response.data.user);
+            const currentRefreshToken = this.getRefreshToken();
+            const newRefreshToken = response.data.refreshToken || currentRefreshToken || '';
+            this.saveSession(response.data.accessToken, newRefreshToken, response.data.user);
             this.currentUser.set(response.data.user);
           }
         }),

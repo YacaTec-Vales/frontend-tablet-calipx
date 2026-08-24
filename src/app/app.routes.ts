@@ -12,12 +12,6 @@ export const routes: Routes = [
       import('./pages/login/login').then((m) => m.Login),
   },
 
-  {
-    path: 'change-password',
-    loadComponent: () =>
-      import('./pages/change-password/change-password').then((m) => m.ChangePassword),
-    canActivate: [authGuard],
-  },
 
   {
     path: 'verificador',
