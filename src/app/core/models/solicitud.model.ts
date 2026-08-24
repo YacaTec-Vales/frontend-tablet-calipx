@@ -93,12 +93,34 @@ export interface CreateSolicitudDto {
 /** Request body para PATCH /solicitudes/:id (Coordinador edita) */
 export type UpdateSolicitudDto = Partial<CreateSolicitudDto>;
 
-/** Request body para POST /solicitudes/:id/verificar (Verificador dictamina) */
+/**
+ * Request body para POST /solicitudes/:id/verificar (Verificador dictamina).
+ *
+ * El verificador sube cada foto via `POST /uploads/verification/:id` y
+ * envia los UUIDs resultantes aqui. Esto reemplaza el envio de URLs
+ * firmadas (que expiraban a los 15 min).
+ */
 export interface VerificarSolicitudDto {
-  fotos_verificacion: string[];
+  ineDocumentId?: string;
+  addressProofDocumentId?: string;
+  fachadaDocumentId?: string;
   comentarios_verificador: string;
   dictamen: Dictamen;
   kill_switch: boolean;
+}
+
+/**
+ * Entrada de `verification_photos` en la respuesta de la solicitud.
+ * Desde 2026-08-23 son UUIDs (`app.document.id`); los registros
+ * historicos pueden contener URLs ser firmadas.
+ */
+export type VerificationPhotoEntry = string;
+
+/** Detecta si una entrada es un UUID v4 o una URL firmada legacy. */
+export function isVerificationPhotoUuid(entry: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    entry,
+  );
 }
 
 /** Respuesta de GET /solicitudes/:id y GET /solicitudes */
@@ -111,7 +133,12 @@ export interface SolicitudResponse {
   coordinador_id: string;
   verificador_id?: string;
   branch_id: string;
-  fotos_verificacion?: string[];
+  /**
+   * Lista de fotos de verificacion. Desde 2026-08-23 son UUIDs de
+   * `app.document` (resolver via `GET /uploads/:id` para URL fresca);
+   * registros historicos pueden contener URLs firmadas directas.
+   */
+  fotos_verificacion?: VerificationPhotoEntry[];
   comentarios_verificador?: string;
   dictamen?: Dictamen;
   kill_switch?: boolean;

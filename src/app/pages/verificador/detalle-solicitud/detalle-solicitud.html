@@ -50,6 +50,26 @@
 
   </div>
 
+  @if (verificationDocs().length > 0) {
+  <app-card title="Fotos de Verificación">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      @for (doc of verificationDocs(); track doc.id) {
+      <div class="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+        @if (uploadsService.isImage(doc.mimeType)) {
+        <img [src]="doc.publicUrl" [alt]="doc.fileName" class="w-full h-48 object-cover" />
+        } @else if (uploadsService.isPdf(doc.mimeType)) {
+        <embed [src]="doc.publicUrl" type="application/pdf" class="w-full h-48" />
+        } @else {
+        <a [href]="doc.publicUrl" target="_blank" rel="noopener" class="block p-4 text-blue-600 underline">
+          {{ doc.fileName }}
+        </a>
+        }
+      </div>
+      }
+    </div>
+  </app-card>
+  }
+
   <div *ngIf="errorMessage()" class="mt-4 p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
     {{ errorMessage() }}
   </div>
