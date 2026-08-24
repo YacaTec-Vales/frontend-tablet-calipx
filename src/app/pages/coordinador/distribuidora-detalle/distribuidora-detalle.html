@@ -19,38 +19,103 @@
     {{ errorMessage() }}
   </div>
 
-  <div *ngIf="distribuidora() && !isLoading()" class="space-y-6">
-    <app-card title="Información Financiera">
-      <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Límite de Crédito</dt>
-          <dd class="text-2xl font-bold text-gray-900 dark:text-white">
-            ${{ (distribuidora()!.creditLimitCents / 100).toFixed(2) }}
-          </dd>
-        </div>
-        <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Crédito Disponible</dt>
-          <dd class="text-2xl font-bold text-green-600">
-            ${{ (distribuidora()!.creditAvailableCents / 100).toFixed(2) }}
-          </dd>
-        </div>
-        <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado</dt>
-          <dd class="mt-1">
-            <app-badge [text]="distribuidora()!.status" [variant]="getBadgeVariant(distribuidora()!.status)"></app-badge>
-          </dd>
-        </div>
-      </dl>
-    </app-card>
+  <div *ngIf="distribuidora() && !isLoading()" class="space-y-0">
+    
+    <!-- Tabs Navigation -->
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-lg shadow-sm">
+      <li class="me-2">
+        <button (click)="currentTab.set('FINANCIERA')"
+          class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+          [ngClass]="currentTab() === 'FINANCIERA' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+          Info. Financiera
+        </button>
+      </li>
+      <li class="me-2">
+        <button (click)="currentTab.set('GENERALES')"
+          class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+          [ngClass]="currentTab() === 'GENERALES' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+          Datos Generales
+        </button>
+      </li>
+    </ul>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="solicitarAumento()">
-        Solicitar Aumento de Límite
-      </app-button>
+    <!-- Content Container -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-b-lg border border-t-0 border-gray-200 dark:border-gray-700 p-6">
       
-      <app-button variant="outline" size="lg" [fullWidth]="true" (onClick)="verHistorialAumentos()">
-        Ver Historial de Peticiones
-      </app-button>
+      <!-- FINANCIERA -->
+      @if (currentTab() === 'FINANCIERA') {
+        <div class="animate-fade-in space-y-6">
+          <dl class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Límite de Crédito</dt>
+              <dd class="text-2xl font-bold text-gray-900 dark:text-white">
+                ${{ (distribuidora()!.creditLimitCents / 100).toFixed(2) }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Crédito Disponible</dt>
+              <dd class="text-2xl font-bold text-green-600">
+                ${{ (distribuidora()!.creditAvailableCents / 100).toFixed(2) }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado</dt>
+              <dd class="mt-1">
+                <app-badge [text]="distribuidora()!.status" [variant]="getBadgeVariant(distribuidora()!.status)"></app-badge>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Puntos Acumulados</dt>
+              <dd class="text-xl font-bold text-blue-600">
+                {{ distribuidora()!.pointsBalance }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cuota Inicial</dt>
+              <dd class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {{ distribuidora()!.initialFeeCents !== null ? '$' + (distribuidora()!.initialFeeCents! / 100).toFixed(2) : 'N/A' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Relaciones Morosas</dt>
+              <dd class="text-lg font-semibold" [ngClass]="distribuidora()!.delinquentRelationsCount > 0 ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'">
+                {{ distribuidora()!.delinquentRelationsCount }}
+              </dd>
+            </div>
+          </dl>
+          
+          <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
+            Activada el: {{ distribuidora()!.activatedAt ? (distribuidora()!.activatedAt | date:'mediumDate') : 'Pendiente' }}
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="solicitarAumento()">
+              Solicitar Aumento de Límite
+            </app-button>
+            <app-button variant="outline" size="lg" [fullWidth]="true" (onClick)="verHistorialAumentos()">
+              Ver Historial de Peticiones
+            </app-button>
+          </div>
+        </div>
+      }
+
+      <!-- GENERALES -->
+      @if (currentTab() === 'GENERALES') {
+        <div class="animate-fade-in">
+          <dl class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="distribuidora()!.generalData">
+            <div *ngFor="let item of distribuidora()!.generalData | keyvalue">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 capitalize">{{ item.key.replace('_', ' ') }}</dt>
+              <dd class="mt-1 text-sm font-bold text-gray-900 dark:text-white truncate" [title]="item.value">
+                {{ item.value || 'N/A' }}
+              </dd>
+            </div>
+          </dl>
+          <div *ngIf="!distribuidora()!.generalData || (distribuidora()!.generalData | keyvalue)?.length === 0" class="text-sm text-gray-500">
+            No hay datos generales disponibles.
+          </div>
+        </div>
+      }
+
     </div>
   </div>
 </div>

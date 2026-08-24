@@ -60,15 +60,12 @@
 
         <!-- Nombre completo y correo -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)"
-            name="nombre" [disabled]="isSubmitting()">
-          </app-input>
-          <app-input label="Apellido Paterno" placeholder="Ej. García" [value]="apellidoPaterno()"
-            (valueChange)="apellidoPaterno.set($event)" name="apellidoPaterno" [disabled]="isSubmitting()">
-          </app-input>
-          <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()"
-            (valueChange)="apellidoMaterno.set($event)" name="apellidoMaterno" [disabled]="isSubmitting()">
-          </app-input>
+          <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)" [sanitizeType]="'name'"
+            [disabled]="isSubmitting()"></app-input>
+          <app-input label="Apellido Paterno" placeholder="Ej. García" [value]="apellidoPaterno()" [sanitizeType]="'name'"
+            (valueChange)="apellidoPaterno.set($event)" [disabled]="isSubmitting()"></app-input>
+          <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()" [sanitizeType]="'name'"
+            (valueChange)="apellidoMaterno.set($event)" [disabled]="isSubmitting()"></app-input>
           <app-input label="Correo Electrónico" type="email" placeholder="Ej. ana@correo.com" [value]="correo()"
             (valueChange)="correo.set($event)" name="correo" [disabled]="isSubmitting()">
           </app-input>
@@ -76,17 +73,12 @@
 
         <!-- Identificación y Contacto -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC"
-            hint="4 letras + 6 dígitos + 3 alfa" [value]="rfc()" (valueChange)="rfc.set($event)"
-            name="rfc" [disabled]="isSubmitting()">
-          </app-input>
-          <app-input label="CURP (18 caracteres)" placeholder="GAMA800101HDFRRC08"
-            hint="18 caracteres" [value]="curp()" (valueChange)="curp.set($event)"
-            name="curp" [disabled]="isSubmitting()">
-          </app-input>
-          <app-input label="Teléfono" type="tel" placeholder="Ej. 8711234567"
-            hint="10 dígitos" [value]="phone()" (valueChange)="phone.set($event)"
-            name="phone" [disabled]="isSubmitting()">
+          <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC" [sanitizeType]="'rfc'"
+            [value]="rfc()" (valueChange)="rfc.set($event)" maxlength="13" [disabled]="isSubmitting()"></app-input>
+          <app-input label="CURP (18 caracteres)" placeholder="GAMA800101HDFRRC08" [sanitizeType]="'curp'"
+            [value]="curp()" (valueChange)="curp.set($event)" maxlength="18" [disabled]="isSubmitting()"></app-input>
+          <app-input label="Teléfono" type="tel" placeholder="Ej. 8711234567" [sanitizeType]="'phone'"
+            [value]="phone()" (valueChange)="phone.set($event)" maxlength="10" inputmode="numeric" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Fecha de Nacimiento" type="date" [value]="fechaNacimiento()"
             (valueChange)="fechaNacimiento.set($event)" name="fechaNacimiento" [disabled]="isSubmitting()">
@@ -96,23 +88,20 @@
         <!-- Dirección -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <app-input label="Calle" placeholder="Ej. Av. Juárez" [value]="calle()" (valueChange)="calle.set($event)"
-            name="calle" [disabled]="isSubmitting()">
-          </app-input>
-          <app-input label="Número" placeholder="Ej. 123" [value]="numero()" (valueChange)="numero.set($event)"
-            name="numero" [disabled]="isSubmitting()">
-          </app-input>
+            [disabled]="isSubmitting()"></app-input>
+          <app-input label="Número" placeholder="Ej. 123" [value]="numero()" (valueChange)="numero.set($event)" [sanitizeType]="'numeric'"
+            [disabled]="isSubmitting()"></app-input>
           <app-input label="Colonia" placeholder="Ej. Centro" [value]="colonia()" (valueChange)="colonia.set($event)"
             name="colonia" [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <app-input label="Código Postal (5 dígitos)" placeholder="Ej. 44100" [value]="codigoPostal()"
-            (valueChange)="codigoPostal.set($event)" name="codigoPostal" [disabled]="isSubmitting()">
+          <app-input label="Código Postal (5 dígitos)" placeholder="Ej. 44100" [value]="codigoPostal()" [sanitizeType]="'numeric'"
+            (valueChange)="codigoPostal.set($event)" maxlength="5" inputmode="numeric" [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Lugar de Nacimiento" placeholder="Ej. Guadalajara" [value]="lugarNacimiento()"
-            (valueChange)="lugarNacimiento.set($event)" name="lugarNacimiento" [disabled]="isSubmitting()">
-          </app-input>
+          <app-input label="Lugar de Nacimiento" placeholder="Ej. Guadalajara" [value]="lugarNacimiento()" [sanitizeType]="'name'"
+            (valueChange)="lugarNacimiento.set($event)" [disabled]="isSubmitting()"></app-input>
         </div>
 
         <!-- Estado y Ciudad -->
@@ -128,9 +117,42 @@
               }
             </select>
           </div>
-          <app-input label="Ciudad" placeholder="Ej. Guadalajara" [value]="ciudad()" (valueChange)="ciudad.set($event)"
-            name="ciudad" [disabled]="isSubmitting()">
-          </app-input>
+          <app-input label="Ciudad" placeholder="Ej. Guadalajara" [value]="ciudad()" (valueChange)="ciudad.set($event)" [sanitizeType]="'name'"
+            [disabled]="isSubmitting()"></app-input>
+        </div>
+
+        <!-- Identificación (INE) -->
+        <div class="mt-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-800 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          @if (inePreviewUrl()) {
+            <div class="mb-4 flex justify-center">
+              <img [src]="inePreviewUrl()" alt="Preview INE" class="max-h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 object-contain">
+            </div>
+          } @else {
+            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+              <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          }
+          
+          <div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center">
+            <label for="ine-upload" class="relative cursor-pointer rounded-md font-semibold text-brand focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 hover:text-brand-light">
+              <span>{{ ineFile() ? 'Cambiar archivo' : 'Sube la identificación (INE)' }}</span>
+              <input id="ine-upload" name="ine-upload" type="file" class="sr-only" accept="image/*,.pdf" (change)="onIneSelected($event)" [disabled]="isSubmitting()">
+            </label>
+            <p class="pl-1">obligatorio para continuar</p>
+          </div>
+          <p class="text-xs leading-5 text-gray-500 mt-2">Formatos aceptados: Imágenes (.jpg, .png) o PDF</p>
+          
+          @if (ineFile()) {
+            <p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              Archivo seleccionado: {{ ineFile()!.name }}
+            </p>
+          } @else {
+            <p class="mt-4 text-sm font-medium text-red-500 flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Requerido para avanzar al siguiente paso
+            </p>
+          }
         </div>
 
       </div>
@@ -157,20 +179,20 @@
               <option value="PRESTAMO_BANCARIO">Préstamo Bancario</option>
             </select>
           </div>
-          <app-input label="m² de Construcción" type="number" placeholder="Ej. 120"
+          <app-input label="m² de Construcción" type="number" placeholder="Ej. 120" [sanitizeType]="'numeric'"
             [value]="domicilioM2()?.toString() ?? ''" (valueChange)="domicilioM2.set(+$event || undefined)" name="m2"
             [disabled]="isSubmitting()">
           </app-input>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <app-input label="Recámaras" type="number" placeholder="Ej. 3"
+          <app-input label="Recámaras" type="number" placeholder="Ej. 3" [sanitizeType]="'numeric'"
             [value]="domicilioRecamaras()?.toString() ?? ''"
             (valueChange)="domicilioRecamaras.set(+$event || undefined)" name="recamaras" [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Pisos" type="number" placeholder="Ej. 2" [value]="domicilioPisos()?.toString() ?? ''"
+          <app-input label="Pisos" type="number" placeholder="Ej. 2" [value]="domicilioPisos()?.toString() ?? ''" [sanitizeType]="'numeric'"
             (valueChange)="domicilioPisos.set(+$event || undefined)" name="pisos" [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Años de Residencia" type="number" placeholder="Ej. 5"
+          <app-input label="Años de Residencia" type="number" placeholder="Ej. 5" [sanitizeType]="'numeric'"
             [value]="domicilioResidencia()?.toString() ?? ''"
             (valueChange)="domicilioResidencia.set(+$event || undefined)" name="residencia" [disabled]="isSubmitting()">
           </app-input>
@@ -200,7 +222,7 @@
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
             <app-input label="Marca" placeholder="Ej. Nissan" [value]="newVehiculoMarca()" (valueChange)="newVehiculoMarca.set($event)" name="v_marca" [disabled]="isSubmitting()"></app-input>
             <app-input label="Modelo" placeholder="Ej. Versa" [value]="newVehiculoModelo()" (valueChange)="newVehiculoModelo.set($event)" name="v_modelo" [disabled]="isSubmitting()"></app-input>
-            <app-input label="Año" type="number" placeholder="Ej. 2020" [value]="newVehiculoAnio()?.toString() ?? ''" (valueChange)="newVehiculoAnio.set(+$event || undefined)" name="v_anio" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Año" type="number" placeholder="Ej. 2020" [value]="newVehiculoAnio()?.toString() ?? ''" (valueChange)="newVehiculoAnio.set(+$event || undefined)" name="v_anio" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
             <app-input label="Placas (Opcional)" placeholder="Ej. XYZ-123" [value]="newVehiculoPlacas()" (valueChange)="newVehiculoPlacas.set($event)" name="v_placas" [disabled]="isSubmitting()"></app-input>
             <div class="md:col-span-4 flex justify-end">
               <app-button type="button" variant="secondary" size="sm" (onClick)="addVehiculo()">+ Agregar Vehículo</app-button>
@@ -232,7 +254,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
             <app-input label="Establecimiento" placeholder="Ej. Soriana" [value]="newRefEstablecimiento()" (valueChange)="newRefEstablecimiento.set($event)" name="r_est" [disabled]="isSubmitting()"></app-input>
             <app-input label="Dirección" placeholder="Ej. Blvd. Independencia" [value]="newRefDireccion()" (valueChange)="newRefDireccion.set($event)" name="r_dir" [disabled]="isSubmitting()"></app-input>
-            <app-input label="Antigüedad (Años)" type="number" placeholder="Ej. 3" [value]="newRefAntiguedad()?.toString() ?? ''" (valueChange)="newRefAntiguedad.set(+$event || undefined)" name="r_ant" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Antigüedad (Años)" type="number" placeholder="Ej. 3" [value]="newRefAntiguedad()?.toString() ?? ''" (valueChange)="newRefAntiguedad.set(+$event || undefined)" name="r_ant" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
             <div class="flex items-center gap-2 h-10">
               <input type="checkbox" id="r_carta" [checked]="newRefCarta()" (change)="newRefCarta.set(!newRefCarta())" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
               <label for="r_carta" class="text-sm font-medium text-gray-900 dark:text-gray-300">Entregó Carta Laboral</label>
@@ -255,7 +277,7 @@
             @for (lim of limitesCredito(); track $index) {
               <div class="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
                 <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                  {{ lim.institucion }} - {{ lim.monto_centavos / 100 | currency:'MXN' }}
+                  {{ lim.institucion }} - {{ lim.monto_centavos / 100 | currency:'MXN' }} - {{ lim.carta_acredita ? 'Con carta' : 'Sin carta' }}
                 </span>
                 <button type="button" (click)="removeLimite($index)" class="text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
               </div>
@@ -266,7 +288,11 @@
         @if (limitesCredito().length < 10) {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
             <app-input label="Institución" placeholder="Ej. Coppel" [value]="newLimiteInstitucion()" (valueChange)="newLimiteInstitucion.set($event)" name="l_inst" [disabled]="isSubmitting()"></app-input>
-            <app-input label="Monto en Centavos" type="number" placeholder="Ej. 1500000" [value]="newLimiteMonto()?.toString() ?? ''" (valueChange)="newLimiteMonto.set(+$event || undefined)" name="l_monto" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Monto en Centavos" type="number" placeholder="Ej. 1500000" [value]="newLimiteMonto()?.toString() ?? ''" (valueChange)="newLimiteMonto.set(+$event || undefined)" name="l_monto" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
+            <div class="flex items-center gap-2 md:col-span-2">
+              <input type="checkbox" id="l_carta" [checked]="newLimiteCarta()" (change)="newLimiteCarta.set(!newLimiteCarta())" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+              <label for="l_carta" class="text-sm font-medium text-gray-900 dark:text-gray-300">Carta que Acredita</label>
+            </div>
             <div class="md:col-span-2 flex justify-end">
               <app-button type="button" variant="secondary" size="sm" (onClick)="addLimite()">+ Agregar Límite</app-button>
             </div>
@@ -306,8 +332,8 @@
                 <option value="OTRO">Otro</option>
               </select>
             </div>
-            <app-input label="Nombre" placeholder="Ej. Juan Pérez" [value]="newFamiliarNombre()" (valueChange)="newFamiliarNombre.set($event)" name="f_nom" [disabled]="isSubmitting()"></app-input>
-            <app-input label="Edad" type="number" placeholder="Ej. 30" [value]="newFamiliarEdad()?.toString() ?? ''" (valueChange)="newFamiliarEdad.set(+$event || undefined)" name="f_edad" [disabled]="isSubmitting()"></app-input>
+            <app-input label="Nombre" placeholder="Ej. Juan Pérez" [value]="newFamiliarNombre()" (valueChange)="newFamiliarNombre.set($event)" name="f_nom" [disabled]="isSubmitting()" [sanitizeType]="'name'"></app-input>
+            <app-input label="Edad" type="number" placeholder="Ej. 30" [value]="newFamiliarEdad()?.toString() ?? ''" (valueChange)="newFamiliarEdad.set(+$event || undefined)" name="f_edad" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
             <app-input label="Puesto / Ocupación" placeholder="Ej. Empleado" [value]="newFamiliarPuesto()" (valueChange)="newFamiliarPuesto.set($event)" name="f_pues" [disabled]="isSubmitting()"></app-input>
             <app-input label="Lugar de Trabajo / Estudio" placeholder="Ej. CFE" [value]="newFamiliarLugar()" (valueChange)="newFamiliarLugar.set($event)" name="f_lug" [disabled]="isSubmitting()"></app-input>
             <app-input label="Referencia de Contacto" placeholder="Tel o correo" [value]="newFamiliarContacto()" (valueChange)="newFamiliarContacto.set($event)" name="f_con" [disabled]="isSubmitting()"></app-input>
@@ -348,3 +374,16 @@
 
   </form>
 </div>
+
+@if (showConfirmModal()) {
+  <app-confirm-modal
+    title="Confirmar Creación"
+    message="¿Estás seguro de que deseas crear esta solicitud de distribuidora? Se enviará a verificación."
+    confirmText="Sí, enviar solicitud"
+    cancelText="Cancelar"
+    variant="primary"
+    (confirm)="confirmarSubmit()"
+    (cancel)="showConfirmModal.set(false)"
+    [isLoading]="isSubmitting()"
+  />
+}

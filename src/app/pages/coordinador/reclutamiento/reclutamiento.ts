@@ -1,10 +1,12 @@
 import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { CardComponent } from '../../../components/ui/card/card';
+import { ConfirmModalComponent } from '../../../components/ui/confirm-modal/confirm-modal';
 import { SolicitudesService } from '../../../core/services/solicitudes.service';
+import { UploadsService } from '../../../core/services/uploads.service';
 import {
   CreateSolicitudDto,
   DatosGenerales,
@@ -25,11 +27,12 @@ import {
  */
 @Component({
   selector: 'app-reclutamiento',
-  imports: [CommonModule, FormsModule, InputComponent, ButtonComponent, CardComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CardComponent, InputComponent, ButtonComponent, ConfirmModalComponent],
   templateUrl: './reclutamiento.html',
 })
 export class Reclutamiento {
   private readonly solicitudesService = inject(SolicitudesService);
+  private readonly uploadsService = inject(UploadsService);
 
   // ─── Datos Generales (13 campos) ───────────────────────
 
@@ -48,6 +51,34 @@ export class Reclutamiento {
   readonly lugarNacimiento = signal('');
   readonly estado = signal('');
   readonly ciudad = signal('');
+  readonly ineFile = signal<File | null>(null);
+  readonly inePreviewUrl = signal<string | null>(null);
+
+  onIneSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.ineFile.set(file);
+      
+      // Liberar URL previa si existía
+      if (this.inePreviewUrl()) {
+        URL.revokeObjectURL(this.inePreviewUrl()!);
+      }
+      
+      // Si es imagen, generar un preview local
+      if (file.type.startsWith('image/')) {
+        this.inePreviewUrl.set(URL.createObjectURL(file));
+      } else {
+        this.inePreviewUrl.set(null); // Es un PDF u otro formato
+      }
+    } else {
+      this.ineFile.set(null);
+      if (this.inePreviewUrl()) {
+        URL.revokeObjectURL(this.inePreviewUrl()!);
+        this.inePreviewUrl.set(null);
+      }
+    }
+  }
 
   // ─── Datos Adicionales (5 bloques) ─────────────────────
 
@@ -125,15 +156,18 @@ export class Reclutamiento {
   // Nuevo Límite de Crédito
   readonly newLimiteInstitucion = signal('');
   readonly newLimiteMonto = signal<number | undefined>(undefined);
+  readonly newLimiteCarta = signal(false);
 
   addLimite() {
     if (this.newLimiteInstitucion() && this.newLimiteMonto() !== undefined) {
       this.limitesCredito.update(l => [...l, {
         institucion: this.newLimiteInstitucion(),
-        monto_centavos: this.newLimiteMonto()!
+        monto_centavos: this.newLimiteMonto()!,
+        carta_acredita: this.newLimiteCarta()
       }]);
       this.newLimiteInstitucion.set('');
       this.newLimiteMonto.set(undefined);
+      this.newLimiteCarta.set(false);
     }
   }
 
@@ -176,6 +210,7 @@ export class Reclutamiento {
 
   readonly currentStep = signal(1);
   readonly totalSteps = 6;
+  readonly showConfirmModal = signal(false);
   readonly isSubmitting = signal(false);
   readonly successMessage = signal('');
   readonly errorMessage = signal('');
@@ -213,7 +248,8 @@ export class Reclutamiento {
         this.codigoPostal().trim().length === 5 &&
         this.lugarNacimiento().trim().length > 0 &&
         this.estado().trim().length > 0 &&
-        this.ciudad().trim().length > 0
+        this.ciudad().trim().length > 0 &&
+        this.ineFile() !== null
       );
     }
     // Paso 2 a 5 no tienen campos obligatorios estrictos que bloqueen avanzar
@@ -239,12 +275,44 @@ export class Reclutamiento {
 
   // ─── Acciones ──────────────────────────────────────────
 
-  /** Envia la solicitud al backend via POST /solicitudes */
+  /** Muestra modal de confirmación antes de enviar */
   onSubmit(): void {
+    const file = this.ineFile();
+    if (!file) {
+      this.errorMessage.set('La identificación (INE) es obligatoria.');
+      return;
+    }
+    this.showConfirmModal.set(true);
+  }
+
+  /** Envia la solicitud al backend via POST /solicitudes */
+  confirmarSubmit(): void {
+    this.showConfirmModal.set(false);
     this.isSubmitting.set(true);
     this.errorMessage.set('');
     this.successMessage.set('');
 
+    const file = this.ineFile();
+    if (!file) {
+      this.errorMessage.set('La identificación (INE) es obligatoria.');
+      this.isSubmitting.set(false);
+      return;
+    }
+
+    // 1. Subir la INE primero
+    this.uploadsService.uploadFile(file, 'ine').subscribe({
+      next: (uploadRes) => {
+        const documentId = uploadRes.data.id;
+        this.submitSolicitud(documentId);
+      },
+      error: () => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set('Error al subir la identificación (INE). Verifica tu conexión o intenta con otro archivo.');
+      }
+    });
+  }
+
+  private submitSolicitud(ineDocumentId: string): void {
     const datosGenerales: DatosGenerales = {
       nombre: this.nombre(),
       correo: this.correo(),
@@ -261,6 +329,7 @@ export class Reclutamiento {
       lugar_nacimiento: this.lugarNacimiento(),
       estado: this.estado(),
       ciudad: this.ciudad(),
+      ine_document_id: ineDocumentId,
     };
 
     const domicilio: DatosDomicilio = {
@@ -332,6 +401,14 @@ export class Reclutamiento {
     this.lugarNacimiento.set('');
     this.estado.set('');
     this.ciudad.set('');
+    
+    // Reset file y preview
+    this.ineFile.set(null);
+    if (this.inePreviewUrl()) {
+      URL.revokeObjectURL(this.inePreviewUrl()!);
+      this.inePreviewUrl.set(null);
+    }
+    
     this.vehiculos.set([]);
     this.domicilioSituacion.set('');
     this.domicilioM2.set(undefined);
@@ -376,7 +453,7 @@ export class Reclutamiento {
     ]);
     
     this.limitesCredito.set([
-      { institucion: 'Banco Azteca', monto_centavos: 500000 }
+      { institucion: 'Banco Azteca', monto_centavos: 500000, carta_acredita: true }
     ]);
 
     this.familiares.set([

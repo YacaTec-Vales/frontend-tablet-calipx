@@ -94,14 +94,16 @@
               [(ngModel)]="formData.nombre"
               name="nombre"
               maxlength="100"
-              [disabled]="isSubmitting() || showAuditLog()">
+              [disabled]="isSubmitting() || showAuditLog()"
+              [sanitizeType]="'name'">
             </app-input>
             <app-input 
               label="Apellido Paterno" 
               [(ngModel)]="formData.apellido_paterno"
               name="apellido_paterno"
               maxlength="100"
-              [disabled]="isSubmitting() || showAuditLog()">
+              [disabled]="isSubmitting() || showAuditLog()"
+              [sanitizeType]="'name'">
             </app-input>
           </div>
 
@@ -112,7 +114,8 @@
               [(ngModel)]="formData.rfc"
               name="rfc"
               maxlength="13"
-              [disabled]="isSubmitting() || showAuditLog()">
+              [disabled]="isSubmitting() || showAuditLog()"
+              [sanitizeType]="'rfc'">
             </app-input>
           </div>
 
@@ -133,7 +136,8 @@
               [(ngModel)]="formData.numero"
               name="numero"
               maxlength="10"
-              [disabled]="isSubmitting() || showAuditLog()">
+              [disabled]="isSubmitting() || showAuditLog()"
+              [sanitizeType]="'numeric'">
             </app-input>
           </div>
 
@@ -183,8 +187,8 @@
             <app-button variant="outline" size="sm" [fullWidth]="true" (onClick)="cancelarGuardado()" [disabled]="isSubmitting()">
               Cancelar
             </app-button>
-            <app-button variant="primary" size="sm" [fullWidth]="true" (onClick)="confirmarGuardado()" [isLoading]="isSubmitting()" [disabled]="isSubmitting()">
-              Confirmar
+            <app-button variant="primary" size="sm" [fullWidth]="true" (onClick)="preConfirmarGuardado()" [isLoading]="isSubmitting()" [disabled]="isSubmitting()">
+              Confirmar Cambios
             </app-button>
           </div>
         </div>
@@ -194,3 +198,16 @@
 
   </div>
 </div>
+
+@if (showConfirmModal()) {
+  <app-confirm-modal
+    title="Confirmar Modificaciones"
+    message="¿Estás seguro de que deseas aplicar estas modificaciones a la solicitud? Esta acción no se puede deshacer."
+    confirmText="Sí, guardar cambios"
+    cancelText="Cancelar"
+    variant="primary"
+    (confirm)="confirmarGuardado()"
+    (cancel)="showConfirmModal.set(false)"
+    [isLoading]="isSubmitting()"
+  />
+}

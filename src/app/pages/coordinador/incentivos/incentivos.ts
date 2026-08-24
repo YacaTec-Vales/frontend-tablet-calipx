@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
+import { ConfirmModalComponent } from '../../../components/ui/confirm-modal/confirm-modal';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { CoordinadoresService } from '../../../core/services/coordinadores.service';
 import { DistribuidoresService } from '../../../core/services/distribuidores.service';
@@ -23,7 +24,7 @@ interface Candidata {
 
 @Component({
   selector: 'app-incentivos',
-  imports: [CommonModule, ReactiveFormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent],
+  imports: [CommonModule, ReactiveFormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent, ConfirmModalComponent],
   templateUrl: './incentivos.html'
 })
 export class Incentivos implements OnInit, OnDestroy {
@@ -38,6 +39,7 @@ export class Incentivos implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
 
   selectedCandidata: Candidata | null = null;
+  showConfirmModal = signal(false);
   isSending = signal(false);
   requestSent = signal(false);
   isLoadingRequests = signal(false);
@@ -187,7 +189,13 @@ export class Incentivos implements OnInit, OnDestroy {
 
   preAutorizarAumento() {
     if (!this.form || this.form.invalid || !this.selectedCandidata) return;
+    this.showConfirmModal.set(true);
+  }
 
+  confirmarAumento() {
+    if (!this.form || this.form.invalid || !this.selectedCandidata) return;
+
+    this.showConfirmModal.set(false);
     this.isSending.set(true);
     this.formError.set(null);
 

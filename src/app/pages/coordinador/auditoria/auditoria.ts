@@ -5,16 +5,26 @@ import { CommonModule } from '@angular/common';
 export interface AuditoriaFormData {
   nombre?: string;
   apellido_paterno?: string;
+  apellido_materno?: string;
+  correo?: string;
+  phone?: string;
   rfc?: string;
+  curp?: string;
+  fecha_nacimiento?: string;
+  lugar_nacimiento?: string;
   calle?: string;
   numero?: string;
   colonia?: string;
+  codigo_postal?: string;
+  ciudad?: string;
+  estado?: string;
   [key: string]: string | undefined;
 }
 import { FormsModule } from '@angular/forms';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { CardComponent } from '../../../components/ui/card/card';
+import { ConfirmModalComponent } from '../../../components/ui/confirm-modal/confirm-modal';
 import { TableComponent } from '../../../components/ui/table/table';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
 import { PaginationComponent } from '../../../components/ui/pagination/pagination';
@@ -23,7 +33,7 @@ import { SolicitudResponse, UpdateSolicitudDto } from '../../../core/models/soli
 
 @Component({
   selector: 'app-auditoria',
-  imports: [CommonModule, FormsModule, InputComponent, ButtonComponent, CardComponent, TableComponent, BadgeComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, InputComponent, ButtonComponent, CardComponent, TableComponent, BadgeComponent, PaginationComponent, ConfirmModalComponent],
   templateUrl: './auditoria.html'
 })
 export class Auditoria implements OnInit, OnDestroy {
@@ -39,7 +49,19 @@ export class Auditoria implements OnInit, OnDestroy {
   
   readonly showAuditLog = signal(false);
   readonly auditChanges = signal<{ field: string, old: string, new: string }[]>([]);
+  showConfirmModal = signal(false);
   readonly isSubmitting = signal(false);
+  
+  readonly currentTab = signal('PERSONALES');
+
+  readonly estadosMexicanos = [
+    'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas',
+    'Chihuahua', 'Coahuila', 'Colima', 'Ciudad de México', 'Durango', 'Guanajuato',
+    'Guerrero', 'Hidalgo', 'Jalisco', 'Estado de México', 'Michoacán', 'Morelos',
+    'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo',
+    'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala',
+    'Veracruz', 'Yucatán', 'Zacatecas'
+  ];
 
   // Pagination
   readonly itemsPerPage = signal(10);
@@ -131,16 +153,26 @@ export class Auditoria implements OnInit, OnDestroy {
     const editableData = {
       nombre: d.nombre,
       apellido_paterno: d.apellido_paterno,
+      apellido_materno: d.apellido_materno,
+      correo: d.correo,
+      phone: d.phone,
       rfc: d.rfc,
+      curp: d.curp,
+      fecha_nacimiento: d.fecha_nacimiento,
+      lugar_nacimiento: d.lugar_nacimiento,
       calle: d.calle,
       numero: d.numero,
-      colonia: d.colonia
+      colonia: d.colonia,
+      codigo_postal: d.codigo_postal,
+      ciudad: d.ciudad,
+      estado: d.estado
     };
 
     this.formData = { ...editableData };
     this.originalData = { ...editableData };
     this.showAuditLog.set(false);
     this.auditChanges.set([]);
+    this.currentTab.set('PERSONALES');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -151,7 +183,13 @@ export class Auditoria implements OnInit, OnDestroy {
 
   revisarCambios() {
     const changes: { field: string, old: string, new: string }[] = [];
-    ['nombre', 'apellido_paterno', 'rfc', 'calle', 'numero', 'colonia'].forEach(field => {
+    const fieldsToCheck = [
+      'nombre', 'apellido_paterno', 'apellido_materno', 'correo', 'phone', 
+      'rfc', 'curp', 'fecha_nacimiento', 'lugar_nacimiento', 
+      'calle', 'numero', 'colonia', 'codigo_postal', 'ciudad', 'estado'
+    ];
+    
+    fieldsToCheck.forEach(field => {
       if (this.formData[field] !== this.originalData[field]) {
         changes.push({
           field,
@@ -175,7 +213,12 @@ export class Auditoria implements OnInit, OnDestroy {
     this.showAuditLog.set(false);
   }
 
+  preConfirmarGuardado() {
+    this.showConfirmModal.set(true);
+  }
+
   confirmarGuardado() {
+    this.showConfirmModal.set(false);
     const solicitud = this.selectedSolicitud();
     if (!solicitud) return;
     
@@ -184,7 +227,6 @@ export class Auditoria implements OnInit, OnDestroy {
     
     const dto: UpdateSolicitudDto = {
       datos_generales: {
-        ...solicitud.datos_generales,
         ...this.formData
       } as unknown as DatosGenerales // Casteamos para cumplir con el DTO sin usar any
     };

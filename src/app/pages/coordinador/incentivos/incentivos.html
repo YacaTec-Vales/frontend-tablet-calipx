@@ -154,3 +154,15 @@
     </app-card>
   </div>
 </div>
+
+@if (showConfirmModal()) {
+  <app-confirm-modal
+    title="Confirmar Autorización"
+    message="¿Estás seguro de que deseas autorizar este aumento de crédito? Esta acción enviará la solicitud al gerente para su aprobación final."
+    confirmText="Sí, autorizar"
+    cancelText="Cancelar"
+    (confirm)="confirmarAumento()"
+    (cancel)="showConfirmModal.set(false)"
+    [isLoading]="isSending()"
+  />
+}

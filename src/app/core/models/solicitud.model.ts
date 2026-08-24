@@ -45,6 +45,7 @@ export interface ReferenciaLaboral {
 export interface LimiteCreditoOtraRelacion {
   institucion: string;
   monto_centavos: number;
+  carta_acredita: boolean;
 }
 
 export interface Familiar {
@@ -75,6 +76,7 @@ export interface DatosGenerales {
   lugar_nacimiento: string;
   estado: string;
   ciudad: string;
+  ine_document_id?: string;
 }
 
 /** 5 bloques de datos_adicionales para POST /solicitudes */

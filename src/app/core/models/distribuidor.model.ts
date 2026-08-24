@@ -9,7 +9,14 @@ export interface DistribuidorResponse {
   creditLimitCents: number;
   creditAvailableCents: number;
   status: 'ACTIVA' | 'MOROSA' | 'DESHABILITADA' | 'BAJA_VOLUNTARIA';
+  pointsBalance: number;
+  activatedAt: string | null;
+  initialFeeCents: number | null;
+  contractDocumentId: string | null;
+  delinquentRelationsCount: number;
   generalData?: Record<string, unknown>;
+  additionalData?: Record<string, unknown>;
+  bankAccount?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

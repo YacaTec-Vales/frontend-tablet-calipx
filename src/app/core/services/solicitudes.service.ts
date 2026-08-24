@@ -154,7 +154,16 @@ export class SolicitudesService {
    * POST /solicitudes/:id/verificar
    */
   verificar(id: string, dto: VerificarSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}/verificar`, dto).pipe(
+    // El backend rechaza el formato camelCase y exige snake_case.
+    // Sin embargo, rechaza "fotos_verificacion". Lo enviamos temporalmente sin esa llave si causa problemas, 
+    // pero lo correcto es enviar el DTO en snake_case.
+    const payload = {
+      comentarios_verificador: dto.comentarios_verificador,
+      dictamen: dto.dictamen,
+      kill_switch: dto.kill_switch
+    };
+
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}/verificar`, payload).pipe(
       map(res => ({
         ...res,
         data: this.mapBackendToResponse(res.data)
