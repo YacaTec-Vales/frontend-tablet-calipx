@@ -1,4 +1,4 @@
-<div class="p-6 max-w-6xl mx-auto space-y-6">
+<div class="p-6 max-w-[1400px] mx-auto space-y-6">
   <div class="flex items-center justify-between mb-2">
     <div>
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Auditoría y Edición</h2>
@@ -43,7 +43,6 @@
 
   <!-- Vista 1: Lista de Solicitudes -->
   <app-card *ngIf="!selectedSolicitud()" title="Solicitudes en Verificación / Dictaminadas" [noPadding]="true">
-    
     @if (isLoading()) {
       <div class="flex justify-center items-center py-16">
         <svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -81,79 +80,313 @@
     }
   </app-card>
 
-  <!-- Vista 2: Formulario de Edición -->
-  <div *ngIf="selectedSolicitud()" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Vista 2: Formulario de Edición con Stepper -->
+  <div *ngIf="selectedSolicitud()" class="space-y-6">
     
-    <div class="lg:col-span-2">
-      <app-card title="Modificar Datos" subtitle="Folio: {{ selectedSolicitud()?.folio ?? selectedSolicitud()?.id }}">
-        <form class="space-y-6 mt-4" (ngSubmit)="revisarCambios()">
+    <!-- Stepper Visual (Full Width) -->
+    <app-card>
+      <div class="mb-4 mt-2">
+        <div class="flex justify-between items-center relative">
+          <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-gray-700 z-0 rounded"></div>
+          <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 z-0 rounded transition-all duration-300" [style.width]="((currentStep() - 1) / (totalSteps - 1) * 100) + '%'"></div>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <app-input 
-              label="Nombre" 
-              [(ngModel)]="formData.nombre"
-              name="nombre"
-              maxlength="100"
-              [disabled]="isSubmitting() || showAuditLog()"
-              [sanitizeType]="'name'">
-            </app-input>
-            <app-input 
-              label="Apellido Paterno" 
-              [(ngModel)]="formData.apellido_paterno"
-              name="apellido_paterno"
-              maxlength="100"
-              [disabled]="isSubmitting() || showAuditLog()"
-              [sanitizeType]="'name'">
-            </app-input>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <app-input 
-              label="RFC" 
-              type="text"
-              [(ngModel)]="formData.rfc"
-              name="rfc"
-              maxlength="13"
-              [disabled]="isSubmitting() || showAuditLog()"
-              [sanitizeType]="'rfc'">
-            </app-input>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-2">
-              <app-input 
-                label="Calle" 
-                type="text"
-                [(ngModel)]="formData.calle"
-                name="calle"
-                maxlength="150"
-                [disabled]="isSubmitting() || showAuditLog()">
-              </app-input>
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+            <div class="relative z-10 flex flex-col items-center">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors duration-300"
+                [class]="currentStep() >= i ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400 dark:bg-gray-800 dark:border-gray-600'">
+                {{ i }}
+              </div>
+              <span class="text-xs font-medium mt-2 absolute top-full w-24 text-center -ml-8"
+                [class]="currentStep() === i ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
+                @switch (i) {
+                  @case (1) { Info Personal }
+                  @case (2) { Contacto }
+                  @case (3) { Dir. Oficial }
+                  @case (4) { Vivienda }
+                  @case (5) { Vehículos }
+                  @case (6) { Laborales }
+                  @case (7) { Créditos }
+                  @case (8) { Familiares }
+                }
+              </span>
             </div>
-            <app-input 
-              label="Número" 
-              type="text"
-              [(ngModel)]="formData.numero"
-              name="numero"
-              maxlength="10"
-              [disabled]="isSubmitting() || showAuditLog()"
-              [sanitizeType]="'numeric'">
-            </app-input>
-          </div>
+          }
+        </div>
+        <div class="h-6"></div>
+      </div>
+    </app-card>
 
-          <app-input 
-            label="Colonia" 
-            type="text"
-            [(ngModel)]="formData.colonia"
-            name="colonia"
-            maxlength="100"
-            [disabled]="isSubmitting() || showAuditLog()">
-          </app-input>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Lado Izquierdo: Formulario -->
+      <div class="lg:col-span-1">
+        <app-card title="Modificar Datos" subtitle="Folio: {{ selectedSolicitud()?.folio ?? selectedSolicitud()?.id }}">
+          <form class="space-y-6" (ngSubmit)="revisarCambios()">
+          
+          <!-- Step 1: Información Personal -->
+          @if (currentStep() === 1) {
+            <div class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <app-input label="Nombre" [(ngModel)]="formData.nombre" name="nombre" maxlength="100" [disabled]="isSubmitting() || showAuditLog()" [sanitizeType]="'name'"></app-input>
+                <app-input label="Apellido Paterno" [(ngModel)]="formData.apellido_paterno" name="apellido_paterno" maxlength="100" [disabled]="isSubmitting() || showAuditLog()" [sanitizeType]="'name'"></app-input>
+                <app-input label="Apellido Materno" [(ngModel)]="formData.apellido_materno" name="apellido_materno" maxlength="100" [disabled]="isSubmitting() || showAuditLog()" [sanitizeType]="'name'"></app-input>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <app-input label="RFC" type="text" [(ngModel)]="formData.rfc" name="rfc" maxlength="13" [disabled]="isSubmitting() || showAuditLog()" [sanitizeType]="'rfc'"></app-input>
+                <app-input label="CURP" type="text" [(ngModel)]="formData.curp" name="curp" maxlength="18" [disabled]="isSubmitting() || showAuditLog()" [sanitizeType]="'curp'"></app-input>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <app-input label="Fecha de Nacimiento" type="date" [(ngModel)]="formData.fecha_nacimiento" name="fecha_nacimiento" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                <app-input label="Lugar de Nacimiento" type="text" [(ngModel)]="formData.lugar_nacimiento" name="lugar_nacimiento" maxlength="100" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+              </div>
+            </div>
+          }
 
-          <div *ngIf="!showAuditLog()" class="pt-4 flex justify-end">
-            <app-button type="submit" variant="primary">
-              Revisar Cambios
-            </app-button>
+          <!-- Step 2: Contacto -->
+          @if (currentStep() === 2) {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <app-input label="Correo Electrónico" type="email" [(ngModel)]="formData.correo" name="correo" maxlength="100" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+              <app-input label="Teléfono" type="tel" [(ngModel)]="formData.phone" name="phone" maxlength="10" [disabled]="isSubmitting() || showAuditLog()" [sanitizeType]="'numeric'"></app-input>
+            </div>
+          }
+
+          <!-- Step 3: Dirección Oficial -->
+          @if (currentStep() === 3) {
+            <div class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                  <app-input label="Calle" type="text" [(ngModel)]="formData.calle" name="calle" maxlength="150" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                </div>
+                <app-input label="Número Exterior/Interior" type="text" [(ngModel)]="formData.numero" name="numero" maxlength="20" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <app-input label="Colonia" type="text" [(ngModel)]="formData.colonia" name="colonia" maxlength="100" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                <app-input label="Código Postal" type="text" [(ngModel)]="formData.codigo_postal" name="codigo_postal" maxlength="5" [disabled]="isSubmitting() || showAuditLog()" [sanitizeType]="'numeric'"></app-input>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <app-input label="Ciudad / Municipio" type="text" [(ngModel)]="formData.ciudad" name="ciudad" maxlength="100" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                <div class="flex flex-col gap-1">
+                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Estado</label>
+                  <select [(ngModel)]="formData.estado" name="estado" [disabled]="isSubmitting() || showAuditLog()"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50">
+                    <option value="">Selecciona un estado...</option>
+                    <option *ngFor="let est of estadosMexicanos" [value]="est">{{ est }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Step 4: Domicilio -->
+          @if (currentStep() === 4) {
+            <div class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Situación de Vivienda</label>
+                  <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+                    [value]="domicilioSituacion()" (change)="domicilioSituacion.set($any($event.target).value)" [disabled]="isSubmitting() || showAuditLog()">
+                    <option value="">Selecciona</option>
+                    <option value="PROPIA">Propia</option>
+                    <option value="RENTADA">Rentada</option>
+                    <option value="LIQUIDADA">Liquidada</option>
+                    <option value="INFONAVIT">Infonavit</option>
+                    <option value="PRESTAMO_BANCARIO">Préstamo Bancario</option>
+                  </select>
+                </div>
+                <app-input label="m² de Construcción" type="number" placeholder="Ej. 120" [sanitizeType]="'numeric'" [value]="domicilioM2()?.toString() ?? ''" (valueChange)="domicilioM2.set(+$event || undefined)" name="m2" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <app-input label="Recámaras" type="number" placeholder="Ej. 3" [sanitizeType]="'numeric'" [value]="domicilioRecamaras()?.toString() ?? ''" (valueChange)="domicilioRecamaras.set(+$event || undefined)" name="recamaras" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                <app-input label="Pisos" type="number" placeholder="Ej. 2" [value]="domicilioPisos()?.toString() ?? ''" [sanitizeType]="'numeric'" (valueChange)="domicilioPisos.set(+$event || undefined)" name="pisos" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                <app-input label="Años de Residencia" type="number" placeholder="Ej. 5" [sanitizeType]="'numeric'" [value]="domicilioResidencia()?.toString() ?? ''" (valueChange)="domicilioResidencia.set(+$event || undefined)" name="residencia" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+              </div>
+            </div>
+          }
+
+          <!-- Step 5: Vehículos -->
+          @if (currentStep() === 5) {
+            <div class="space-y-4">
+              @if (vehiculos().length > 0) {
+                <div class="space-y-2 mb-4">
+                  @for (veh of vehiculos(); track $index) {
+                    <div class="relative bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 p-4 pt-8">
+                      <button *ngIf="!showAuditLog()" type="button" (click)="removeVehiculo($index)" class="absolute top-2 right-2 text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+                      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <app-input label="Marca" [value]="veh.marca" (valueChange)="updateVehiculo($index, 'marca', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Modelo" [value]="veh.modelo" (valueChange)="updateVehiculo($index, 'modelo', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Año" type="number" [value]="veh.anio.toString()" (valueChange)="updateVehiculo($index, 'anio', +$event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Placas (Opcional)" [value]="veh.placas || ''" (valueChange)="updateVehiculo($index, 'placas', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+              
+              @if (vehiculos().length < 5 && !showAuditLog()) {
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                  <app-input label="Marca" placeholder="Ej. Nissan" [value]="newVehiculoMarca()" (valueChange)="newVehiculoMarca.set($event)" name="v_marca" [disabled]="isSubmitting()"></app-input>
+                  <app-input label="Modelo" placeholder="Ej. Versa" [value]="newVehiculoModelo()" (valueChange)="newVehiculoModelo.set($event)" name="v_modelo" [disabled]="isSubmitting()"></app-input>
+                  <app-input label="Año" type="number" placeholder="Ej. 2020" [value]="newVehiculoAnio()?.toString() ?? ''" (valueChange)="newVehiculoAnio.set(+$event || undefined)" name="v_anio" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
+                  <app-input label="Placas (Opcional)" placeholder="Ej. XYZ-123" [value]="newVehiculoPlacas()" (valueChange)="newVehiculoPlacas.set($event)" name="v_placas" [disabled]="isSubmitting()"></app-input>
+                  <div class="md:col-span-4 flex justify-end">
+                    <app-button type="button" variant="secondary" size="sm" (onClick)="addVehiculo()">+ Agregar Vehículo</app-button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Step 6: Laborales -->
+          @if (currentStep() === 6) {
+            <div class="space-y-4">
+              @if (referenciasLaborales().length > 0) {
+                <div class="space-y-2 mb-4">
+                  @for (ref of referenciasLaborales(); track $index) {
+                    <div class="relative bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 p-4 pt-8">
+                      <button *ngIf="!showAuditLog()" type="button" (click)="removeReferencia($index)" class="absolute top-2 right-2 text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <app-input label="Establecimiento" [value]="ref.establecimiento" (valueChange)="updateReferencia($index, 'establecimiento', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Dirección" [value]="ref.direccion" (valueChange)="updateReferencia($index, 'direccion', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Antigüedad (Años)" type="number" [value]="ref.antiguedad_anios.toString()" (valueChange)="updateReferencia($index, 'antiguedad_anios', +$event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <div class="flex items-center gap-2 h-10">
+                          <input type="checkbox" [id]="'r_carta_'+$index" [checked]="ref.carta_laboral_presentada" (change)="updateReferencia($index, 'carta_laboral_presentada', !ref.carta_laboral_presentada)" [disabled]="isSubmitting() || showAuditLog()" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                          <label [for]="'r_carta_'+$index" class="text-sm font-medium text-gray-900 dark:text-gray-300">Entregó Carta Laboral</label>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+              @if (referenciasLaborales().length < 10 && !showAuditLog()) {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                  <app-input label="Establecimiento" placeholder="Ej. Soriana" [value]="newRefEstablecimiento()" (valueChange)="newRefEstablecimiento.set($event)" name="r_est" [disabled]="isSubmitting()"></app-input>
+                  <app-input label="Dirección" placeholder="Ej. Blvd. Independencia" [value]="newRefDireccion()" (valueChange)="newRefDireccion.set($event)" name="r_dir" [disabled]="isSubmitting()"></app-input>
+                  <app-input label="Antigüedad (Años)" type="number" placeholder="Ej. 3" [value]="newRefAntiguedad()?.toString() ?? ''" (valueChange)="newRefAntiguedad.set(+$event || undefined)" name="r_ant" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
+                  <div class="flex items-center gap-2 h-10">
+                    <input type="checkbox" id="r_carta" [checked]="newRefCarta()" (change)="newRefCarta.set(!newRefCarta())" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                    <label for="r_carta" class="text-sm font-medium text-gray-900 dark:text-gray-300">Entregó Carta Laboral</label>
+                  </div>
+                  <div class="md:col-span-2 flex justify-end">
+                    <app-button type="button" variant="secondary" size="sm" (onClick)="addReferencia()">+ Agregar Referencia</app-button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Step 7: Créditos -->
+          @if (currentStep() === 7) {
+            <div class="space-y-4">
+              @if (limitesCredito().length > 0) {
+                <div class="space-y-2 mb-4">
+                  @for (lim of limitesCredito(); track $index) {
+                    <div class="relative bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 p-4 pt-8">
+                      <button *ngIf="!showAuditLog()" type="button" (click)="removeLimite($index)" class="absolute top-2 right-2 text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <app-input label="Institución" [value]="lim.institucion" (valueChange)="updateLimite($index, 'institucion', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Monto en Centavos" type="number" [value]="lim.monto_centavos.toString()" (valueChange)="updateLimite($index, 'monto_centavos', +$event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <div class="flex items-center gap-2 md:col-span-2">
+                          <input type="checkbox" [id]="'l_carta_'+$index" [checked]="lim.carta_acredita" (change)="updateLimite($index, 'carta_acredita', !lim.carta_acredita)" [disabled]="isSubmitting() || showAuditLog()" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                          <label [for]="'l_carta_'+$index" class="text-sm font-medium text-gray-900 dark:text-gray-300">Carta que Acredita</label>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+              @if (limitesCredito().length < 10 && !showAuditLog()) {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                  <app-input label="Institución" placeholder="Ej. Coppel" [value]="newLimiteInstitucion()" (valueChange)="newLimiteInstitucion.set($event)" name="l_inst" [disabled]="isSubmitting()"></app-input>
+                  <app-input label="Monto en Centavos" type="number" placeholder="Ej. 1500000" [value]="newLimiteMonto()?.toString() ?? ''" (valueChange)="newLimiteMonto.set(+$event || undefined)" name="l_monto" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
+                  <div class="flex items-center gap-2 md:col-span-2">
+                    <input type="checkbox" id="l_carta" [checked]="newLimiteCarta()" (change)="newLimiteCarta.set(!newLimiteCarta())" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                    <label for="l_carta" class="text-sm font-medium text-gray-900 dark:text-gray-300">Carta que Acredita</label>
+                  </div>
+                  <div class="md:col-span-2 flex justify-end">
+                    <app-button type="button" variant="secondary" size="sm" (onClick)="addLimite()">+ Agregar Límite</app-button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Step 8: Familiares -->
+          @if (currentStep() === 8) {
+            <div class="space-y-4">
+              @if (familiares().length > 0) {
+                <div class="space-y-2 mb-4">
+                  @for (fam of familiares(); track $index) {
+                    <div class="relative bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 p-4 pt-8">
+                      <button *ngIf="!showAuditLog()" type="button" (click)="removeFamiliar($index)" class="absolute top-2 right-2 text-red-600 hover:text-red-800 font-bold text-sm">Eliminar</button>
+                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Parentesco</label>
+                          <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            [value]="fam.parentesco" (change)="updateFamiliar($index, 'parentesco', $any($event.target).value)" [disabled]="isSubmitting() || showAuditLog()">
+                            <option value="CONYUGE">Cónyuge</option>
+                            <option value="HIJO">Hijo</option>
+                            <option value="HIJA">Hija</option>
+                            <option value="OTRO">Otro</option>
+                          </select>
+                        </div>
+                        <app-input label="Nombre" [value]="fam.nombre" (valueChange)="updateFamiliar($index, 'nombre', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Edad" type="number" [value]="fam.edad.toString()" (valueChange)="updateFamiliar($index, 'edad', +$event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Puesto / Ocupación" [value]="fam.puesto" (valueChange)="updateFamiliar($index, 'puesto', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Lugar de Trabajo / Estudio" [value]="fam.lugar_trabajo_o_estudio" (valueChange)="updateFamiliar($index, 'lugar_trabajo_o_estudio', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                        <app-input label="Referencia de Contacto" [value]="fam.referencia_contacto" (valueChange)="updateFamiliar($index, 'referencia_contacto', $event)" [disabled]="isSubmitting() || showAuditLog()"></app-input>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+              @if (familiares().length < 10 && !showAuditLog()) {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                  <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Parentesco</label>
+                    <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      [value]="newFamiliarParentesco()" (change)="newFamiliarParentesco.set($any($event.target).value)" [disabled]="isSubmitting()">
+                      <option value="">Selecciona</option>
+                      <option value="CONYUGE">Cónyuge</option>
+                      <option value="HIJO">Hijo</option>
+                      <option value="HIJA">Hija</option>
+                      <option value="OTRO">Otro</option>
+                    </select>
+                  </div>
+                  <app-input label="Nombre" placeholder="Ej. Juan Pérez" [value]="newFamiliarNombre()" (valueChange)="newFamiliarNombre.set($event)" name="f_nom" [disabled]="isSubmitting()" [sanitizeType]="'name'"></app-input>
+                  <app-input label="Edad" type="number" placeholder="Ej. 30" [value]="newFamiliarEdad()?.toString() ?? ''" (valueChange)="newFamiliarEdad.set(+$event || undefined)" name="f_edad" [disabled]="isSubmitting()" [sanitizeType]="'numeric'"></app-input>
+                  <app-input label="Puesto / Ocupación" placeholder="Ej. Empleado" [value]="newFamiliarPuesto()" (valueChange)="newFamiliarPuesto.set($event)" name="f_pues" [disabled]="isSubmitting()"></app-input>
+                  <app-input label="Lugar de Trabajo / Estudio" placeholder="Ej. CFE" [value]="newFamiliarLugar()" (valueChange)="newFamiliarLugar.set($event)" name="f_lug" [disabled]="isSubmitting()"></app-input>
+                  <app-input label="Referencia de Contacto" placeholder="Tel o correo" [value]="newFamiliarContacto()" (valueChange)="newFamiliarContacto.set($event)" name="f_con" [disabled]="isSubmitting()"></app-input>
+                  <div class="md:col-span-2 lg:col-span-3 flex justify-end">
+                    <app-button type="button" variant="secondary" size="sm" (onClick)="addFamiliar()">+ Agregar Familiar</app-button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Controles del Formulario -->
+          <div class="pt-4 flex justify-between gap-3 border-t border-gray-100 dark:border-gray-700 mt-6 pt-6">
+            <div>
+              @if (currentStep() > 1 && !showAuditLog()) {
+                <app-button type="button" variant="secondary" (onClick)="prevStep()">
+                  &larr; Atrás
+                </app-button>
+              }
+            </div>
+            <div class="flex gap-2">
+              @if (currentStep() < totalSteps && !showAuditLog()) {
+                <app-button type="button" variant="secondary" (onClick)="nextStep()">
+                  Siguiente &rarr;
+                </app-button>
+              }
+              
+              @if (!showAuditLog()) {
+                <app-button type="submit" variant="primary">
+                  Revisar Cambios en Auditoría
+                </app-button>
+              }
+            </div>
           </div>
         </form>
       </app-card>
@@ -161,13 +394,13 @@
 
     <!-- Panel Lateral: Rastro de Auditoría -->
     <div class="lg:col-span-1">
-      <app-card title="Log de Auditoría" subtitle="Antes vs Después" extraClasses="border-t-4 border-t-yellow-400">
+      <app-card title="Log de Auditoría" subtitle="Antes vs Después" extraClasses="border-t-4 border-t-yellow-400 h-full">
         
         <div *ngIf="!showAuditLog()" class="py-12 text-center text-gray-500">
           <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p class="text-sm">Modifica algún dato y haz clic en "Revisar Cambios" para ver el rastro que se generará en el backend.</p>
+          <p class="text-sm">Navega por los pasos, modifica algún dato y haz clic en "Revisar Cambios" para ver el rastro que se generará en el backend.</p>
         </div>
 
         <div *ngIf="showAuditLog()" class="space-y-4">
@@ -178,21 +411,20 @@
           <div *ngFor="let change of auditChanges()" class="border-b border-gray-100 pb-3 mb-3">
             <span class="text-xs font-bold text-gray-500">{{ change.field }}</span>
             <div class="flex flex-col gap-1 mt-1">
-              <div class="text-sm text-red-600 line-through bg-red-50 p-1 rounded px-2">- {{ change.old || '(vacío)' }}</div>
-              <div class="text-sm text-green-700 font-bold bg-green-50 p-1 rounded px-2">+ {{ change.new || '(vacío)' }}</div>
+              <div class="text-sm text-red-600 bg-red-50 p-2 rounded break-all whitespace-pre-wrap font-mono">- {{ change.old || '(vacío)' }}</div>
+              <div class="text-sm text-green-700 font-bold bg-green-50 p-2 rounded break-all whitespace-pre-wrap font-mono">+ {{ change.new || '(vacío)' }}</div>
             </div>
           </div>
 
           <div class="flex gap-2 pt-4">
             <app-button variant="outline" size="sm" [fullWidth]="true" (onClick)="cancelarGuardado()" [disabled]="isSubmitting()">
-              Cancelar
+              Cancelar / Seguir Editando
             </app-button>
             <app-button variant="primary" size="sm" [fullWidth]="true" (onClick)="preConfirmarGuardado()" [isLoading]="isSubmitting()" [disabled]="isSubmitting()">
               Confirmar Cambios
             </app-button>
           </div>
         </div>
-
       </app-card>
     </div>
 
@@ -202,7 +434,7 @@
 @if (showConfirmModal()) {
   <app-confirm-modal
     title="Confirmar Modificaciones"
-    message="¿Estás seguro de que deseas aplicar estas modificaciones a la solicitud? Esta acción no se puede deshacer."
+    message="¿Estás seguro de que deseas aplicar estas modificaciones a la solicitud? Esta acción no se puede deshacer y se notificará en los logs."
     confirmText="Sí, guardar cambios"
     cancelText="Cancelar"
     variant="primary"
