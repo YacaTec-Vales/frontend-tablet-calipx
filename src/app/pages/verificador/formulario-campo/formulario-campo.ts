@@ -123,9 +123,10 @@ export class FormularioCampo implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    const uploadFachada$ = this.uploadsService.uploadFile(this.fotoFachada()!, 'other');
-    const uploadComprobante$ = this.uploadsService.uploadFile(this.fotoComprobante()!, 'address_proof');
-    const uploadIdentificacion$ = this.uploadsService.uploadFile(this.fotoIdentificacion()!, 'ine');
+    const solicitationId = this.solicitud()!.id;
+    const uploadFachada$ = this.uploadsService.uploadVerificationFile(solicitationId, this.fotoFachada()!, 'other');
+    const uploadComprobante$ = this.uploadsService.uploadVerificationFile(solicitationId, this.fotoComprobante()!, 'address_proof');
+    const uploadIdentificacion$ = this.uploadsService.uploadVerificationFile(solicitationId, this.fotoIdentificacion()!, 'ine');
 
     forkJoin([uploadFachada$, uploadComprobante$, uploadIdentificacion$]).subscribe({
       next: ([resFachada, resComprobante, resIdentificacion]) => {
