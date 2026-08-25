@@ -26,10 +26,10 @@ export class Login implements OnInit {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly mfaService = inject(MfaService);
-  
+
   readonly isLoading = this.authService.isLoading;
   readonly isMfaLoading = signal(false);
-  
+
   readonly step = signal<'login' | 'change_password' | 'mfa_verify' | 'mfa_setup'>('login');
   readonly mfaToken = signal('');
 
@@ -136,8 +136,8 @@ export class Login implements OnInit {
     }
 
     // Se requiere currentPassword en el backend
-    const currentPwd = this.password() || ''; 
-    
+    const currentPwd = this.password() || '';
+
     this.authService.changePassword({
       currentPassword: currentPwd,
       newPassword: this.newPassword()
@@ -262,10 +262,5 @@ export class Login implements OnInit {
 
   clearError(): void {
     this.alert.set(null);
-  }
-
-  /** Atajos de prueba para desarrollo */
-  setTestEmail(email: string): void {
-    this.email.set(email);
   }
 }
