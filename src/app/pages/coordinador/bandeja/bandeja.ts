@@ -110,10 +110,6 @@ export class Bandeja implements OnInit, OnDestroy {
     this.router.navigate(['/coordinador/solicitud', id]);
   }
 
-  editarSolicitud(id: string): void {
-    this.router.navigate(['/coordinador/solicitud', id, 'editar']);
-  }
-
   get isEmpty(): boolean {
     return this.solicitudes().length === 0;
   }
