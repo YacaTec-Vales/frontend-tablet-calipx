@@ -25,7 +25,7 @@ export interface SolicitudFilters {
  * Servicio que conecta con los endpoints de solicitudes
  * del modulo Distribuidores.
  *
- * Endpoints 11-16 del documento endpoints_tablet_calipx.md:
+ * Endpoints 11-16 del documento endpoints_tablet_Calipx.md:
  * - POST /solicitudes (Coordinador crea)
  * - PATCH /solicitudes/:id (Coordinador edita)
  * - GET /solicitudes (ambos listan)

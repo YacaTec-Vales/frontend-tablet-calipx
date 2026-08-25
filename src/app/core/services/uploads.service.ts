@@ -22,11 +22,24 @@ export class UploadsService {
    * @param file Archivo a subir
    * @param documentType Tipo de documento (ej. 'ine', 'address_proof', 'other')
    */
-  uploadFile(file: File, documentType: string): Observable<ApiResponse<DocumentResponse>> {
+  uploadFile(file: File, documentType: string, metadata?: string): Observable<ApiResponse<DocumentResponse>> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('documentType', documentType);
+    if (metadata) formData.append('metadata', metadata);
 
     return this.http.post<ApiResponse<DocumentResponse>>(this.apiUrl, formData);
+  }
+
+  /**
+   * Sube una foto vinculada a una verificación (inyecta solicitationId automáticamente)
+   */
+  uploadVerificationFile(solicitationId: string, file: File, documentType: string, metadata?: string): Observable<ApiResponse<DocumentResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('documentType', documentType);
+    if (metadata) formData.append('metadata', metadata);
+
+    return this.http.post<ApiResponse<DocumentResponse>>(`${this.apiUrl}/verification/${solicitationId}`, formData);
   }
 }

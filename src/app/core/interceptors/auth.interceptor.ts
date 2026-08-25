@@ -30,7 +30,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (isPublic) {
     // Rutas publicas solo necesitan el header x-client-app y x-origin
     const publicReq = req.clone({
-      setHeaders: { 
+      setHeaders: {
         'x-client-app': 'Calipx'
       },
     });

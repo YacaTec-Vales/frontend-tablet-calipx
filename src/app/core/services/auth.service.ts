@@ -16,9 +16,9 @@ import {
   LoginResponseDto,
 } from '../models/auth.model';
 
-const TOKEN_KEY = 'calipx_access_token';
-const REFRESH_KEY = 'calipx_refresh_token';
-const USER_KEY = 'calipx_user';
+const TOKEN_KEY = 'Calipx_access_token';
+const REFRESH_KEY = 'Calipx_refresh_token';
+const USER_KEY = 'Calipx_user';
 
 /**
  * Servicio de autenticacion para la tablet Calipx.
@@ -120,7 +120,7 @@ export class AuthService {
     this.isLoading.set(true);
     return this.http
       .post<ApiResponse<TokenResponse>>(
-        `${this.apiUrl}/auth/mfa-verify`, 
+        `${this.apiUrl}/auth/mfa-verify`,
         { code },
         { headers: { Authorization: `Bearer ${mfaToken}` } }
       )

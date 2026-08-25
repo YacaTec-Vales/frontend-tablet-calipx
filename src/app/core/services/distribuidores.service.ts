@@ -18,7 +18,7 @@ export interface PaginatedDistribuidoresResponse {
  * Servicio que conecta con los endpoints de distribuidoras
  * ya autorizadas (post-alta).
  *
- * Endpoints 17-18 del documento endpoints_tablet_calipx.md:
+ * Endpoints 17-18 del documento endpoints_tablet_Calipx.md:
  * - GET /distribuidores/:id (detalle de distribuidora)
  * - POST /distribuidores/:id/credit/increment (preautorizar credito)
  */
