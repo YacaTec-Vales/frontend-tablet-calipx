@@ -6,6 +6,10 @@ import { SolicitudResponse } from '../../../core/models/solicitud.model';
 import { CardComponent } from '../../../components/ui/card/card';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
+import {
+  UploadsService,
+  type DocumentResponse,
+} from '../../../core/services/uploads.service';
 
 @Component({
   selector: 'app-detalle-solicitud-coordinador',
@@ -16,10 +20,12 @@ export class DetalleSolicitud implements OnInit {
   private readonly solicitudesService = inject(SolicitudesService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly uploadsService = inject(UploadsService);
 
   readonly solicitud = signal<SolicitudResponse | null>(null);
   readonly isLoading = signal(true);
   readonly errorMessage = signal<string | null>(null);
+  readonly verificationDocs = signal<DocumentResponse[]>([]);
 
   readonly currentTab = signal<'GENERALES' | 'DOMICILIO' | 'VEHICULOS' | 'LABORALES' | 'CREDITOS' | 'FAMILIARES'>('GENERALES');
 
@@ -38,10 +44,72 @@ export class DetalleSolicitud implements OnInit {
       next: (res) => {
         this.solicitud.set(res.data);
         this.isLoading.set(false);
+        this.loadVerificationPhotos(id);
       },
       error: (err) => {
         this.errorMessage.set(err.error?.message || 'Error al cargar la solicitud');
         this.isLoading.set(false);
+      },
+    });
+  }
+
+  /**
+   * Resuelve las fotos de verificacion. Mezcla tres fuentes para
+   * compatibilidad con datos historicos:
+   *  - `GET /uploads/verification/:id` -> nuevos uploads con metadata
+   *  - UUIDs viejos en `fotos_verificacion` que no aparecen ahi
+   *    (subidos antes del fix via POST /uploads plano) -> resolver
+   *    con `GET /uploads/:id`
+   *  - URLs firmadas legacy -> pintar tal cual
+   */
+  private loadVerificationPhotos(solicitanteId: string): void {
+    this.uploadsService.getDocumentsByVerification(solicitanteId).subscribe({
+      next: (byMeta) => {
+        const photos = this.solicitud()?.fotos_verificacion ?? [];
+        const idsInMeta = new Set(byMeta.map((d) => d.id));
+        const legacyUuids = photos.filter((p) => !idsInMeta.has(p));
+        const urlEntries = photos
+          .filter((p) => !/^[0-9a-f]{8}-/i.test(p))
+          .map<DocumentResponse>((url) => ({
+            id: url,
+            documentType: 'photo_verification',
+            fileName: 'Foto',
+            storagePath: url,
+            publicUrl: url,
+            mimeType: 'image/jpeg',
+            sizeBytes: 0,
+            sha256Hash: null,
+            uploadedBy: '',
+            metadata: {},
+            isActive: true,
+            createdAt: '',
+          }));
+
+        if (legacyUuids.length === 0) {
+          this.verificationDocs.set([...byMeta, ...urlEntries]);
+          return;
+        }
+
+        Promise.all(
+          legacyUuids.map(
+            (uuid) =>
+              new Promise<DocumentResponse | null>((resolve) => {
+                this.uploadsService.getById(uuid).subscribe({
+                  next: (doc) => resolve(doc),
+                  error: () => resolve(null),
+                });
+              }),
+          ),
+        ).then((resolved) => {
+          this.verificationDocs.set([
+            ...byMeta,
+            ...urlEntries,
+            ...resolved.filter((d): d is DocumentResponse => d !== null),
+          ]);
+        });
+      },
+      error: () => {
+        this.verificationDocs.set([]);
       },
     });
   }

@@ -119,6 +119,27 @@
   <div class="mt-6">
     <!-- Tab: Datos Generales -->
     @if (currentTab() === 'GENERALES') {
+
+    @if (verificationDocs().length > 0) {
+    <app-card title="Fotos de Verificación" class="mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        @for (doc of verificationDocs(); track doc.id) {
+        <div class="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+          @if (uploadsService.isImage(doc.mimeType)) {
+          <img [src]="doc.publicUrl" [alt]="doc.fileName" class="w-full h-48 object-cover" />
+          } @else if (uploadsService.isPdf(doc.mimeType)) {
+          <embed [src]="doc.publicUrl" type="application/pdf" class="w-full h-48" />
+          } @else {
+          <a [href]="doc.publicUrl" target="_blank" rel="noopener" class="block p-4 text-blue-600 underline">
+            {{ doc.fileName }}
+          </a>
+          }
+        </div>
+        }
+      </div>
+    </app-card>
+    }
+
     <app-card title="Datos Generales" subtitle="Información capturada inicialmente">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8 mt-4">
         <div>

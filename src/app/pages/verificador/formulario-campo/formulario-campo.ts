@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,8 +7,15 @@ import { CardComponent } from '../../../components/ui/card/card';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { SolicitudesService } from '../../../core/services/solicitudes.service';
-import { UploadsService } from '../../../core/services/uploads.service';
-import { SolicitudResponse, Dictamen, VerificarSolicitudDto } from '../../../core/models/solicitud.model';
+import {
+  UploadsService,
+  type DocumentResponse,
+} from '../../../core/services/uploads.service';
+import {
+  SolicitudResponse,
+  Dictamen,
+  VerificarSolicitudDto,
+} from '../../../core/models/solicitud.model';
 
 /**
  * Formulario de verificacion en campo.
@@ -16,7 +23,10 @@ import { SolicitudResponse, Dictamen, VerificarSolicitudDto } from '../../../cor
  * El Verificador captura fotos, comentarios, dictamen y kill_switch.
  * Conecta con:
  * - GET /solicitudes/:id (carga datos del coordinador para comparar)
- * - POST /solicitudes/:id/verificar (envia dictamen)
+ * - POST /uploads/verification/:id (sube cada foto, el backend inyecta
+ *   metadata.solicitationId automaticamente)
+ * - POST /solicitudes/:id/verificar (envia dictamen con los IDs de
+ *   las fotos; reemplaza el envio de URLs firmadas que expiraban)
  */
 @Component({
   selector: 'app-formulario-campo',
@@ -123,52 +133,62 @@ export class FormularioCampo implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    const solicitationId = this.solicitud()!.id;
-    const uploadFachada$ = this.uploadsService.uploadVerificationFile(solicitationId, this.fotoFachada()!, 'other');
-    const uploadComprobante$ = this.uploadsService.uploadVerificationFile(solicitationId, this.fotoComprobante()!, 'address_proof');
-    const uploadIdentificacion$ = this.uploadsService.uploadVerificationFile(solicitationId, this.fotoIdentificacion()!, 'ine');
+    const solicitudId = this.solicitudId();
+
+    const uploadFachada$ = this.uploadsService.uploadForVerification(
+      solicitudId,
+      this.fotoFachada()!,
+      'other',
+    );
+    const uploadComprobante$ = this.uploadsService.uploadForVerification(
+      solicitudId,
+      this.fotoComprobante()!,
+      'address_proof',
+    );
+    const uploadIdentificacion$ = this.uploadsService.uploadForVerification(
+      solicitudId,
+      this.fotoIdentificacion()!,
+      'ine',
+    );
 
     forkJoin([uploadFachada$, uploadComprobante$, uploadIdentificacion$]).subscribe({
       next: ([resFachada, resComprobante, resIdentificacion]) => {
-        const extractUrl = (res: unknown) => {
-          const r = res as { data?: { publicUrl?: string }; publicUrl?: string };
-          return r?.data?.publicUrl || r?.publicUrl || '';
+        const extractId = (res: unknown): string | null => {
+          const r = res as { data?: { id?: string }; id?: string };
+          return r?.data?.id ?? r?.id ?? null;
         };
-        
-        // Parche para desarrollo local: class-validator rechaza 'localhost' por no tener TLD.
-        // nip.io resuelve a la misma IP y tiene TLD valido (.io), lo que engaña al validador y permite cargar la imagen localmente.
-        const fixLocalhostUrl = (url: string) => url.replace('http://localhost', 'http://127.0.0.1.nip.io');
-        
-        const urls = [
-          fixLocalhostUrl(encodeURI(extractUrl(resFachada))),
-          fixLocalhostUrl(encodeURI(extractUrl(resComprobante))),
-          fixLocalhostUrl(encodeURI(extractUrl(resIdentificacion)))
-        ];
 
-        // Validar que las URLs sean validas (no vacias y que empiecen con http)
-        if (urls.some(u => !u || !u.startsWith('http'))) {
+        const fachadaId = extractId(resFachada);
+        const comprobanteId = extractId(resComprobante);
+        const identificacionId = extractId(resIdentificacion);
+
+        if (!fachadaId || !comprobanteId || !identificacionId) {
           this.isSubmitting.set(false);
-          this.errorMessage.set('Error interno: El servidor de archivos no devolvió URLs válidas. ' + JSON.stringify(urls));
+          this.errorMessage.set(
+            'Error interno: el servidor no devolvio IDs de documento. ' +
+              JSON.stringify([fachadaId, comprobanteId, identificacionId]),
+          );
           return;
         }
 
         const dto: VerificarSolicitudDto = {
-          fotos_verificacion: urls,
+          fachadaDocumentId: fachadaId,
+          addressProofDocumentId: comprobanteId,
+          ineDocumentId: identificacionId,
           comentarios_verificador: this.comentarios,
           dictamen,
           kill_switch: this.rechazoDefinitivo(),
         };
 
-        this.solicitudesService.verificar(this.solicitudId(), dto).subscribe({
+        this.solicitudesService.verificar(solicitudId, dto).subscribe({
           next: () => {
             this.isSubmitting.set(false);
 
             const dictamenLabel = dictamen === 'CUMPLE' ? 'CUMPLE' : 'NO CUMPLE';
             this.successMessage.set(
-              `Dictamen "${dictamenLabel}" enviado exitosamente.`
+              `Dictamen "${dictamenLabel}" enviado exitosamente.`,
             );
 
-            // Volver al buzon tras un breve delay
             setTimeout(() => {
               this.volver();
             }, 2000);
@@ -182,7 +202,9 @@ export class FormularioCampo implements OnInit {
             } else if (code === 'DISTRIBUIDORES.VERIFIER_NO_BRANCH') {
               this.errorMessage.set('No tienes una sucursal asignada. Contacta al administrador.');
             } else {
-              this.errorMessage.set(`Error 400. URLs enviadas: ${JSON.stringify(urls)}. Mensaje: ${err.error?.message}`);
+              this.errorMessage.set(
+                `Error 400. IDs enviados: ${fachadaId}, ${comprobanteId}, ${identificacionId}. Mensaje: ${err.error?.message}`,
+              );
             }
           },
         });
@@ -190,7 +212,7 @@ export class FormularioCampo implements OnInit {
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set('Error al subir las fotografías. Intenta de nuevo.');
-      }
+      },
     });
   }
 
@@ -198,7 +220,6 @@ export class FormularioCampo implements OnInit {
   volver(): void {
     this.router.navigate(['/verificador/buzon-visitas']);
   }
-
   onFotoSelected(event: Event, tipo: 'fachada' | 'comprobante' | 'identificacion') {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
