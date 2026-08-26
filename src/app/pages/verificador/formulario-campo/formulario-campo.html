@@ -19,20 +19,382 @@
   </div>
   }
 
+  @if (solicitud()) {
+    <!-- Tabs de Navegación -->
+    <div class="border-b border-gray-200 dark:border-gray-700 mt-6">
+      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+        <li class="me-2">
+          <button (click)="currentTab.set('GENERALES')"
+            class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+            [ngClass]="currentTab() === 'GENERALES' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+            Datos Generales
+          </button>
+        </li>
+        @if (solicitud()!.datos_adicionales) {
+        <li class="me-2">
+          <button (click)="currentTab.set('DOMICILIO')"
+            class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+            [ngClass]="currentTab() === 'DOMICILIO' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+            Domicilio
+          </button>
+        </li>
+        <li class="me-2">
+          <button (click)="currentTab.set('VEHICULOS')"
+            class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+            [ngClass]="currentTab() === 'VEHICULOS' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+            Vehículos
+            @if (solicitud()!.datos_adicionales!.vehiculos.length > 0) {
+              <span class="inline-flex items-center justify-center w-4 h-4 ms-2 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
+                {{ solicitud()!.datos_adicionales!.vehiculos.length }}
+              </span>
+            }
+          </button>
+        </li>
+        <li class="me-2">
+          <button (click)="currentTab.set('LABORALES')"
+            class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+            [ngClass]="currentTab() === 'LABORALES' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+            Ref. Laborales
+          </button>
+        </li>
+        <li class="me-2">
+          <button (click)="currentTab.set('CREDITOS')"
+            class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+            [ngClass]="currentTab() === 'CREDITOS' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+            Otros Créditos
+          </button>
+        </li>
+        <li class="me-2">
+          <button (click)="currentTab.set('FAMILIARES')"
+            class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+            [ngClass]="currentTab() === 'FAMILIARES' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'">
+            Familiares
+          </button>
+        </li>
+        }
+      </ul>
+    </div>
+  
+    <div class="mt-6 mb-6">
+      <!-- Tab: Datos Generales -->
+      @if (currentTab() === 'GENERALES') {
+      <app-card title="Datos Generales" subtitle="Información capturada inicialmente">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8 mt-4">
+          <div>
+            <span class="block text-sm font-semibold text-gray-500">Nombre Completo</span>
+            <p class="text-gray-900 dark:text-white font-medium">
+              {{ solicitud()!.datos_generales.nombre }}
+              {{ solicitud()!.datos_generales.apellido_paterno }}
+              {{ solicitud()!.datos_generales.apellido_materno }}
+            </p>
+          </div>
+          <div>
+            <span class="block text-sm font-semibold text-gray-500">RFC</span>
+            <p class="text-gray-900 dark:text-white font-medium">{{ solicitud()!.datos_generales.rfc }}</p>
+          </div>
+          <div>
+            <span class="block text-sm font-semibold text-gray-500">CURP</span>
+            <p class="text-gray-900 dark:text-white font-medium">{{ solicitud()!.datos_generales.curp || 'N/A' }}</p>
+          </div>
+          <div>
+            <span class="block text-sm font-semibold text-gray-500">Teléfono</span>
+            <p class="text-gray-900 dark:text-white font-medium">{{ solicitud()!.datos_generales.phone || 'N/A' }}</p>
+          </div>
+          <div>
+            <span class="block text-sm font-semibold text-gray-500">Correo Electrónico</span>
+            <p class="text-gray-900 dark:text-white font-medium">{{ solicitud()!.datos_generales.correo || 'N/A' }}</p>
+          </div>
+          <div>
+            <span class="block text-sm font-semibold text-gray-500">Fecha y Lugar Nacimiento</span>
+            <p class="text-gray-900 dark:text-white font-medium">
+              {{ solicitud()!.datos_generales.fecha_nacimiento }} 
+              @if (solicitud()!.datos_generales.lugar_nacimiento) {
+                ({{ solicitud()!.datos_generales.lugar_nacimiento }})
+              }
+            </p>
+          </div>
+          <div class="md:col-span-2">
+            <span class="block text-sm font-semibold text-gray-500">Dirección</span>
+            <p class="text-gray-900 dark:text-white font-medium">
+              {{ solicitud()!.datos_generales.calle }} {{ solicitud()!.datos_generales.numero }},
+              {{ solicitud()!.datos_generales.colonia }}, CP {{ solicitud()!.datos_generales.codigo_postal }}
+            </p>
+            <p class="text-gray-700 dark:text-gray-300">
+              {{ solicitud()!.datos_generales.ciudad }}, {{ solicitud()!.datos_generales.estado }}
+            </p>
+          </div>
+        </div>
+      </app-card>
+      }
+  
+      <!-- Tab: Domicilio -->
+      @if (currentTab() === 'DOMICILIO' && solicitud()!.datos_adicionales) {
+        <app-card title="Datos del Domicilio" subtitle="Información sobre la vivienda">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <div>
+              <span class="block text-sm font-semibold text-gray-500">Situación</span>
+              <p class="text-gray-900 font-medium">{{ solicitud()!.datos_adicionales!.domicilio.situacion }}</p>
+            </div>
+            <div>
+              <span class="block text-sm font-semibold text-gray-500">M² Construcción</span>
+              <p class="text-gray-900 font-medium">{{ solicitud()!.datos_adicionales!.domicilio.m2_construccion }} m²</p>
+            </div>
+            <div>
+              <span class="block text-sm font-semibold text-gray-500">Recámaras / Pisos</span>
+              <p class="text-gray-900 font-medium">{{ solicitud()!.datos_adicionales!.domicilio.num_recamaras }} / {{ solicitud()!.datos_adicionales!.domicilio.num_pisos }}</p>
+            </div>
+            <div>
+              <span class="block text-sm font-semibold text-gray-500">Tiempo de Residencia</span>
+              <p class="text-gray-900 font-medium">{{ solicitud()!.datos_adicionales!.domicilio.tiempo_residencia_anios }} años</p>
+            </div>
+          </div>
+        </app-card>
+      }
+  
+      <!-- Tab: Vehículos -->
+      @if (currentTab() === 'VEHICULOS' && solicitud()!.datos_adicionales) {
+        @if (solicitud()!.datos_adicionales!.vehiculos.length > 0) {
+          <app-card title="Vehículos">
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2">Marca</th>
+                    <th class="px-4 py-2">Modelo</th>
+                    <th class="px-4 py-2">Año</th>
+                    <th class="px-4 py-2">Placas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (veh of solicitud()!.datos_adicionales!.vehiculos; track $index) {
+                    <tr class="border-b bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ veh.marca }}</td>
+                      <td class="px-4 py-2">{{ veh.modelo }}</td>
+                      <td class="px-4 py-2">{{ veh.anio }}</td>
+                      <td class="px-4 py-2">{{ veh.placas || 'N/A' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </app-card>
+        } @else {
+          <div class="p-8 text-center text-gray-500 bg-gray-50 rounded-lg">No hay vehículos registrados en esta solicitud.</div>
+        }
+      }
+  
+      <!-- Tab: Referencias Laborales -->
+      @if (currentTab() === 'LABORALES' && solicitud()!.datos_adicionales) {
+        @if (solicitud()!.datos_adicionales!.referencias_laborales.length > 0) {
+          <app-card title="Referencias Laborales">
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2">Establecimiento</th>
+                    <th class="px-4 py-2">Dirección</th>
+                    <th class="px-4 py-2">Antigüedad</th>
+                    <th class="px-4 py-2">Carta Presentada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ref of solicitud()!.datos_adicionales!.referencias_laborales; track $index) {
+                    <tr class="border-b bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ ref.establecimiento }}</td>
+                      <td class="px-4 py-2">{{ ref.direccion }}</td>
+                      <td class="px-4 py-2">{{ ref.antiguedad_anios }} años</td>
+                      <td class="px-4 py-2">{{ ref.carta_laboral_presentada ? 'Sí' : 'No' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </app-card>
+        } @else {
+          <div class="p-8 text-center text-gray-500 bg-gray-50 rounded-lg">No hay referencias laborales registradas.</div>
+        }
+      }
+  
+      <!-- Tab: Límites de Crédito -->
+      @if (currentTab() === 'CREDITOS' && solicitud()!.datos_adicionales) {
+        @if (solicitud()!.datos_adicionales!.limites_credito_en_otras_relaciones.length > 0) {
+          <app-card title="Límites de Crédito en Otras Instituciones">
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2">Institución</th>
+                    <th class="px-4 py-2">Monto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (lim of solicitud()!.datos_adicionales!.limites_credito_en_otras_relaciones; track $index) {
+                    <tr class="border-b bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ lim.institucion }}</td>
+                      <td class="px-4 py-2">{{ lim.monto_centavos / 100 | currency:'MXN' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </app-card>
+        } @else {
+          <div class="p-8 text-center text-gray-500 bg-gray-50 rounded-lg">No se declararon otros límites de crédito.</div>
+        }
+      }
+  
+      <!-- Tab: Familiares -->
+      @if (currentTab() === 'FAMILIARES' && solicitud()!.datos_adicionales) {
+        @if (solicitud()!.datos_adicionales!.familiares.length > 0) {
+          <app-card title="Contactos Familiares">
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2">Nombre</th>
+                    <th class="px-4 py-2">Parentesco</th>
+                    <th class="px-4 py-2">Edad</th>
+                    <th class="px-4 py-2">Ocupación / Trabajo</th>
+                    <th class="px-4 py-2">Contacto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (fam of solicitud()!.datos_adicionales!.familiares; track $index) {
+                    <tr class="border-b bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ fam.nombre }}</td>
+                      <td class="px-4 py-2">{{ fam.parentesco }}</td>
+                      <td class="px-4 py-2">{{ fam.edad }}</td>
+                      <td class="px-4 py-2">{{ fam.puesto }} ({{ fam.lugar_trabajo_o_estudio }})</td>
+                      <td class="px-4 py-2">{{ fam.referencia_contacto }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </app-card>
+        } @else {
+          <div class="p-8 text-center text-gray-500 bg-gray-50 rounded-lg">No hay familiares registrados.</div>
+        }
+      }
+    </div>
+  }
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Panel Izquierdo: Evidencia -->
     <app-card title="1. Evidencia Fotográfica" subtitle="Toma las fotos requeridas desde la tablet">
       <div class="space-y-6 mt-4">
-        <app-input label="Foto de la Fachada" type="file" [(ngModel)]="fotoFachada" [disabled]="isSubmitting()">
-        </app-input>
+        
+        <!-- Foto de Fachada -->
+        <div>
+          <span class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Foto de la Fachada</span>
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-800 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            @if (previewFachada()) {
+              <div class="mb-4 flex justify-center">
+                <img [src]="previewFachada()" alt="Preview Fachada" class="max-h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 object-contain">
+              </div>
+            } @else {
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            }
+            
+            <div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center">
+              <label class="relative cursor-pointer rounded-md font-semibold text-brand focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 hover:text-brand-light">
+                <span>{{ fotoFachada() ? 'Cambiar Fachada' : 'Tomar / Subir Fachada' }}</span>
+                <input type="file" class="sr-only" accept="image/*" (change)="onFotoSelected($event, 'fachada')" [disabled]="isSubmitting()">
+              </label>
+              <p class="pl-1">obligatoria</p>
+            </div>
+            <p class="text-xs leading-5 text-gray-500 mt-2">Formatos aceptados: Imágenes (.jpg, .png)</p>
+            
+            @if (fotoFachada()) {
+              <p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Archivo: {{ fotoFachada()!.name }}
+              </p>
+            } @else {
+              <p class="mt-4 text-sm font-medium text-red-500 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Requerido para dictaminar
+              </p>
+            }
+          </div>
+        </div>
 
-        <app-input label="Comprobante de Domicilio" type="file" [(ngModel)]="fotoComprobante"
-          [disabled]="isSubmitting()">
-        </app-input>
+        <!-- Foto de Comprobante -->
+        <div>
+          <span class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Comprobante de Domicilio</span>
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-800 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            @if (previewComprobante()) {
+              <div class="mb-4 flex justify-center">
+                <img [src]="previewComprobante()" alt="Preview Comprobante" class="max-h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 object-contain">
+              </div>
+            } @else {
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            }
+            
+            <div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center">
+              <label class="relative cursor-pointer rounded-md font-semibold text-brand focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 hover:text-brand-light">
+                <span>{{ fotoComprobante() ? 'Cambiar Comprobante' : 'Tomar / Subir Comprobante' }}</span>
+                <input type="file" class="sr-only" accept="image/*" (change)="onFotoSelected($event, 'comprobante')" [disabled]="isSubmitting()">
+              </label>
+              <p class="pl-1">obligatorio</p>
+            </div>
+            <p class="text-xs leading-5 text-gray-500 mt-2">Formatos aceptados: Imágenes (.jpg, .png)</p>
+            
+            @if (fotoComprobante()) {
+              <p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Archivo: {{ fotoComprobante()!.name }}
+              </p>
+            } @else {
+              <p class="mt-4 text-sm font-medium text-red-500 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Requerido para dictaminar
+              </p>
+            }
+          </div>
+        </div>
 
-        <app-input label="Identificación Oficial (INE)" type="file" [(ngModel)]="fotoIdentificacion"
-          [disabled]="isSubmitting()">
-        </app-input>
+        <!-- Identificación (INE) -->
+        <div>
+          <span class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Identificación Oficial (INE)</span>
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-800 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            @if (previewIdentificacion()) {
+              <div class="mb-4 flex justify-center">
+                <img [src]="previewIdentificacion()" alt="Preview INE" class="max-h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 object-contain">
+              </div>
+            } @else {
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            }
+            
+            <div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center">
+              <label class="relative cursor-pointer rounded-md font-semibold text-brand focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 hover:text-brand-light">
+                <span>{{ fotoIdentificacion() ? 'Cambiar INE' : 'Tomar / Subir INE' }}</span>
+                <input type="file" class="sr-only" accept="image/*" (change)="onFotoSelected($event, 'identificacion')" [disabled]="isSubmitting()">
+              </label>
+              <p class="pl-1">obligatoria</p>
+            </div>
+            <p class="text-xs leading-5 text-gray-500 mt-2">Formatos aceptados: Imágenes (.jpg, .png)</p>
+            
+            @if (fotoIdentificacion()) {
+              <p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Archivo: {{ fotoIdentificacion()!.name }}
+              </p>
+            } @else {
+              <p class="mt-4 text-sm font-medium text-red-500 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Requerido para dictaminar
+              </p>
+            }
+          </div>
+        </div>
+
       </div>
     </app-card>
 
@@ -52,15 +414,15 @@
         <div class="pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-4">
           <p class="text-xs text-center text-gray-500 font-bold uppercase mb-2">Resolución Final</p>
 
-          <!-- Kill Switch Toggle -->
+          <!-- Rechazo Definitivo Toggle -->
           <label class="inline-flex items-center cursor-pointer justify-center mb-2">
-            <input type="checkbox" class="sr-only peer" [ngModel]="killSwitch()" (ngModelChange)="killSwitch.set($event)">
+            <input type="checkbox" class="sr-only peer" [ngModel]="rechazoDefinitivo()" (ngModelChange)="rechazoDefinitivo.set($event)">
             <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
-            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Activar Kill Switch (Fraude)</span>
+            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Rechazo Definitivo (Bloqueo por Fraude)</span>
           </label>
 
           <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="emitirDictamen('CUMPLE')"
-            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit">
+            [isLoading]="isSubmitting()" [disabled]="isSubmitting() || !canSubmit || rechazoDefinitivo()">
             Aprobar (VERIFICADA)
           </app-button>
 

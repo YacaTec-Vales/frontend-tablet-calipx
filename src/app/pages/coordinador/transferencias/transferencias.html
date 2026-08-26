@@ -115,3 +115,16 @@
     </app-card>
   </div>
 </div>
+
+@if (showConfirmModal()) {
+  <app-confirm-modal
+    [title]="actionType === 'approve' ? 'Confirmar Transferencia' : 'Confirmar Rechazo'"
+    [message]="actionType === 'approve' ? '¿Estás seguro de que deseas aprobar y asignar esta transferencia? Esta acción no se puede deshacer.' : '¿Estás seguro de que deseas rechazar esta solicitud de transferencia?'"
+    [confirmText]="actionType === 'approve' ? 'Sí, aprobar' : 'Sí, rechazar'"
+    cancelText="Cancelar"
+    [variant]="actionType === 'approve' ? 'primary' : 'error'"
+    (confirm)="confirmarProcesar()"
+    (cancel)="showConfirmModal.set(false)"
+    [isLoading]="isProcessing"
+  />
+}

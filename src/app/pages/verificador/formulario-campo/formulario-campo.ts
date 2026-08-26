@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { CardComponent } from '../../../components/ui/card/card';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
@@ -29,7 +30,7 @@ import {
  */
 @Component({
   selector: 'app-formulario-campo',
-  imports: [FormsModule, CardComponent, InputComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, CardComponent, InputComponent, ButtonComponent],
   templateUrl: './formulario-campo.html',
 })
 export class FormularioCampo implements OnInit {
@@ -47,22 +48,29 @@ export class FormularioCampo implements OnInit {
   /** Estado de carga */
   readonly isLoadingSolicitud = signal(false);
 
+  readonly currentTab = signal<'GENERALES' | 'DOMICILIO' | 'VEHICULOS' | 'LABORALES' | 'CREDITOS' | 'FAMILIARES'>('GENERALES');
+
   // ─── Campos del formulario del verificador ─────────────
 
-  /** Archivos capturados en campo */
-  fotoFachada: File | null = null;
-  fotoComprobante: File | null = null;
-  fotoIdentificacion: File | null = null;
+  /** URLs de fotos de verificacion (por ahora se capturan como archivos) */
+  readonly fotoFachada = signal<File | null>(null);
+  readonly previewFachada = signal<string | null>(null);
+
+  readonly fotoComprobante = signal<File | null>(null);
+  readonly previewComprobante = signal<string | null>(null);
+
+  readonly fotoIdentificacion = signal<File | null>(null);
+  readonly previewIdentificacion = signal<string | null>(null);
 
   /** Comentarios del verificador (max 2000 chars segun spec) */
   comentarios = '';
 
   /**
-   * Kill switch: si true, el verificador mata el flujo
+   * Rechazo definitivo: si true, el verificador mata el flujo
    * directamente por fraude evidente (casa inexistente,
    * INE falsa, vehiculo fantasma, etc.)
    */
-  readonly killSwitch = signal(false);
+  readonly rechazoDefinitivo = signal(false);
 
   /** Estado de envio */
   readonly isSubmitting = signal(false);
@@ -76,9 +84,9 @@ export class FormularioCampo implements OnInit {
   /** Habilita los botones de dictamen solo si hay fotos y comentarios suficientes */
   get canSubmit(): boolean {
     return (
-      !!this.fotoFachada &&
-      !!this.fotoComprobante &&
-      !!this.fotoIdentificacion &&
+      !!this.fotoFachada() &&
+      !!this.fotoComprobante() &&
+      !!this.fotoIdentificacion() &&
       this.comentarios.length >= 5 &&
       !this.isSubmitting()
     );
@@ -113,11 +121,11 @@ export class FormularioCampo implements OnInit {
    *
    * Dictamen alineado con el backend:
    * - CUMPLE → estado = DICTAMINADA (pasa al Gerente)
-   * - NO_CUMPLE + kill_switch=true → estado = RECHAZADA
-   * - NO_CUMPLE + kill_switch=false → estado = DICTAMINADA (Gerente decide)
+   * - NO_CUMPLE + rechazoDefinitivo=true → estado = RECHAZADA
+   * - NO_CUMPLE + rechazoDefinitivo=false → estado = DICTAMINADA (Gerente decide)
    */
   emitirDictamen(dictamen: Dictamen): void {
-    if (!this.fotoFachada || !this.fotoComprobante || !this.fotoIdentificacion) {
+    if (!this.fotoFachada() || !this.fotoComprobante() || !this.fotoIdentificacion()) {
       this.errorMessage.set('Las fotografías son requeridas antes de dictaminar.');
       return;
     }
@@ -127,22 +135,19 @@ export class FormularioCampo implements OnInit {
 
     const solicitudId = this.solicitudId();
 
-    // Subimos las 3 fotos al endpoint de verificacion. El backend
-    // inyecta metadata.solicitationId en cada `app.document`, y nos
-    // devuelve el `id` (UUID) que enviaremos en el dictamen.
     const uploadFachada$ = this.uploadsService.uploadForVerification(
       solicitudId,
-      this.fotoFachada,
+      this.fotoFachada()!,
       'other',
     );
     const uploadComprobante$ = this.uploadsService.uploadForVerification(
       solicitudId,
-      this.fotoComprobante,
+      this.fotoComprobante()!,
       'address_proof',
     );
     const uploadIdentificacion$ = this.uploadsService.uploadForVerification(
       solicitudId,
-      this.fotoIdentificacion,
+      this.fotoIdentificacion()!,
       'ine',
     );
 
@@ -172,7 +177,7 @@ export class FormularioCampo implements OnInit {
           ineDocumentId: identificacionId,
           comentarios_verificador: this.comentarios,
           dictamen,
-          kill_switch: this.killSwitch(),
+          kill_switch: this.rechazoDefinitivo(),
         };
 
         this.solicitudesService.verificar(solicitudId, dto).subscribe({
@@ -214,5 +219,27 @@ export class FormularioCampo implements OnInit {
   /** Regresa al buzon de visitas */
   volver(): void {
     this.router.navigate(['/verificador/buzon-visitas']);
+  }
+  onFotoSelected(event: Event, tipo: 'fachada' | 'comprobante' | 'identificacion') {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const previewUrl = URL.createObjectURL(file);
+      
+      switch (tipo) {
+        case 'fachada':
+          this.fotoFachada.set(file);
+          this.previewFachada.set(previewUrl);
+          break;
+        case 'comprobante':
+          this.fotoComprobante.set(file);
+          this.previewComprobante.set(previewUrl);
+          break;
+        case 'identificacion':
+          this.fotoIdentificacion.set(file);
+          this.previewIdentificacion.set(previewUrl);
+          break;
+      }
+    }
   }
 }

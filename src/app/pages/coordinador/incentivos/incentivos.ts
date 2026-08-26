@@ -1,9 +1,10 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
+import { ConfirmModalComponent } from '../../../components/ui/confirm-modal/confirm-modal';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { CoordinadoresService } from '../../../core/services/coordinadores.service';
 import { DistribuidoresService } from '../../../core/services/distribuidores.service';
@@ -23,7 +24,7 @@ interface Candidata {
 
 @Component({
   selector: 'app-incentivos',
-  imports: [CommonModule, ReactiveFormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent],
+  imports: [CommonModule, ReactiveFormsModule, CardComponent, TableComponent, BadgeComponent, ButtonComponent, InputComponent, ConfirmModalComponent],
   templateUrl: './incentivos.html'
 })
 export class Incentivos implements OnInit, OnDestroy {
@@ -38,12 +39,35 @@ export class Incentivos implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
 
   selectedCandidata: Candidata | null = null;
+  showConfirmModal = signal(false);
   isSending = signal(false);
   requestSent = signal(false);
   isLoadingRequests = signal(false);
   solicitudDetalle = signal<CreditRaiseRequest | null>(null);
   lastRejectedRequest = signal<CreditRaiseRequest | null>(null);
   formError = signal<string | null>(null);
+
+  readonly searchQuery = signal('');
+  readonly currentFilter = signal<string>('');
+
+  readonly filteredCandidatas = computed(() => {
+    const search = this.searchQuery().toLowerCase().trim();
+    const filter = this.currentFilter();
+    let all = this.candidatas();
+
+    if (filter) {
+      all = all.filter(c => c.puntaje === filter);
+    }
+
+    if (search) {
+      all = all.filter(c => {
+        const text = `${c.id} ${c.nombre}`.toLowerCase();
+        return text.includes(search);
+      });
+    }
+
+    return all;
+  });
 
   form: FormGroup | null = null;
 
@@ -81,12 +105,22 @@ export class Incentivos implements OnInit, OnDestroy {
     this.coordinadoresService.listarDistribuidoras(user.id).subscribe({
       next: (res) => {
         const d = res.data?.data || [];
+        const mapStatusToPuntaje = (status: string) => {
+          switch (status) {
+            case 'ACTIVA': return 'Excelente';
+            case 'MOROSA': return 'Con Atrasos';
+            case 'DESHABILITADA': return 'Deshabilitada';
+            case 'BAJA_VOLUNTARIA': return 'Baja Voluntaria';
+            default: return 'Desconocido';
+          }
+        };
+
         const candidatasMap = d.map((dist: { id: string; distributorNumber: string; creditLimitCents?: number; status: string }) => ({
           id: dist.id,
           nombre: `Distribuidora ${dist.distributorNumber}`,
           limiteActual: (dist.creditLimitCents || 0) / 100,
           valesPagados: 0, // Mocked
-          puntaje: dist.status === 'ACTIVA' ? 'Excelente' : 'Bueno'
+          puntaje: mapStatusToPuntaje(dist.status)
         }));
         this.candidatas.set(candidatasMap);
         if (!isBackground) this.isLoading.set(false);
@@ -155,7 +189,13 @@ export class Incentivos implements OnInit, OnDestroy {
 
   preAutorizarAumento() {
     if (!this.form || this.form.invalid || !this.selectedCandidata) return;
+    this.showConfirmModal.set(true);
+  }
 
+  confirmarAumento() {
+    if (!this.form || this.form.invalid || !this.selectedCandidata) return;
+
+    this.showConfirmModal.set(false);
     this.isSending.set(true);
     this.formError.set(null);
 
@@ -183,5 +223,15 @@ export class Incentivos implements OnInit, OnDestroy {
         this.formError.set(msg);
       }
     });
+  }
+
+  getBadgeVariant(puntaje: string): 'success' | 'warning' | 'error' | 'info' {
+    switch (puntaje) {
+      case 'Excelente': return 'success';
+      case 'Con Atrasos': return 'error';
+      case 'Deshabilitada': return 'error';
+      case 'Baja Voluntaria': return 'warning';
+      default: return 'info';
+    }
   }
 }

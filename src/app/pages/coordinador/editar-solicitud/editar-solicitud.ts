@@ -29,9 +29,12 @@ export class EditarSolicitud implements OnInit {
 
   // Form signals
   readonly nombre = signal('');
+  readonly correo = signal('');
   readonly apellidoPaterno = signal('');
   readonly apellidoMaterno = signal('');
   readonly rfc = signal('');
+  readonly curp = signal('');
+  readonly phone = signal('');
   readonly calle = signal('');
   readonly numero = signal('');
   readonly colonia = signal('');
@@ -53,9 +56,12 @@ export class EditarSolicitud implements OnInit {
       next: (res) => {
         const s = res.data;
         this.nombre.set(s.datos_generales.nombre);
+        this.correo.set(s.datos_generales.correo || '');
         this.apellidoPaterno.set(s.datos_generales.apellido_paterno);
         this.apellidoMaterno.set(s.datos_generales.apellido_materno || '');
         this.rfc.set(s.datos_generales.rfc);
+        this.curp.set(s.datos_generales.curp || '');
+        this.phone.set(s.datos_generales.phone || '');
         this.calle.set(s.datos_generales.calle);
         this.numero.set(s.datos_generales.numero);
         this.colonia.set(s.datos_generales.colonia);
@@ -79,8 +85,11 @@ export class EditarSolicitud implements OnInit {
   getValidationErrors(): string[] {
     const errors: string[] = [];
     if (this.nombre().length === 0) errors.push('El nombre es requerido.');
+    if (this.correo().length === 0 || !this.correo().includes('@')) errors.push('Un correo válido es requerido.');
     if (this.apellidoPaterno().length === 0) errors.push('El apellido paterno es requerido.');
     if (this.rfc().length !== 13) errors.push('El RFC debe tener exactamente 13 caracteres.');
+    if (this.curp().length !== 18) errors.push('La CURP debe tener exactamente 18 caracteres.');
+    if (this.phone().length !== 10) errors.push('El teléfono debe tener exactamente 10 dígitos.');
     if (this.calle().length === 0) errors.push('La calle es requerida.');
     if (this.numero().length === 0) errors.push('El número es requerido.');
     if (this.colonia().length === 0) errors.push('La colonia es requerida.');
@@ -105,9 +114,12 @@ export class EditarSolicitud implements OnInit {
     const dto = {
       datos_generales: {
         nombre: this.nombre(),
+        correo: this.correo(),
         apellido_paterno: this.apellidoPaterno(),
         apellido_materno: this.apellidoMaterno(),
-        rfc: this.rfc(),
+        rfc: this.rfc().trim().toUpperCase(),
+        curp: this.curp().trim().toUpperCase(),
+        phone: this.phone().trim(),
         calle: this.calle(),
         numero: this.numero(),
         colonia: this.colonia(),

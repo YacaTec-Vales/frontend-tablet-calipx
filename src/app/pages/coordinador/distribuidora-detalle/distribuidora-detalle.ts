@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DistribuidoresService } from '../../../core/services/distribuidores.service';
 import { DistribuidorResponse } from '../../../core/models/distribuidor.model';
-import { CardComponent } from '../../../components/ui/card/card';
 import { BadgeComponent } from '../../../components/ui/badge/badge';
 import { ButtonComponent } from '../../../components/ui/button/button';
 
 @Component({
   selector: 'app-distribuidora-detalle',
-  imports: [CommonModule, RouterModule, CardComponent, BadgeComponent, ButtonComponent],
+  imports: [CommonModule, RouterModule, BadgeComponent, ButtonComponent],
   templateUrl: './distribuidora-detalle.html'
 })
 export class DistribuidoraDetalle implements OnInit {
@@ -20,6 +19,9 @@ export class DistribuidoraDetalle implements OnInit {
   distribuidora = signal<DistribuidorResponse | null>(null);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
+
+  // Tabs
+  currentTab = signal('FINANCIERA');
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');

@@ -8,7 +8,7 @@ import { BusinessConfigItem } from '../models/business-config.model';
 /**
  * Servicio para leer la configuracion global del negocio.
  *
- * Endpoint 21 del documento endpoints_tablet_calipx.md:
+ * Endpoint 21 del documento endpoints_tablet_Calipx.md:
  * - GET /business-config (lectura de los 7 parametros globales)
  *
  * Solo lectura desde la tablet (PATCH es exclusivo del Gerente General).

@@ -13,11 +13,12 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   UserRole,
+  LoginResponseDto,
 } from '../models/auth.model';
 
-const TOKEN_KEY = 'calipx_access_token';
-const REFRESH_KEY = 'calipx_refresh_token';
-const USER_KEY = 'calipx_user';
+const TOKEN_KEY = 'Calipx_access_token';
+const REFRESH_KEY = 'Calipx_refresh_token';
+const USER_KEY = 'Calipx_user';
 
 /**
  * Servicio de autenticacion para la tablet Calipx.
@@ -42,6 +43,11 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  updateCurrentUser(user: AuthUser): void {
+    this.currentUser.set(user);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   /** Indica si hay un usuario autenticado con token valido */
@@ -86,11 +92,38 @@ export class AuthService {
    * POST /auth/login
    * Autentica al usuario y almacena tokens JWT.
    */
-  login(credentials: LoginRequest): Observable<ApiResponse<TokenResponse>> {
+  login(credentials: LoginRequest): Observable<ApiResponse<LoginResponseDto>> {
     this.isLoading.set(true);
 
     return this.http
-      .post<ApiResponse<TokenResponse>>(`${this.apiUrl}/auth/login`, credentials)
+      .post<ApiResponse<LoginResponseDto>>(`${this.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap((response) => {
+          if (!response.data.mfaRequired && response.data.accessToken && response.data.refreshToken && response.data.user) {
+            this.saveSession(response.data.accessToken, response.data.refreshToken, response.data.user);
+            this.currentUser.set(response.data.user);
+          }
+          this.isLoading.set(false);
+        }),
+        catchError((error) => {
+          this.isLoading.set(false);
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  /**
+   * POST /auth/mfa-verify
+   * Verifica el codigo TOTP despues de un login exitoso que requeria MFA.
+   */
+  mfaVerify(mfaToken: string, code: string): Observable<ApiResponse<TokenResponse>> {
+    this.isLoading.set(true);
+    return this.http
+      .post<ApiResponse<TokenResponse>>(
+        `${this.apiUrl}/auth/mfa-verify`,
+        { code },
+        { headers: { Authorization: `Bearer ${mfaToken}` } }
+      )
       .pipe(
         tap((response) => {
           const { accessToken, refreshToken, user } = response.data;
@@ -174,7 +207,9 @@ export class AuthService {
         tap((response) => {
           // El backend devuelve nuevos tokens tras cambiar contrasena
           if (response.data?.accessToken) {
-            this.saveSession(response.data.accessToken, response.data.refreshToken, response.data.user);
+            const currentRefreshToken = this.getRefreshToken();
+            const newRefreshToken = response.data.refreshToken || currentRefreshToken || '';
+            this.saveSession(response.data.accessToken, newRefreshToken, response.data.user);
             this.currentUser.set(response.data.user);
           }
         }),

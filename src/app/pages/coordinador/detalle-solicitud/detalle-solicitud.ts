@@ -27,6 +27,8 @@ export class DetalleSolicitud implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly verificationDocs = signal<DocumentResponse[]>([]);
 
+  readonly currentTab = signal<'GENERALES' | 'DOMICILIO' | 'VEHICULOS' | 'LABORALES' | 'CREDITOS' | 'FAMILIARES'>('GENERALES');
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {

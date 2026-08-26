@@ -62,9 +62,12 @@ export interface Familiar {
 /** 12 campos de datos_generales para POST /solicitudes */
 export interface DatosGenerales {
   nombre: string;
+  correo: string;
   apellido_paterno: string;
   apellido_materno: string;
   rfc: string;
+  curp: string;
+  phone: string;
   fecha_nacimiento: string;
   calle: string;
   numero: string;
@@ -73,6 +76,7 @@ export interface DatosGenerales {
   lugar_nacimiento: string;
   estado: string;
   ciudad: string;
+  ine_document_id?: string;
 }
 
 /** 5 bloques de datos_adicionales para POST /solicitudes */

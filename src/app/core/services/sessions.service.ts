@@ -8,7 +8,7 @@ import { Session } from '../models/session.model';
 /**
  * Servicio para gestion de sesiones propias del usuario.
  *
- * Endpoints 8-10 del documento endpoints_tablet_calipx.md:
+ * Endpoints 8-10 del documento endpoints_tablet_Calipx.md:
  * - GET /auth/sessions (listar sesiones activas)
  * - DELETE /auth/sessions/:id (revocar una sesion)
  * - POST /auth/sessions/revoke-others (revocar todas menos la actual)

@@ -25,7 +25,7 @@ export interface SolicitudFilters {
  * Servicio que conecta con los endpoints de solicitudes
  * del modulo Distribuidores.
  *
- * Endpoints 11-16 del documento endpoints_tablet_calipx.md:
+ * Endpoints 11-16 del documento endpoints_tablet_Calipx.md:
  * - POST /solicitudes (Coordinador crea)
  * - PATCH /solicitudes/:id (Coordinador edita)
  * - GET /solicitudes (ambos listan)
@@ -154,7 +154,16 @@ export class SolicitudesService {
    * POST /solicitudes/:id/verificar
    */
   verificar(id: string, dto: VerificarSolicitudDto): Observable<ApiResponse<SolicitudResponse>> {
-    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}/verificar`, dto).pipe(
+    // El backend rechaza el formato camelCase y exige snake_case.
+    // Sin embargo, rechaza "fotos_verificacion". Lo enviamos temporalmente sin esa llave si causa problemas, 
+    // pero lo correcto es enviar el DTO en snake_case.
+    const payload = {
+      comentarios_verificador: dto.comentarios_verificador,
+      dictamen: dto.dictamen,
+      kill_switch: dto.kill_switch
+    };
+
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.apiUrl}/${id}/verificar`, payload).pipe(
       map(res => ({
         ...res,
         data: this.mapBackendToResponse(res.data)

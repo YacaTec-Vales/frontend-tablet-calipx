@@ -12,12 +12,6 @@ export const routes: Routes = [
       import('./pages/login/login').then((m) => m.Login),
   },
 
-  {
-    path: 'change-password',
-    loadComponent: () =>
-      import('./pages/change-password/change-password').then((m) => m.ChangePassword),
-    canActivate: [authGuard],
-  },
 
   {
     path: 'verificador',
@@ -46,6 +40,11 @@ export const routes: Routes = [
           import('./pages/verificador/detalle-solicitud/detalle-solicitud').then(
             (m) => m.DetalleSolicitud,
           ),
+      },
+      {
+        path: 'seguridad',
+        loadComponent: () =>
+          import('./pages/shared/seguridad/seguridad').then((m) => m.Seguridad),
       },
     ],
   },
@@ -123,7 +122,11 @@ export const routes: Routes = [
             (m) => m.Transferencias,
           ),
       },
-
+      {
+        path: 'seguridad',
+        loadComponent: () =>
+          import('./pages/shared/seguridad/seguridad').then((m) => m.Seguridad),
+      },
     ],
   },
 

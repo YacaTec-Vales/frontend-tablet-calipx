@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
 import { TableComponent } from '../../../components/ui/table/table';
 import { ButtonComponent } from '../../../components/ui/button/button';
+import { ConfirmModalComponent } from '../../../components/ui/confirm-modal/confirm-modal';
 import { InputComponent } from '../../../components/ui/input/input';
 import { AutorizacionesService, AuthorizationResponseDto } from '../../../core/services/autorizaciones.service';
 import { CoordinadoresService } from '../../../core/services/coordinadores.service';
@@ -19,7 +20,7 @@ interface TransferenciaView extends AuthorizationResponseDto {
 
 @Component({
   selector: 'app-transferencias',
-  imports: [CommonModule, FormsModule, CardComponent, TableComponent, ButtonComponent, InputComponent],
+  imports: [CommonModule, FormsModule, CardComponent, TableComponent, ButtonComponent, ConfirmModalComponent, InputComponent],
   templateUrl: './transferencias.html'
 })
 export class Transferencias implements OnInit, OnDestroy {
@@ -34,6 +35,7 @@ export class Transferencias implements OnInit, OnDestroy {
   selectedSolicitud: TransferenciaView | null = null;
   actionType: 'approve' | 'reject' | null = null;
   motivoRechazo: string = '';
+  showConfirmModal = signal(false);
   selectedDistributorId: string = '';
   isProcessing = false;
 
@@ -144,18 +146,22 @@ export class Transferencias implements OnInit, OnDestroy {
   }
 
   procesar() {
+    if (this.actionType === 'approve' && !this.selectedDistributorId) {
+      this.errorMessage.set('Debes seleccionar una distribuidora destino.');
+      return;
+    }
+    this.showConfirmModal.set(true);
+  }
+
+  confirmarProcesar() {
     if (!this.selectedSolicitud) return;
 
+    this.showConfirmModal.set(false);
     this.isProcessing = true;
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
     if (this.actionType === 'approve') {
-      if (!this.selectedDistributorId) {
-        this.errorMessage.set('Debes seleccionar una distribuidora destino.');
-        this.isProcessing = false;
-        return;
-      }
 
       const dto = {
         notes: 'Aprobado y asignado por coordinador',

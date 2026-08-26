@@ -5,6 +5,7 @@ import { LayoutModule, BreakpointObserver } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from './core/services/auth.service';
+import { environment } from '../environments/environment.development';
 
 @Component({
   selector: 'app-root',
@@ -25,6 +26,12 @@ export class App implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Intenta restaurar la sesion si hay un token almacenado
     this.authService.tryRestoreSession();
+
+    // Si la variable de entorno está deshabilitada, siempre será válida la resolución (para desarrollo local)
+    if (!environment.enforceTabletResolution) {
+      this.isValidResolution.set(true);
+      return;
+    }
 
     // Check initial state
     this.isValidResolution.set(this.breakpointObserver.isMatched(this.tabletQuery));

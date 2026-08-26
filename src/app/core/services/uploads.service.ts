@@ -63,18 +63,23 @@ export class UploadsService {
    * Sube un archivo al backend (multipart/form-data).
    * Devuelve el `DocumentResponse` con `id` y `publicUrl` fresca (15 min).
    */
-  uploadFile(file: File, documentType: KnownDocumentType): Observable<ApiResponse<DocumentResponse>> {
+  uploadFile(file: File, documentType: string, metadata?: string): Observable<ApiResponse<DocumentResponse>> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('documentType', documentType);
+    if (metadata) formData.append('metadata', metadata);
     return this.http.post<ApiResponse<DocumentResponse>>(this.apiUrl, formData);
   }
 
-  /**
-   * Sube una foto de verificacion asociada a una solicitud. El backend
-   * inyecta `metadata.solicitationId` automaticamente para que
-   * `getDocumentsByVerification()` la encuentre.
-   */
+  uploadVerificationFile(solicitationId: string, file: File, documentType: string, metadata?: string): Observable<ApiResponse<DocumentResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('documentType', documentType);
+    if (metadata) formData.append('metadata', metadata);
+
+    return this.http.post<ApiResponse<DocumentResponse>>(`${this.apiUrl}/verification/${solicitationId}`, formData);
+  }
+
   uploadForVerification(
     solicitationId: string,
     file: File,

@@ -20,11 +20,9 @@ export const authGuard: CanActivateFn = (route) => {
     return false;
   }
 
-  // Si el usuario debe cambiar contrasena, redirigir
-  // (excepto si ya esta en la ruta de cambio)
-  const targetPath = route.routeConfig?.path ?? '';
-  if (authService.mustChangePassword() && targetPath !== 'change-password') {
-    router.navigate(['/change-password']);
+  // Si el usuario debe cambiar contrasena, redirigir a login para que complete el flujo
+  if (authService.mustChangePassword()) {
+    router.navigate(['/login']);
     return false;
   }
 

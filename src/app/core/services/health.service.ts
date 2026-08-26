@@ -7,7 +7,7 @@ import { HealthResponse } from '../models/api-response.model';
 /**
  * Servicio de health checks para verificar conectividad con el backend.
  *
- * Endpoints 22-23 del documento endpoints_tablet_calipx.md:
+ * Endpoints 22-23 del documento endpoints_tablet_Calipx.md:
  * - GET /health/live (liveness)
  * - GET /health/ready (readiness)
  *
