@@ -11,7 +11,7 @@ import { filter } from 'rxjs/operators';
   styleUrl: './layout.css'
 })
 export class Layout implements OnInit {
-  currentRoute: string = '';
+  currentRoute: string = inject(Router).url;
   private readonly authService = inject(AuthService);
 
   constructor(private router: Router) { }
