@@ -7,6 +7,7 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { refreshInterceptor } from './core/interceptors/refresh.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { recaptchaInterceptor } from './core/interceptors/recaptcha.interceptor';
+import { ddosProtectionInterceptor } from './core/interceptors/ddos-protection.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,6 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(
       withInterceptors([
+        ddosProtectionInterceptor,
         authInterceptor,
         refreshInterceptor,
         recaptchaInterceptor,
