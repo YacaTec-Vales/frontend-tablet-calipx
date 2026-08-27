@@ -6,4 +6,8 @@ export const environment = {
   // Un solo par de llaves cubre los dominios tecu/calipx/poch.
   // Si queda vacía, el interceptor no adjunta x-recaptcha-token.
   recaptchaSiteKey: '6LfrdwktAAAAADqngll9t39PaELG52BcoHv8gw8v',
+  // Mitigación cooperante de DDoS en el cliente (rate-limit,
+  // circuit breaker, fingerprint, request-id). El corte real debe
+  // seguir viviéndose en el edge (Cloudflare) y backend.
+  ddosProtection: true,
 };
