@@ -12,7 +12,11 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/f
       useExisting: forwardRef(() => InputComponent),
       multi: true
     }
-  ]
+  ],
+  host: {
+    class: 'block w-full border-0 p-0 bg-transparent ring-0 shadow-none'
+  }
+
 })
 export class InputComponent implements ControlValueAccessor {
   readonly label = input<string>('');

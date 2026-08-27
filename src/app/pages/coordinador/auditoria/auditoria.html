@@ -434,10 +434,12 @@
 @if (showConfirmModal()) {
   <app-confirm-modal
     title="Confirmar Modificaciones"
-    message="¿Estás seguro de que deseas aplicar estas modificaciones a la solicitud? Esta acción no se puede deshacer y se notificará en los logs."
-    confirmText="Sí, guardar cambios"
+    [message]="selectedSolicitud()?.estado === 'DICTAMINADA' 
+      ? '¡ATENCIÓN! Esta solicitud ya está DICTAMINADA. Si guardas estos cambios, el dictamen se invalidará, se borrarán las fotos y la solicitud regresará a EN VERIFICACIÓN. El verificador tendrá que volver a ir al domicilio. ¿Deseas continuar?' 
+      : '¿Estás seguro de que deseas aplicar estas modificaciones a la solicitud? Esta acción no se puede deshacer y se notificará en los logs.'"
+    [confirmText]="selectedSolicitud()?.estado === 'DICTAMINADA' ? 'Sí, invalidar dictamen y guardar' : 'Sí, guardar cambios'"
     cancelText="Cancelar"
-    variant="primary"
+    [variant]="selectedSolicitud()?.estado === 'DICTAMINADA' ? 'error' : 'primary'"
     (confirm)="confirmarGuardado()"
     (cancel)="showConfirmModal.set(false)"
     [isLoading]="isSubmitting()"
