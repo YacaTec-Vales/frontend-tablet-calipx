@@ -17,3 +17,8 @@
   .bg-red-700 { background-color: var(--color-danger-strong, #be123c) !important; }
   .hover\:bg-red-800:hover { background-color: var(--color-danger-strong, #be123c) !important; }
 }
+
+/* Ocultar el badge de reCAPTCHA para que no estorbe en la UI */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
