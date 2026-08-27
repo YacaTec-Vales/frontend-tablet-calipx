@@ -15,8 +15,8 @@ import * as QRCode from 'qrcode';
       <div class="bg-white shadow rounded-lg overflow-hidden">
         <div class="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
           <div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Configuración de Seguridad</h3>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500">Administra la autenticación de dos pasos (MFA).</p>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Perfil y Seguridad</h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">Administra tu perfil, contraseña y autenticación de dos pasos (MFA).</p>
           </div>
           <div class="bg-gray-100 p-3 rounded-full">
             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,148 +45,248 @@ import * as QRCode from 'qrcode';
           </div>
           }
 
-          <!-- ESTADO: Desactivado -->
-          @if (!isMfaEnabled() && step() === 'inactive') {
-            <div class="flex flex-col md:flex-row gap-8 items-start">
-              <div class="flex-1">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 mb-4 border border-gray-200">
-                  <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                  Inactivo
+          <!-- TABS -->
+          <div class="border-b border-gray-200 mb-6">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500">
+              <li class="me-2">
+                <button (click)="currentTab.set('PERFIL')" class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+                  [ngClass]="currentTab() === 'PERFIL' ? 'text-brand border-brand' : 'border-transparent hover:text-gray-600 hover:border-gray-300'">
+                  Mi Perfil
+                </button>
+              </li>
+              <li class="me-2">
+                <button (click)="currentTab.set('MFA')" class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group"
+                  [ngClass]="currentTab() === 'MFA' ? 'text-brand border-brand' : 'border-transparent hover:text-gray-600 hover:border-gray-300'">
+                  Seguridad y Accesos
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- SECCIÓN DE PERFIL Y CONTRASEÑA -->
+          @if (currentTab() === 'PERFIL') {
+            @if (user()) {
+              <div class="mb-4">
+              <h4 class="text-xl font-bold text-gray-900 mb-6">Información Personal</h4>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 mb-1">Nombre / Usuario</label>
+                  <div class="text-gray-900 font-medium">{{ user()?.displayName || user()?.username }}</div>
                 </div>
-                <h4 class="text-xl font-bold text-gray-900 mb-2">Protege tu cuenta</h4>
-                <p class="text-gray-600 mb-6">
-                  La autenticación de dos pasos añade una capa adicional de seguridad a tu cuenta. Además de tu contraseña, necesitarás un código generado por una aplicación en tu teléfono.
-                </p>
-                <app-button (click)="startSetup()" [disabled]="isLoading()">
-                  Activar autenticación de dos pasos
-                </app-button>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 mb-1">Correo Electrónico</label>
+                  <div class="text-gray-900 font-medium">{{ user()?.email }}</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 mb-1">Rol</label>
+                  <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {{ user()?.role }}
+                  </div>
+                </div>
               </div>
-              <div class="hidden md:block w-48 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                <svg class="w-full h-full text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
+
+              <div class="bg-gray-50 rounded-xl border border-gray-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                  <div>
+                    <h5 class="text-lg font-bold text-gray-900">Cambiar Contraseña</h5>
+                    <p class="text-sm text-gray-500">Actualiza tu contraseña periódicamente por seguridad.</p>
+                  </div>
+                  <app-button variant="secondary" size="sm" (click)="showPasswordChange.set(!showPasswordChange())">
+                    {{ showPasswordChange() ? 'Cancelar' : 'Cambiar' }}
+                  </app-button>
+                </div>
+
+                @if (showPasswordChange()) {
+                  <form (submit)="changePassword($event)" class="space-y-4 pt-4 border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <app-input
+                        id="currentPassword"
+                        label="Contraseña Actual"
+                        type="password"
+                        placeholder="••••••••"
+                        [(value)]="currentPassword"
+                      ></app-input>
+                      <div class="hidden md:block"></div>
+                      
+                      <app-input
+                        id="newPassword"
+                        label="Nueva Contraseña"
+                        type="password"
+                        placeholder="••••••••"
+                        [(value)]="newPassword"
+                      ></app-input>
+                      <app-input
+                        id="confirmPassword"
+                        label="Confirmar Nueva Contraseña"
+                        type="password"
+                        placeholder="••••••••"
+                        [(value)]="confirmPassword"
+                      ></app-input>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                      <app-button type="submit" [disabled]="isLoading() || !currentPassword() || !newPassword() || !confirmPassword()">
+                        <span class="flex items-center gap-2">
+                          @if (isLoading()) {
+                            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                          }
+                          Guardar Contraseña
+                        </span>
+                      </app-button>
+                    </div>
+                  </form>
+                }
               </div>
-            </div>
+              </div>
+            }
           }
 
-          <!-- ESTADO: Configurando -->
-          @if (step() === 'setup') {
-            <div class="space-y-8">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Paso 1 -->
-                <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span class="bg-brand text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">1</span>
-                    Escanea el código QR
-                  </h4>
-                  <p class="text-sm text-gray-600 mb-4">Usa tu aplicación de autenticación (Google Authenticator, Authy, etc.) para escanear este código.</p>
-                  <div class="bg-white p-4 rounded-lg inline-block border border-gray-200 shadow-sm">
-                    @if (qrCodeUrl()) {
-                      <img [src]="qrCodeUrl()" alt="QR Code" class="w-48 h-48" />
-                    } @else {
-                      <div class="w-48 h-48 bg-gray-100 animate-pulse flex items-center justify-center rounded">
-                        <span class="text-gray-400">Generando...</span>
-                      </div>
-                    }
+          <!-- SECCIÓN MFA -->
+          @if (currentTab() === 'MFA') {
+            <!-- ESTADO: Desactivado -->
+            @if (!isMfaEnabled() && step() === 'inactive') {
+              <div class="flex flex-col md:flex-row gap-8 items-start">
+                <div class="flex-1">
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 mb-4 border border-gray-200">
+                    <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                    Inactivo
                   </div>
+                  <h4 class="text-xl font-bold text-gray-900 mb-2">Protege tu cuenta</h4>
+                  <p class="text-gray-600 mb-6">
+                    La autenticación de dos pasos añade una capa adicional de seguridad a tu cuenta. Además de tu contraseña, necesitarás un código generado por una aplicación en tu teléfono.
+                  </p>
+                  <app-button (click)="startSetup()" [disabled]="isLoading()">
+                    Activar autenticación de dos pasos
+                  </app-button>
                 </div>
-
-                <!-- Paso 2 -->
-                <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 flex flex-col">
-                  <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span class="bg-brand text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">2</span>
-                    Códigos de respaldo
-                  </h4>
-                  <p class="text-sm text-gray-600 mb-4">Guarda estos códigos en un lugar seguro. Los necesitarás si pierdes acceso a tu aplicación.</p>
-                  
-                  <div class="bg-white border border-gray-200 rounded-lg p-4 font-mono text-sm grid grid-cols-2 gap-2 flex-1">
-                    @for (code of backupCodes(); track code) {
-                      <div class="text-gray-800 bg-gray-50 px-2 py-1 rounded border border-gray-100 text-center tracking-wider">{{ code }}</div>
-                    }
-                  </div>
+                <div class="hidden md:block w-48 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <svg class="w-full h-full text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                  </svg>
                 </div>
               </div>
+            }
 
-              <!-- Paso 3 -->
-              <div class="border-t border-gray-200 pt-8 max-w-md mx-auto text-center">
-                <h4 class="text-lg font-bold text-gray-900 mb-2">Verifica la configuración</h4>
-                <p class="text-sm text-gray-600 mb-6">Ingresa el código de 6 dígitos generado por tu aplicación para activar el MFA.</p>
-                
-                <form (submit)="verifySetup($event)" class="space-y-4">
-                  <div class="max-w-xs mx-auto">
-                    <app-input
-                      id="setupCode"
-                      type="text"
-                      placeholder="123456"
-                      [maxlength]="6"
-                      [(value)]="setupCode"
-                    ></app-input>
-                  </div>
-                  
-                  <div class="flex gap-3 justify-center pt-2">
-                    <app-button type="button" variant="secondary" (click)="cancelSetup()" [disabled]="isLoading()">
-                      Cancelar
-                    </app-button>
-                    <app-button type="submit" [disabled]="isLoading() || setupCode().length < 6">
-                      Verificar y Activar
-                    </app-button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          }
-
-          <!-- ESTADO: Activado -->
-          @if (isMfaEnabled() && step() === 'active') {
-            <div class="flex flex-col md:flex-row gap-8 items-start">
-              <div class="flex-1">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 mb-4 border border-green-200">
-                  <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                  Activo
-                </div>
-                <h4 class="text-xl font-bold text-gray-900 mb-2">Cuenta Protegida</h4>
-                <p class="text-gray-600 mb-6">
-                  La autenticación de dos pasos está activa. Tu cuenta tiene una capa adicional de seguridad.
-                </p>
-                
-                <div class="bg-red-50 border border-red-100 p-5 rounded-xl mt-8">
-                  <h5 class="text-red-800 font-bold mb-2">Desactivar MFA</h5>
-                  <p class="text-red-600 text-sm mb-4">Al desactivar el MFA reducirás la seguridad de tu cuenta.</p>
-                  
-                  @if (!showDisableForm()) {
-                    <button type="button" class="text-red-700 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-sm px-5 py-2.5 transition-colors shadow-sm" (click)="showDisableForm.set(true)">
-                      Desactivar autenticación de dos pasos
-                    </button>
-                  } @else {
-                    <form (submit)="disableMfa($event)" class="bg-white p-4 rounded-lg border border-red-200">
-                      <p class="text-sm text-gray-700 mb-3 font-medium">Ingresa un código actual para confirmar:</p>
-                      <div class="flex gap-3">
-                        <div class="flex-1">
-                          <app-input
-                            id="disableCode"
-                            type="text"
-                            placeholder="123456"
-                            [maxlength]="6"
-                            [(value)]="disableCode"
-                          ></app-input>
+            <!-- ESTADO: Configurando -->
+            @if (step() === 'setup') {
+              <div class="space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <!-- Paso 1 -->
+                  <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <span class="bg-brand text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">1</span>
+                      Escanea el código QR
+                    </h4>
+                    <p class="text-sm text-gray-600 mb-4">Usa tu aplicación de autenticación (Google Authenticator, Authy, etc.) para escanear este código.</p>
+                    <div class="bg-white p-4 rounded-lg inline-block border border-gray-200 shadow-sm">
+                      @if (qrCodeUrl()) {
+                        <img [src]="qrCodeUrl()" alt="QR Code" class="w-48 h-48" />
+                      } @else {
+                        <div class="w-48 h-48 bg-gray-100 animate-pulse flex items-center justify-center rounded">
+                          <span class="text-gray-400">Generando...</span>
                         </div>
-                        <app-button type="submit" variant="primary" class="!bg-red-600 hover:!bg-red-700 !ring-red-300" [disabled]="isLoading() || disableCode().length < 6">
-                          Confirmar
-                        </app-button>
-                      </div>
-                      <button type="button" class="text-sm text-gray-500 hover:text-gray-700 mt-3" (click)="showDisableForm.set(false); disableCode.set(''); alert.set(null)">
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Paso 2 -->
+                  <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 flex flex-col">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <span class="bg-brand text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">2</span>
+                      Códigos de respaldo
+                    </h4>
+                    <p class="text-sm text-gray-600 mb-4">Guarda estos códigos en un lugar seguro. Los necesitarás si pierdes acceso a tu aplicación.</p>
+                    
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 font-mono text-sm grid grid-cols-2 gap-2 flex-1">
+                      @for (code of backupCodes(); track code) {
+                        <div class="text-gray-800 bg-gray-50 px-2 py-1 rounded border border-gray-100 text-center tracking-wider">{{ code }}</div>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="border-t border-gray-200 pt-8 max-w-md mx-auto text-center">
+                  <h4 class="text-lg font-bold text-gray-900 mb-2">Verifica la configuración</h4>
+                  <p class="text-sm text-gray-600 mb-6">Ingresa el código de 6 dígitos generado por tu aplicación para activar el MFA.</p>
+                  
+                  <form (submit)="verifySetup($event)" class="space-y-4">
+                    <div class="max-w-xs mx-auto">
+                      <app-input
+                        id="setupCode"
+                        type="text"
+                        placeholder="123456"
+                        [maxlength]="6"
+                        [(value)]="setupCode"
+                      ></app-input>
+                    </div>
+                    
+                    <div class="flex gap-3 justify-center pt-2">
+                      <app-button type="button" variant="secondary" (click)="cancelSetup()" [disabled]="isLoading()">
                         Cancelar
-                      </button>
-                    </form>
-                  }
+                      </app-button>
+                      <app-button type="submit" [disabled]="isLoading() || setupCode().length < 6">
+                        Verificar y Activar
+                      </app-button>
+                    </div>
+                  </form>
                 </div>
               </div>
-              <div class="hidden md:block w-48 bg-green-50 rounded-xl p-4 border border-green-100">
-                <svg class="w-full h-full text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
+            }
+
+            <!-- ESTADO: Activado -->
+            @if (isMfaEnabled() && step() === 'active') {
+              <div class="flex flex-col md:flex-row gap-8 items-start">
+                <div class="flex-1">
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 mb-4 border border-green-200">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    Activo
+                  </div>
+                  <h4 class="text-xl font-bold text-gray-900 mb-2">Cuenta Protegida</h4>
+                  <p class="text-gray-600 mb-6">
+                    La autenticación de dos pasos está activa. Tu cuenta tiene una capa adicional de seguridad.
+                  </p>
+                  
+                  <div class="bg-red-50 border border-red-100 p-5 rounded-xl mt-8">
+                    <h5 class="text-red-800 font-bold mb-2">Desactivar MFA</h5>
+                    <p class="text-red-600 text-sm mb-4">Al desactivar el MFA reducirás la seguridad de tu cuenta.</p>
+                    
+                    @if (!showDisableForm()) {
+                      <button type="button" class="text-red-700 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-sm px-5 py-2.5 transition-colors shadow-sm" (click)="showDisableForm.set(true)">
+                        Desactivar autenticación de dos pasos
+                      </button>
+                    } @else {
+                      <form (submit)="disableMfa($event)" class="bg-white p-4 rounded-lg border border-red-200">
+                        <p class="text-sm text-gray-700 mb-3 font-medium">Ingresa un código actual para confirmar:</p>
+                        <div class="flex gap-3">
+                          <div class="flex-1">
+                            <app-input
+                              id="disableCode"
+                              type="text"
+                              placeholder="123456"
+                              [maxlength]="6"
+                              [(value)]="disableCode"
+                            ></app-input>
+                          </div>
+                          <app-button type="submit" variant="primary" class="!bg-red-600 hover:!bg-red-700 !ring-red-300" [disabled]="isLoading() || disableCode().length < 6">
+                            Confirmar
+                          </app-button>
+                        </div>
+                        <button type="button" class="text-sm text-gray-500 hover:text-gray-700 mt-3" (click)="showDisableForm.set(false); disableCode.set(''); alert.set(null)">
+                          Cancelar
+                        </button>
+                      </form>
+                    }
+                  </div>
+                </div>
+                <div class="hidden md:block w-48 bg-green-50 rounded-xl p-4 border border-green-100">
+                  <svg class="w-full h-full text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                  </svg>
+                </div>
               </div>
-            </div>
+            }
           }
         </div>
       </div>
@@ -203,6 +303,8 @@ export class Seguridad implements OnInit {
   // 'inactive' | 'setup' | 'active'
   readonly step = signal<'inactive' | 'setup' | 'active'>('inactive');
   
+  readonly currentTab = signal<'PERFIL' | 'MFA'>('PERFIL');
+  
   readonly qrCodeUrl = signal('');
   readonly backupCodes = signal<string[]>([]);
   readonly setupCode = signal('');
@@ -210,6 +312,13 @@ export class Seguridad implements OnInit {
   readonly showDisableForm = signal(false);
   readonly disableCode = signal('');
   
+  // Perfil y Contraseña
+  readonly user = this.authService.currentUser;
+  readonly showPasswordChange = signal(false);
+  readonly currentPassword = signal('');
+  readonly newPassword = signal('');
+  readonly confirmPassword = signal('');
+
   readonly alert = signal<{ type: 'success' | 'error'; message: string } | null>(null);
 
   ngOnInit() {
@@ -292,6 +401,39 @@ export class Seguridad implements OnInit {
       error: (err) => {
         this.isLoading.set(false);
         this.alert.set({ type: 'error', message: err.error?.message || 'Código incorrecto. Intenta nuevamente.' });
+      }
+    });
+  }
+
+  changePassword(event: Event) {
+    event.preventDefault();
+    if (!this.currentPassword() || !this.newPassword() || !this.confirmPassword()) return;
+
+    if (this.newPassword() !== this.confirmPassword()) {
+      this.alert.set({ type: 'error', message: 'Las contraseñas nuevas no coinciden.' });
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.alert.set(null);
+
+    this.authService.changePassword({
+      currentPassword: this.currentPassword(),
+      newPassword: this.newPassword()
+    }).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.alert.set({ type: 'success', message: 'Contraseña actualizada exitosamente.' });
+        this.showPasswordChange.set(false);
+        this.currentPassword.set('');
+        this.newPassword.set('');
+        this.confirmPassword.set('');
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        const reasons = err.error?.error?.details?.reasons;
+        const backendMessage = Array.isArray(reasons) ? reasons.join(', ') : (err.error?.message || 'Error al cambiar la contraseña.');
+        this.alert.set({ type: 'error', message: backendMessage });
       }
     });
   }
