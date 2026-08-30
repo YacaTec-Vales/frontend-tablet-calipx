@@ -20,16 +20,17 @@
         [(ngModel)]="monto"
         placeholder="Ej: 5000"
         hint="Ingresa el monto adicional sugerido."
+        [isInvalid]="!!montoError()" [errorMessage]="montoError()"
         [disabled]="isSubmitting()">
       </app-input>
 
       <app-input
-        label="Motivo o Justificación"
+        label="Motivo o Justificacion"
         type="textarea"
         [rows]="4"
         [(ngModel)]="motivo"
-        placeholder="Explica detalladamente por qué se recomienda este aumento..."
-        hint="Mínimo 10 caracteres."
+        placeholder="Explica detalladamente por que se recomienda este aumento..."
+        [isInvalid]="!!motivoError()" [errorMessage]="motivoError()"
         [disabled]="isSubmitting()">
       </app-input>
 
@@ -41,7 +42,7 @@
         {{ successMessage() }}
       </div>
 
-      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="onSubmit()" [isLoading]="isSubmitting()" [disabled]="!canSubmit">
+      <app-button variant="primary" size="lg" [fullWidth]="true" (onClick)="onSubmit()" [isLoading]="isSubmitting()" [disabled]="!canSubmit()">
         Enviar Solicitud a Gerencia
       </app-button>
 
