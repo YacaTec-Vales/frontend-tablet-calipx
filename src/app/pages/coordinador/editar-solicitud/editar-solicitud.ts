@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DatosGenerales } from '../../../core/models/solicitud.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,6 +7,14 @@ import { CardComponent } from '../../../components/ui/card/card';
 import { InputComponent } from '../../../components/ui/input/input';
 import { ButtonComponent } from '../../../components/ui/button/button';
 import { FormsModule } from '@angular/forms';
+import {
+  validateName,
+  validateEmail,
+  validateCurp,
+  validateRfc,
+  validatePhone,
+  validatePostalCode,
+} from '../../../core/validators/form-validators';
 
 @Component({
   selector: 'app-editar-solicitud-coordinador',
@@ -27,6 +35,9 @@ export class EditarSolicitud implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly comentariosVerificador = signal<string | null>(null);
 
+  /** Habilita mostrar errores tras el primer submit. */
+  readonly submitted = signal(false);
+
   // Form signals
   readonly nombre = signal('');
   readonly correo = signal('');
@@ -39,6 +50,39 @@ export class EditarSolicitud implements OnInit {
   readonly numero = signal('');
   readonly colonia = signal('');
   readonly codigoPostal = signal('');
+
+  // Errores por campo (computed)
+  readonly nombreError = computed(() => {
+    if (!this.submitted()) return '';
+    return validateName(this.nombre(), 'nombre');
+  });
+  readonly apellidoPaternoError = computed(() => {
+    if (!this.submitted()) return '';
+    return validateName(this.apellidoPaterno(), 'apellido paterno');
+  });
+  readonly correoError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.correo()) return ''; // opcional segun backend
+    return validateEmail(this.correo());
+  });
+  readonly rfcError = computed(() => {
+    if (!this.submitted()) return '';
+    return validateRfc(this.rfc(), 'RFC');
+  });
+  readonly curpError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.curp()) return ''; // opcional segun backend
+    return validateCurp(this.curp(), 'CURP');
+  });
+  readonly phoneError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.phone()) return ''; // opcional segun backend
+    return validatePhone(this.phone());
+  });
+  readonly codigoPostalError = computed(() => {
+    if (!this.submitted()) return '';
+    return validatePostalCode(this.codigoPostal(), 'codigo postal');
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -82,18 +126,24 @@ export class EditarSolicitud implements OnInit {
     this.router.navigate(['/coordinador/solicitud', this.solicitudId()]);
   }
 
+  /** Lista plana de mensajes de error para el alert global. */
   getValidationErrors(): string[] {
     const errors: string[] = [];
-    if (this.nombre().length === 0) errors.push('El nombre es requerido.');
-    if (this.correo().length === 0 || !this.correo().includes('@')) errors.push('Un correo válido es requerido.');
-    if (this.apellidoPaterno().length === 0) errors.push('El apellido paterno es requerido.');
-    if (this.rfc().length !== 13) errors.push('El RFC debe tener exactamente 13 caracteres.');
-    if (this.curp().length !== 18) errors.push('La CURP debe tener exactamente 18 caracteres.');
-    if (this.phone().length !== 10) errors.push('El teléfono debe tener exactamente 10 dígitos.');
+    const e: Record<string, string> = {
+      nombre: this.nombreError(),
+      apellidoPaterno: this.apellidoPaternoError(),
+      correo: this.correoError(),
+      rfc: this.rfcError(),
+      curp: this.curpError(),
+      phone: this.phoneError(),
+      codigoPostal: this.codigoPostalError(),
+    };
+    Object.values(e).forEach((msg) => {
+      if (msg) errors.push(msg);
+    });
     if (this.calle().length === 0) errors.push('La calle es requerida.');
-    if (this.numero().length === 0) errors.push('El número es requerido.');
+    if (this.numero().length === 0) errors.push('El numero es requerido.');
     if (this.colonia().length === 0) errors.push('La colonia es requerida.');
-    if (this.codigoPostal().length !== 5) errors.push('El código postal debe tener 5 dígitos.');
     return errors;
   }
 
@@ -102,6 +152,7 @@ export class EditarSolicitud implements OnInit {
   }
 
   onSubmit(): void {
+    this.submitted.set(true);
     if (!this.canSubmit()) {
       this.errorMessage.set('Por favor corrige los siguientes errores: ' + this.getValidationErrors().join(' '));
       return;

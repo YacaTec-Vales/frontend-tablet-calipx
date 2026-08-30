@@ -45,40 +45,40 @@
         <!-- Nombre completo y correo -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)"
-            name="nombre" maxlength="50" [disabled]="isSubmitting()">
+            name="nombre" maxlength="50" [isInvalid]="!!nombreError()" [errorMessage]="nombreError()" [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Apellido Paterno" placeholder="Ej. García" [value]="apellidoPaterno()"
+          <app-input label="Apellido Paterno" placeholder="Ej. Garcia" [value]="apellidoPaterno()"
             (valueChange)="apellidoPaterno.set($event)" name="apellidoPaterno" maxlength="50"
-            [disabled]="isSubmitting()">
+            [isInvalid]="!!apellidoPaternoError()" [errorMessage]="apellidoPaternoError()" [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()"
+          <app-input label="Apellido Materno" placeholder="Ej. Mendez" [value]="apellidoMaterno()"
             (valueChange)="apellidoMaterno.set($event)" name="apellidoMaterno" maxlength="50"
             [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Correo Electrónico" type="email" placeholder="Ej. ana@correo.com" [value]="correo()"
-            (valueChange)="correo.set($event)" name="correo" maxlength="100" [disabled]="isSubmitting()">
+          <app-input label="Correo Electronico" type="email" placeholder="Ej. ana@correo.com" [value]="correo()"
+            (valueChange)="correo.set($event)" name="correo" maxlength="100" [isInvalid]="!!correoError()" [errorMessage]="correoError()" [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <!-- Identificación y Contacto -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC" [value]="rfc()"
-            (valueChange)="rfc.set($event)" name="rfc" maxlength="13" [disabled]="isSubmitting()">
+            (valueChange)="rfc.set($event)" name="rfc" maxlength="13" [isInvalid]="!!rfcError()" [errorMessage]="rfcError()" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="CURP (18 caracteres)" placeholder="GAMA800101HDFRRC08" [value]="curp()"
-            (valueChange)="curp.set($event)" name="curp" maxlength="18" [disabled]="isSubmitting()">
+            (valueChange)="curp.set($event)" name="curp" maxlength="18" [isInvalid]="!!curpError()" [errorMessage]="curpError()" [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Teléfono" type="tel" placeholder="10 dígitos" [value]="phone()"
-            (valueChange)="phone.set($event)" name="phone" maxlength="10" [disabled]="isSubmitting()">
+          <app-input label="Telefono" type="tel" placeholder="10 digitos" [value]="phone()"
+            (valueChange)="phone.set($event)" name="phone" maxlength="10" [isInvalid]="!!phoneError()" [errorMessage]="phoneError()" [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <!-- Dirección -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <app-input label="Calle" placeholder="Ej. Av. Juárez" [value]="calle()" (valueChange)="calle.set($event)"
+          <app-input label="Calle" placeholder="Ej. Av. Juarez" [value]="calle()" (valueChange)="calle.set($event)"
             name="calle" maxlength="100" [disabled]="isSubmitting()">
           </app-input>
-          <app-input label="Número" placeholder="Ej. 123" [value]="numero()" (valueChange)="numero.set($event)"
+          <app-input label="Numero" placeholder="Ej. 123" [value]="numero()" (valueChange)="numero.set($event)"
             name="numero" maxlength="10" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Colonia" placeholder="Ej. Centro" [value]="colonia()" (valueChange)="colonia.set($event)"
@@ -87,9 +87,9 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <app-input label="Código Postal (5 dígitos)" placeholder="Ej. 44100" [value]="codigoPostal()"
+          <app-input label="Codigo Postal (5 digitos)" placeholder="Ej. 44100" [value]="codigoPostal()"
             (valueChange)="codigoPostal.set($event)" name="codigoPostal" maxlength="5" inputmode="numeric"
-            [disabled]="isSubmitting()">
+            [isInvalid]="!!codigoPostalError()" [errorMessage]="codigoPostalError()" [disabled]="isSubmitting()">
           </app-input>
         </div>
       </div>
