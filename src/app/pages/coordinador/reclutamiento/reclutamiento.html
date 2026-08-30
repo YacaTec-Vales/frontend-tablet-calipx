@@ -61,27 +61,27 @@
         <!-- Nombre completo y correo -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <app-input label="Nombre" placeholder="Ej. Ana" [value]="nombre()" (valueChange)="nombre.set($event)" [sanitizeType]="'name'"
-            [disabled]="isSubmitting()"></app-input>
-          <app-input label="Apellido Paterno" placeholder="Ej. García" [value]="apellidoPaterno()" [sanitizeType]="'name'"
-            (valueChange)="apellidoPaterno.set($event)" [disabled]="isSubmitting()"></app-input>
-          <app-input label="Apellido Materno" placeholder="Ej. Méndez" [value]="apellidoMaterno()" [sanitizeType]="'name'"
-            (valueChange)="apellidoMaterno.set($event)" [disabled]="isSubmitting()"></app-input>
-          <app-input label="Correo Electrónico" type="email" placeholder="Ej. ana@correo.com" [value]="correo()"
-            (valueChange)="correo.set($event)" name="correo" [disabled]="isSubmitting()">
+            [isInvalid]="!!nombreError()" [errorMessage]="nombreError()" [disabled]="isSubmitting()"></app-input>
+          <app-input label="Apellido Paterno" placeholder="Ej. Garcia" [value]="apellidoPaterno()" [sanitizeType]="'name'"
+            (valueChange)="apellidoPaterno.set($event)" [isInvalid]="!!apellidoPaternoError()" [errorMessage]="apellidoPaternoError()" [disabled]="isSubmitting()"></app-input>
+          <app-input label="Apellido Materno" placeholder="Ej. Mendez" [value]="apellidoMaterno()" [sanitizeType]="'name'"
+            (valueChange)="apellidoMaterno.set($event)" [isInvalid]="!!apellidoMaternoError()" [errorMessage]="apellidoMaternoError()" [disabled]="isSubmitting()"></app-input>
+          <app-input label="Correo Electronico" type="email" placeholder="Ej. ana@correo.com" [value]="correo()"
+            (valueChange)="correo.set($event)" name="correo" [isInvalid]="!!correoError()" [errorMessage]="correoError()" [disabled]="isSubmitting()">
           </app-input>
         </div>
 
         <!-- Identificación y Contacto -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <app-input label="RFC (13 caracteres)" placeholder="GAMA800101ABC" [sanitizeType]="'rfc'"
-            [value]="rfc()" (valueChange)="rfc.set($event)" maxlength="13" [disabled]="isSubmitting()"></app-input>
+            [value]="rfc()" (valueChange)="rfc.set($event)" maxlength="13" [isInvalid]="!!rfcError()" [errorMessage]="rfcError()" [disabled]="isSubmitting()"></app-input>
           <app-input label="CURP (18 caracteres)" placeholder="GAMA800101HDFRRC08" [sanitizeType]="'curp'"
-            [value]="curp()" (valueChange)="curp.set($event)" maxlength="18" [disabled]="isSubmitting()"></app-input>
-          <app-input label="Teléfono" type="tel" placeholder="Ej. 8711234567" [sanitizeType]="'phone'"
-            [value]="phone()" (valueChange)="phone.set($event)" maxlength="10" inputmode="numeric" [disabled]="isSubmitting()">
+            [value]="curp()" (valueChange)="curp.set($event)" maxlength="18" [isInvalid]="!!curpError()" [errorMessage]="curpError()" [disabled]="isSubmitting()"></app-input>
+          <app-input label="Telefono" type="tel" placeholder="Ej. 8711234567" [sanitizeType]="'phone'"
+            [value]="phone()" (valueChange)="phone.set($event)" maxlength="10" inputmode="numeric" [isInvalid]="!!phoneError()" [errorMessage]="phoneError()" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Fecha de Nacimiento" type="date" [value]="fechaNacimiento()"
-            (valueChange)="fechaNacimiento.set($event)" name="fechaNacimiento" [disabled]="isSubmitting()">
+            (valueChange)="fechaNacimiento.set($event)" name="fechaNacimiento" [isInvalid]="!!fechaNacimientoError()" [errorMessage]="fechaNacimientoError()" [disabled]="isSubmitting()">
           </app-input>
         </div>
 
@@ -97,8 +97,8 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <app-input label="Código Postal (5 dígitos)" placeholder="Ej. 44100" [value]="codigoPostal()" [sanitizeType]="'numeric'"
-            (valueChange)="codigoPostal.set($event)" maxlength="5" inputmode="numeric" [disabled]="isSubmitting()">
+          <app-input label="Codigo Postal (5 digitos)" placeholder="Ej. 44100" [value]="codigoPostal()" [sanitizeType]="'numeric'"
+            (valueChange)="codigoPostal.set($event)" maxlength="5" inputmode="numeric" [isInvalid]="!!codigoPostalError()" [errorMessage]="codigoPostalError()" [disabled]="isSubmitting()">
           </app-input>
           <app-input label="Lugar de Nacimiento" placeholder="Ej. Guadalajara" [value]="lugarNacimiento()" [sanitizeType]="'name'"
             (valueChange)="lugarNacimiento.set($event)" [disabled]="isSubmitting()"></app-input>

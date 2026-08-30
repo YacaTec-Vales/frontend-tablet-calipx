@@ -17,6 +17,17 @@ import {
   LimiteCreditoOtraRelacion,
   Familiar,
 } from '../../../core/models/solicitud.model';
+import {
+  validateName,
+  validateEmail,
+  validateCurp,
+  validateRfc,
+  validatePhone,
+  validatePostalCode,
+  validateBirthDate,
+  validateBankName,
+  validatePositiveAmount,
+} from '../../../core/validators/form-validators';
 
 /**
  * Pagina de reclutamiento del Coordinador.
@@ -110,18 +121,29 @@ export class Reclutamiento {
   readonly newVehiculoPlacas = signal('');
 
   addVehiculo() {
-    if (this.newVehiculoMarca() && this.newVehiculoModelo() && this.newVehiculoAnio()) {
-      this.vehiculos.update(v => [...v, {
-        marca: this.newVehiculoMarca(),
-        modelo: this.newVehiculoModelo(),
-        anio: this.newVehiculoAnio()!,
-        placas: this.newVehiculoPlacas() || undefined
-      }]);
-      this.newVehiculoMarca.set('');
-      this.newVehiculoModelo.set('');
-      this.newVehiculoAnio.set(undefined);
-      this.newVehiculoPlacas.set('');
+    const marca = this.newVehiculoMarca();
+    const modelo = this.newVehiculoModelo();
+    const anio = this.newVehiculoAnio();
+
+    if (!marca || !modelo || anio === undefined) {
+      this.errorMessage.set('Marca, modelo y anio son obligatorios.');
+      return;
     }
+    if (!Number.isFinite(anio) || anio < 1900 || anio > new Date().getFullYear() + 1) {
+      this.errorMessage.set('El anio debe estar entre 1900 y el anio actual.');
+      return;
+    }
+    this.errorMessage.set('');
+    this.vehiculos.update(v => [...v, {
+      marca,
+      modelo,
+      anio,
+      placas: this.newVehiculoPlacas() || undefined,
+    }]);
+    this.newVehiculoMarca.set('');
+    this.newVehiculoModelo.set('');
+    this.newVehiculoAnio.set(undefined);
+    this.newVehiculoPlacas.set('');
   }
 
   removeVehiculo(index: number) {
@@ -135,18 +157,29 @@ export class Reclutamiento {
   readonly newRefCarta = signal(false);
 
   addReferencia() {
-    if (this.newRefEstablecimiento() && this.newRefDireccion() && this.newRefAntiguedad() !== undefined) {
-      this.referenciasLaborales.update(r => [...r, {
-        establecimiento: this.newRefEstablecimiento(),
-        direccion: this.newRefDireccion(),
-        antiguedad_anios: this.newRefAntiguedad()!,
-        carta_laboral_presentada: this.newRefCarta()
-      }]);
-      this.newRefEstablecimiento.set('');
-      this.newRefDireccion.set('');
-      this.newRefAntiguedad.set(undefined);
-      this.newRefCarta.set(false);
+    const establecimiento = this.newRefEstablecimiento();
+    const direccion = this.newRefDireccion();
+    const antiguedad = this.newRefAntiguedad();
+
+    if (!establecimiento || !direccion || antiguedad === undefined) {
+      this.errorMessage.set('Establecimiento, direccion y antiguedad son obligatorios.');
+      return;
     }
+    if (!Number.isFinite(antiguedad) || antiguedad < 0 || antiguedad > 80) {
+      this.errorMessage.set('La antiguedad debe estar entre 0 y 80 anios.');
+      return;
+    }
+    this.errorMessage.set('');
+    this.referenciasLaborales.update(r => [...r, {
+      establecimiento,
+      direccion,
+      antiguedad_anios: antiguedad,
+      carta_laboral_presentada: this.newRefCarta(),
+    }]);
+    this.newRefEstablecimiento.set('');
+    this.newRefDireccion.set('');
+    this.newRefAntiguedad.set(undefined);
+    this.newRefCarta.set(false);
   }
 
   removeReferencia(index: number) {
@@ -159,16 +192,26 @@ export class Reclutamiento {
   readonly newLimiteCarta = signal(false);
 
   addLimite() {
-    if (this.newLimiteInstitucion() && this.newLimiteMonto() !== undefined) {
-      this.limitesCredito.update(l => [...l, {
-        institucion: this.newLimiteInstitucion(),
-        monto_centavos: this.newLimiteMonto()!,
-        carta_acredita: this.newLimiteCarta()
-      }]);
-      this.newLimiteInstitucion.set('');
-      this.newLimiteMonto.set(undefined);
-      this.newLimiteCarta.set(false);
+    const institucion = this.newLimiteInstitucion();
+    const monto = this.newLimiteMonto();
+
+    if (!institucion || monto === undefined) {
+      this.errorMessage.set('Institucion y monto son obligatorios.');
+      return;
     }
+    if (!Number.isFinite(monto) || monto <= 0) {
+      this.errorMessage.set('El monto debe ser mayor a cero.');
+      return;
+    }
+    this.errorMessage.set('');
+    this.limitesCredito.update(l => [...l, {
+      institucion,
+      monto_centavos: monto,
+      carta_acredita: this.newLimiteCarta(),
+    }]);
+    this.newLimiteInstitucion.set('');
+    this.newLimiteMonto.set(undefined);
+    this.newLimiteCarta.set(false);
   }
 
   removeLimite(index: number) {
@@ -184,22 +227,41 @@ export class Reclutamiento {
   readonly newFamiliarContacto = signal('');
 
   addFamiliar() {
-    if (this.newFamiliarParentesco() && this.newFamiliarNombre() && this.newFamiliarEdad() !== undefined && this.newFamiliarPuesto() && this.newFamiliarLugar() && this.newFamiliarContacto()) {
-      this.familiares.update(f => [...f, {
-        parentesco: this.newFamiliarParentesco() as any,
-        nombre: this.newFamiliarNombre(),
-        edad: this.newFamiliarEdad()!,
-        puesto: this.newFamiliarPuesto(),
-        lugar_trabajo_o_estudio: this.newFamiliarLugar(),
-        referencia_contacto: this.newFamiliarContacto()
-      }]);
-      this.newFamiliarParentesco.set('');
-      this.newFamiliarNombre.set('');
-      this.newFamiliarEdad.set(undefined);
-      this.newFamiliarPuesto.set('');
-      this.newFamiliarLugar.set('');
-      this.newFamiliarContacto.set('');
+    const parentesco = this.newFamiliarParentesco();
+    const nombre = this.newFamiliarNombre();
+    const edad = this.newFamiliarEdad();
+    const puesto = this.newFamiliarPuesto();
+    const lugar = this.newFamiliarLugar();
+    const contacto = this.newFamiliarContacto();
+
+    if (!parentesco || !nombre || edad === undefined || !puesto || !lugar || !contacto) {
+      this.errorMessage.set('Todos los campos del familiar son obligatorios.');
+      return;
     }
+    const nombreErr = validateName(nombre, 'nombre del familiar');
+    if (nombreErr) {
+      this.errorMessage.set(nombreErr);
+      return;
+    }
+    if (!Number.isFinite(edad) || edad < 0 || edad > 120) {
+      this.errorMessage.set('La edad debe estar entre 0 y 120 anios.');
+      return;
+    }
+    this.errorMessage.set('');
+    this.familiares.update(f => [...f, {
+      parentesco: parentesco as any,
+      nombre,
+      edad,
+      puesto,
+      lugar_trabajo_o_estudio: lugar,
+      referencia_contacto: contacto,
+    }]);
+    this.newFamiliarParentesco.set('');
+    this.newFamiliarNombre.set('');
+    this.newFamiliarEdad.set(undefined);
+    this.newFamiliarPuesto.set('');
+    this.newFamiliarLugar.set('');
+    this.newFamiliarContacto.set('');
   }
 
   removeFamiliar(index: number) {
@@ -216,8 +278,12 @@ export class Reclutamiento {
   readonly errorMessage = signal('');
 
   nextStep(): void {
+    if (this.currentStep() === 1) {
+      this.showStep1Errors.set(true);
+    }
     if (this.currentStep() < this.totalSteps && this.canAdvanceStep()) {
       this.currentStep.update(s => s + 1);
+      this.showStep1Errors.set(false);
       window.scrollTo(0, 0);
     }
   }
@@ -229,27 +295,82 @@ export class Reclutamiento {
     }
   }
 
+  // ─── Errores por campo (paso 1) ───────────────────────
+
+  readonly nombreError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validateName(this.nombre(), 'nombre');
+  });
+
+  readonly apellidoPaternoError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validateName(this.apellidoPaterno(), 'apellido paterno');
+  });
+
+  readonly apellidoMaternoError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validateName(this.apellidoMaterno(), 'apellido materno');
+  });
+
+  readonly correoError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validateEmail(this.correo());
+  });
+
+  readonly rfcError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validateRfc(this.rfc(), 'RFC');
+  });
+
+  readonly curpError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validateCurp(this.curp(), 'CURP');
+  });
+
+  readonly phoneError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validatePhone(this.phone());
+  });
+
+  readonly fechaNacimientoError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validateBirthDate(this.fechaNacimiento());
+  });
+
+  readonly codigoPostalError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    return validatePostalCode(this.codigoPostal(), 'codigo postal');
+  });
+
+  readonly ineError = computed(() => {
+    if (!this.showStep1Errors()) return '';
+    if (!this.ineFile()) return 'La identificacion (INE) es obligatoria.';
+    return '';
+  });
+
+  /** Habilita mostrar errores en paso 1 tras click en Siguiente. */
+  readonly showStep1Errors = signal(false);
+
   /** Valida si se puede avanzar al siguiente paso */
   canAdvanceStep(): boolean {
     if (this.currentStep() === 1) {
       return (
-        this.nombre().trim().length > 0 &&
-        this.correo().trim().length > 0 &&
-        this.correo().includes('@') &&
-        this.apellidoPaterno().trim().length > 0 &&
-        this.apellidoMaterno().trim().length > 0 &&
-        this.rfc().trim().length === 13 &&
-        this.curp().trim().length === 18 &&
-        this.phone().trim().length === 10 &&
-        this.fechaNacimiento().trim().length > 0 &&
+        !this.nombreError() &&
+        !this.apellidoPaternoError() &&
+        !this.apellidoMaternoError() &&
+        !this.correoError() &&
+        !this.rfcError() &&
+        !this.curpError() &&
+        !this.phoneError() &&
+        !this.fechaNacimientoError() &&
+        !this.codigoPostalError() &&
+        !this.ineError() &&
         this.calle().trim().length > 0 &&
         this.numero().trim().length > 0 &&
         this.colonia().trim().length > 0 &&
-        this.codigoPostal().trim().length === 5 &&
         this.lugarNacimiento().trim().length > 0 &&
         this.estado().trim().length > 0 &&
-        this.ciudad().trim().length > 0 &&
-        this.ineFile() !== null
+        this.ciudad().trim().length > 0
       );
     }
     // Paso 2 a 5 no tienen campos obligatorios estrictos que bloqueen avanzar
@@ -401,14 +522,14 @@ export class Reclutamiento {
     this.lugarNacimiento.set('');
     this.estado.set('');
     this.ciudad.set('');
-    
+
     // Reset file y preview
     this.ineFile.set(null);
     if (this.inePreviewUrl()) {
       URL.revokeObjectURL(this.inePreviewUrl()!);
       this.inePreviewUrl.set(null);
     }
-    
+
     this.vehiculos.set([]);
     this.domicilioSituacion.set('');
     this.domicilioM2.set(undefined);
@@ -419,6 +540,7 @@ export class Reclutamiento {
     this.limitesCredito.set([]);
     this.familiares.set([]);
     this.currentStep.set(1);
+    this.showStep1Errors.set(false);
   }
 
   /** Rellena el formulario con datos de prueba basados en el Swagger */
