@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../../components/ui/button/button';
@@ -6,6 +6,11 @@ import { InputComponent } from '../../../components/ui/input/input';
 import { AuthService } from '../../../core/services/auth.service';
 import { MfaService } from '../../../core/services/mfa.service';
 import * as QRCode from 'qrcode';
+import {
+  validatePassword,
+  validatePasswordsMatch,
+  validateMfaCode,
+} from '../../../core/validators/form-validators';
 
 @Component({
   selector: 'app-seguridad',
@@ -98,40 +103,50 @@ import * as QRCode from 'qrcode';
                 </div>
 
                 @if (showPasswordChange()) {
-                  <form (submit)="changePassword($event)" class="space-y-4 pt-4 border-t border-gray-200">
+                  <form (submit)="changePassword($event)" class="space-y-4 pt-4 border-t border-gray-200" novalidate>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <app-input
                         id="currentPassword"
-                        label="Contraseña Actual"
+                        label="Contrasena Actual"
                         type="password"
                         placeholder="••••••••"
                         [(value)]="currentPassword"
+                        autocomplete="current-password"
+                        [isInvalid]="!!currentPasswordError()"
+                        [errorMessage]="currentPasswordError()"
                       ></app-input>
                       <div class="hidden md:block"></div>
-                      
+
                       <app-input
                         id="newPassword"
-                        label="Nueva Contraseña"
+                        label="Nueva Contrasena"
                         type="password"
-                        placeholder="••••••••"
+                        placeholder="Minimo 8 caracteres"
                         [(value)]="newPassword"
+                        autocomplete="new-password"
+                        hint="Debe tener al menos una mayuscula, una minuscula y un digito."
+                        [isInvalid]="!!newPasswordError()"
+                        [errorMessage]="newPasswordError()"
                       ></app-input>
                       <app-input
                         id="confirmPassword"
-                        label="Confirmar Nueva Contraseña"
+                        label="Confirmar Nueva Contrasena"
                         type="password"
-                        placeholder="••••••••"
+                        placeholder="Vuelve a escribirla"
                         [(value)]="confirmPassword"
+                        autocomplete="new-password"
+                        [isInvalid]="!!confirmPasswordError()"
+                        [errorMessage]="confirmPasswordError()"
                       ></app-input>
                     </div>
 
                     <div class="flex justify-end pt-2">
-                      <app-button type="submit" [disabled]="isLoading() || !currentPassword() || !newPassword() || !confirmPassword()">
+                      <app-button type="submit" [disabled]="isLoading() || !canChangePassword()">
                         <span class="flex items-center gap-2">
                           @if (isLoading()) {
                             <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                           }
-                          Guardar Contraseña
+                          Guardar Contrasena
                         </span>
                       </app-button>
                     </div>
@@ -211,7 +226,7 @@ import * as QRCode from 'qrcode';
                   <h4 class="text-lg font-bold text-gray-900 mb-2">Verifica la configuración</h4>
                   <p class="text-sm text-gray-600 mb-6">Ingresa el código de 6 dígitos generado por tu aplicación para activar el MFA.</p>
                   
-                  <form (submit)="verifySetup($event)" class="space-y-4">
+                  <form (submit)="verifySetup($event)" class="space-y-4" novalidate>
                     <div class="max-w-xs mx-auto">
                       <app-input
                         id="setupCode"
@@ -219,14 +234,17 @@ import * as QRCode from 'qrcode';
                         placeholder="123456"
                         [maxlength]="6"
                         [(value)]="setupCode"
+                        autocomplete="one-time-code"
+                        [isInvalid]="!!setupCodeError()"
+                        [errorMessage]="setupCodeError()"
                       ></app-input>
                     </div>
-                    
+
                     <div class="flex gap-3 justify-center pt-2">
                       <app-button type="button" variant="secondary" (click)="cancelSetup()" [disabled]="isLoading()">
                         Cancelar
                       </app-button>
-                      <app-button type="submit" [disabled]="isLoading() || setupCode().length < 6">
+                      <app-button type="submit" [disabled]="isLoading() || !canVerifySetup()">
                         Verificar y Activar
                       </app-button>
                     </div>
@@ -256,9 +274,9 @@ import * as QRCode from 'qrcode';
                       <button type="button" class="text-red-700 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-sm px-5 py-2.5 transition-colors shadow-sm" (click)="showDisableForm.set(true)">
                         Desactivar autenticación de dos pasos
                       </button>
-                    } @else {
-                      <form (submit)="disableMfa($event)" class="bg-white p-4 rounded-lg border border-red-200">
-                        <p class="text-sm text-gray-700 mb-3 font-medium">Ingresa un código actual para confirmar:</p>
+                    }                     @else {
+                      <form (submit)="disableMfa($event)" class="bg-white p-4 rounded-lg border border-red-200" novalidate>
+                        <p class="text-sm text-gray-700 mb-3 font-medium">Ingresa un codigo actual para confirmar:</p>
                         <div class="flex gap-3">
                           <div class="flex-1">
                             <app-input
@@ -267,13 +285,16 @@ import * as QRCode from 'qrcode';
                               placeholder="123456"
                               [maxlength]="6"
                               [(value)]="disableCode"
+                              autocomplete="one-time-code"
+                              [isInvalid]="!!disableCodeError()"
+                              [errorMessage]="disableCodeError()"
                             ></app-input>
                           </div>
-                          <app-button type="submit" variant="primary" class="!bg-red-600 hover:!bg-red-700 !ring-red-300" [disabled]="isLoading() || disableCode().length < 6">
+                          <app-button type="submit" variant="primary" class="!bg-red-600 hover:!bg-red-700 !ring-red-300" [disabled]="isLoading() || !canDisableMfa()">
                             Confirmar
                           </app-button>
                         </div>
-                        <button type="button" class="text-sm text-gray-500 hover:text-gray-700 mt-3" (click)="showDisableForm.set(false); disableCode.set(''); alert.set(null)">
+                        <button type="button" class="text-sm text-gray-500 hover:text-gray-700 mt-3" (click)="showDisableForm.set(false); disableCode.set(''); alert.set(null); submittedMfa.set(false)">
                           Cancelar
                         </button>
                       </form>
@@ -321,6 +342,57 @@ export class Seguridad implements OnInit {
 
   readonly alert = signal<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  /** Tocado: habilita mostrar errores por campo despues del primer submit. */
+  readonly submittedPassword = signal(false);
+  readonly submittedMfa = signal(false);
+
+  // Errores por campo (cambio de contrasena)
+  readonly currentPasswordError = computed(() => {
+    if (!this.submittedPassword()) return '';
+    if (!this.currentPassword()) return 'Ingresa tu contrasena actual.';
+    return '';
+  });
+
+  readonly newPasswordError = computed(() => {
+    if (!this.submittedPassword()) return '';
+    if (!this.newPassword()) return 'Ingresa la nueva contrasena.';
+    if (this.newPassword() === this.currentPassword()) {
+      return 'La nueva contrasena debe ser diferente a la actual.';
+    }
+    return validatePassword(this.newPassword());
+  });
+
+  readonly confirmPasswordError = computed(() => {
+    if (!this.submittedPassword()) return '';
+    if (!this.confirmPassword()) return 'Confirma la nueva contrasena.';
+    return validatePasswordsMatch(this.newPassword(), this.confirmPassword());
+  });
+
+  readonly canChangePassword = computed(() => {
+    return (
+      !!this.currentPassword() &&
+      !!this.newPassword() &&
+      !!this.confirmPassword() &&
+      !this.currentPasswordError() &&
+      !this.newPasswordError() &&
+      !this.confirmPasswordError()
+    );
+  });
+
+  // Errores por campo (MFA setup + disable)
+  readonly setupCodeError = computed(() => {
+    if (!this.submittedMfa()) return '';
+    return validateMfaCode(this.setupCode());
+  });
+
+  readonly disableCodeError = computed(() => {
+    if (!this.submittedMfa()) return '';
+    return validateMfaCode(this.disableCode());
+  });
+
+  readonly canVerifySetup = computed(() => !this.setupCodeError() && this.setupCode().length > 0);
+  readonly canDisableMfa = computed(() => !this.disableCodeError() && this.disableCode().length > 0);
+
   ngOnInit() {
     const user = this.authService.currentUser();
     if (user?.mfaEnabled) {
@@ -358,37 +430,44 @@ export class Seguridad implements OnInit {
     this.qrCodeUrl.set('');
     this.backupCodes.set([]);
     this.alert.set(null);
+    this.submittedMfa.set(false);
   }
 
   verifySetup(event: Event) {
     event.preventDefault();
-    if (this.setupCode().length < 6) return;
-    
-    this.isLoading.set(true);
+    this.submittedMfa.set(true);
     this.alert.set(null);
-    
+
+    if (this.setupCodeError()) return;
+
+    this.isLoading.set(true);
+
     this.mfaService.verifySetup(this.setupCode()).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isMfaEnabled.set(true);
         this.step.set('active');
-        this.alert.set({ type: 'success', message: '¡Autenticación de dos pasos activada exitosamente!' });
+        this.alert.set({ type: 'success', message: 'Autenticacion de dos pasos activada exitosamente.' });
         this.setupCode.set('');
+        this.submittedMfa.set(false);
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.alert.set({ type: 'error', message: err.error?.message || 'Código incorrecto. Intenta nuevamente.' });
+        this.alert.set({ type: 'error', message: err.error?.message || 'Codigo incorrecto. Intenta nuevamente.' });
+        this.submittedMfa.set(false);
       }
     });
   }
 
   disableMfa(event: Event) {
     event.preventDefault();
-    if (this.disableCode().length < 6) return;
-    
-    this.isLoading.set(true);
+    this.submittedMfa.set(true);
     this.alert.set(null);
-    
+
+    if (this.disableCodeError()) return;
+
+    this.isLoading.set(true);
+
     this.mfaService.disable(this.disableCode()).subscribe({
       next: () => {
         this.isLoading.set(false);
@@ -396,26 +475,31 @@ export class Seguridad implements OnInit {
         this.step.set('inactive');
         this.showDisableForm.set(false);
         this.disableCode.set('');
-        this.alert.set({ type: 'success', message: 'Autenticación de dos pasos desactivada.' });
+        this.alert.set({ type: 'success', message: 'Autenticacion de dos pasos desactivada.' });
+        this.submittedMfa.set(false);
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.alert.set({ type: 'error', message: err.error?.message || 'Código incorrecto. Intenta nuevamente.' });
+        this.alert.set({ type: 'error', message: err.error?.message || 'Codigo incorrecto. Intenta nuevamente.' });
+        this.submittedMfa.set(false);
       }
     });
   }
 
   changePassword(event: Event) {
     event.preventDefault();
-    if (!this.currentPassword() || !this.newPassword() || !this.confirmPassword()) return;
+    this.submittedPassword.set(true);
+    this.alert.set(null);
 
-    if (this.newPassword() !== this.confirmPassword()) {
-      this.alert.set({ type: 'error', message: 'Las contraseñas nuevas no coinciden.' });
+    if (
+      this.currentPasswordError() ||
+      this.newPasswordError() ||
+      this.confirmPasswordError()
+    ) {
       return;
     }
 
     this.isLoading.set(true);
-    this.alert.set(null);
 
     this.authService.changePassword({
       currentPassword: this.currentPassword(),
@@ -423,16 +507,17 @@ export class Seguridad implements OnInit {
     }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.alert.set({ type: 'success', message: 'Contraseña actualizada exitosamente.' });
+        this.alert.set({ type: 'success', message: 'Contrasena actualizada exitosamente.' });
         this.showPasswordChange.set(false);
         this.currentPassword.set('');
         this.newPassword.set('');
         this.confirmPassword.set('');
+        this.submittedPassword.set(false);
       },
       error: (err) => {
         this.isLoading.set(false);
         const reasons = err.error?.error?.details?.reasons;
-        const backendMessage = Array.isArray(reasons) ? reasons.join(', ') : (err.error?.message || 'Error al cambiar la contraseña.');
+        const backendMessage = Array.isArray(reasons) ? reasons.join(', ') : (err.error?.message || 'Error al cambiar la contrasena.');
         this.alert.set({ type: 'error', message: backendMessage });
       }
     });

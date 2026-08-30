@@ -22,6 +22,7 @@
       <div
         [class]="alert()?.type === 'error' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-green-50 text-green-600 border-green-200'"
         class="p-4 rounded-lg mb-6 text-sm border flex items-center gap-2"
+        role="alert"
       >
         @if (alert()?.type === 'error') {
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,33 +40,39 @@
 
       @switch (step()) {
         @case ('login') {
-          <form class="space-y-6" (submit)="onLoginSubmit($event)">
+          <form class="space-y-6" (submit)="onLoginSubmit($event)" novalidate>
             <app-input
               id="email"
-              label="Correo Electrónico"
+              label="Correo Electronico"
               type="email"
               placeholder="ejemplo@empresa.com"
               [(value)]="email"
+              autocomplete="email"
+              [isInvalid]="!!emailError()"
+              [errorMessage]="emailError()"
             ></app-input>
             <div class="space-y-2">
               <app-input
                 id="password"
-                label="Contraseña"
+                label="Contrasena"
                 [type]="showPassword() ? 'text' : 'password'"
-                placeholder="••••••••"
+                placeholder="Minimo 8 caracteres"
                 [(value)]="password"
+                autocomplete="current-password"
+                [isInvalid]="!!passwordError()"
+                [errorMessage]="passwordError()"
               ></app-input>
             </div>
-            <app-button type="submit" [disabled]="isLoading()" [fullWidth]="true" class="block w-full">
+            <app-button type="submit" [disabled]="isLoading() || !canSubmit()" [fullWidth]="true" class="block w-full">
               <span class="flex items-center justify-center gap-2">
                 @if (isLoading()) {
                 <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Iniciando sesión...
+                Iniciando sesion...
                 } @else {
-                Iniciar sesión
+                Iniciar sesion
                 }
               </span>
             </app-button>
@@ -73,39 +80,46 @@
         }
 
         @case ('change_password') {
-          <form class="space-y-6" (submit)="onChangePasswordSubmit($event)">
+          <form class="space-y-6" (submit)="onChangePasswordSubmit($event)" novalidate>
             <div class="text-center mb-4">
               <div class="bg-blue-100 text-blue-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                 </svg>
               </div>
-              <h3 class="text-lg font-medium text-gray-900">Cambio de Contraseña Requerido</h3>
-              <p class="text-sm text-gray-500 mt-2">Por tu seguridad, debes cambiar tu contraseña temporal antes de continuar.</p>
+              <h3 class="text-lg font-medium text-gray-900">Cambio de Contrasena Requerido</h3>
+              <p class="text-sm text-gray-500 mt-2">Por tu seguridad, debes cambiar tu contrasena temporal antes de continuar.</p>
             </div>
-            
+
             <app-input
               id="newPassword"
-              label="Nueva Contraseña"
+              label="Nueva Contrasena"
               [type]="showNewPassword() ? 'text' : 'password'"
-              placeholder="••••••••"
+              placeholder="Minimo 8 caracteres"
               [(value)]="newPassword"
+              autocomplete="new-password"
+              hint="Debe tener al menos una mayuscula, una minuscula y un digito."
+              [isInvalid]="!!newPasswordError()"
+              [errorMessage]="newPasswordError()"
             ></app-input>
             <app-input
               id="confirmPassword"
-              label="Confirmar Nueva Contraseña"
+              label="Confirmar Nueva Contrasena"
               [type]="showNewPassword() ? 'text' : 'password'"
-              placeholder="••••••••"
+              placeholder="Vuelve a escribirla"
               [(value)]="confirmPassword"
+              autocomplete="new-password"
+              [isInvalid]="!!confirmPasswordError()"
+              [errorMessage]="confirmPasswordError()"
             ></app-input>
 
-            <app-button type="submit" [disabled]="isLoading()" class="w-full">
+            <app-button type="submit" [disabled]="isLoading() || !canSubmit()" class="w-full">
               <span class="flex items-center justify-center gap-2">
                 @if (isLoading()) {
                 <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 Actualizando...
                 } @else {
-                Guardar Contraseña
+                Guardar Contrasena
                 }
               </span>
             </app-button>
@@ -113,23 +127,26 @@
         }
 
         @case ('mfa_verify') {
-          <form class="space-y-6" (submit)="onMfaVerifySubmit($event)">
+          <form class="space-y-6" (submit)="onMfaVerifySubmit($event)" novalidate>
             <div class="text-center mb-4">
               <div class="bg-brand-100 text-brand-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
               </div>
-              <h3 class="text-lg font-medium text-gray-900">Verificación de dos pasos</h3>
-              <p class="text-sm text-gray-500 mt-2">Ingresa el código de 6 dígitos generado por tu aplicación autenticadora.</p>
+              <h3 class="text-lg font-medium text-gray-900">Verificacion de dos pasos</h3>
+              <p class="text-sm text-gray-500 mt-2">Ingresa el codigo de 6 digitos generado por tu aplicacion autenticadora.</p>
             </div>
             <app-input
               id="mfaCodeVerify"
-              label="Código de seguridad"
+              label="Codigo de seguridad"
               type="text"
               placeholder="123456"
               [maxlength]="6"
               [(value)]="mfaCode"
+              autocomplete="one-time-code"
+              [isInvalid]="!!mfaCodeError()"
+              [errorMessage]="mfaCodeError()"
             ></app-input>
-            <app-button type="submit" [disabled]="isLoading() || mfaCode().length < 6" class="w-full">
+            <app-button type="submit" [disabled]="isLoading() || !canSubmit()" class="w-full">
               <span class="flex items-center justify-center gap-2">
                 @if (isLoading()) {
                 <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -139,45 +156,48 @@
                 }
               </span>
             </app-button>
-            <button type="button" class="w-full text-sm text-gray-500 hover:text-brand transition-colors text-center mt-4" (click)="step.set('login'); mfaCode.set(''); alert.set(null)">
+            <button type="button" class="w-full text-sm text-gray-500 hover:text-brand transition-colors text-center mt-4" (click)="step.set('login'); mfaCode.set(''); alert.set(null); submitted.set(false)">
               Volver
             </button>
           </form>
         }
 
         @case ('mfa_setup') {
-          <form class="space-y-6" (submit)="onMfaSetupSubmit($event)">
+          <form class="space-y-6" (submit)="onMfaSetupSubmit($event)" novalidate>
             <div class="text-center mb-2">
-              <h3 class="text-lg font-medium text-gray-900">Configuración MFA Obligatoria</h3>
-              <p class="text-sm text-gray-500 mt-1">Escanea el código QR con tu aplicación (Google Authenticator, Authy, etc) e ingresa el código de 6 dígitos.</p>
+              <h3 class="text-lg font-medium text-gray-900">Configuracion MFA Obligatoria</h3>
+              <p class="text-sm text-gray-500 mt-1">Escanea el codigo QR con tu aplicacion (Google Authenticator, Authy, etc) e ingresa el codigo de 6 digitos.</p>
             </div>
-            
+
             <div class="flex justify-center bg-white p-2 rounded-xl border border-gray-200 min-h-[160px]">
               @if (isMfaLoading() || !mfaSetupUrl()) {
                 <div class="flex items-center justify-center text-gray-400">
                   <svg class="animate-spin h-8 w-8 text-brand-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 </div>
               } @else {
-                <img [src]="mfaSetupUrl()" alt="Código QR MFA" class="w-40 h-40">
+                <img [src]="mfaSetupUrl()" alt="Codigo QR MFA" class="w-40 h-40">
               }
             </div>
-            
+
             <app-input
               id="mfaCodeSetup"
-              label="Código de Verificación Inicial"
+              label="Codigo de Verificacion Inicial"
               type="text"
               placeholder="123456"
               [maxlength]="6"
               [(value)]="mfaCode"
+              autocomplete="one-time-code"
+              [isInvalid]="!!mfaCodeError()"
+              [errorMessage]="mfaCodeError()"
             ></app-input>
 
-            <app-button type="submit" [disabled]="isMfaLoading() || mfaCode().length < 6" class="w-full">
+            <app-button type="submit" [disabled]="isMfaLoading() || !canSubmit()" class="w-full">
               <span class="flex items-center justify-center gap-2">
                 @if (isMfaLoading()) {
                 <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                Verificando Configuración...
+                Verificando Configuracion...
                 } @else {
-                Finalizar Configuración
+                Finalizar Configuracion
                 }
               </span>
             </app-button>
