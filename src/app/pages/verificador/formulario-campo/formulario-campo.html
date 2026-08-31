@@ -79,6 +79,29 @@
       <!-- Tab: Datos Generales -->
       @if (currentTab() === 'GENERALES') {
       <app-card title="Datos Generales" subtitle="Información capturada inicialmente">
+        
+        <!-- Header Actions -->
+        <div class="flex justify-end mb-4">
+          @if (!isEditingGenerales()) {
+            <app-button variant="outline" size="sm" (onClick)="iniciarEdicionGenerales()" [disabled]="isSubmitting()">
+              <span class="flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                Editar Datos Generales
+              </span>
+            </app-button>
+          } @else {
+            <div class="flex gap-2">
+              <app-button variant="secondary" size="sm" (onClick)="cancelarEdicionGenerales()" [disabled]="isSavingGenerales()">
+                Cancelar
+              </app-button>
+              <app-button variant="primary" size="sm" (onClick)="guardarEdicionGenerales()" [isLoading]="isSavingGenerales()">
+                Guardar Cambios
+              </app-button>
+            </div>
+          }
+        </div>
+
+        @if (!isEditingGenerales()) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8 mt-4">
           <div>
             <span class="block text-sm font-semibold text-gray-500">Nombre Completo</span>
@@ -124,6 +147,28 @@
             </p>
           </div>
         </div>
+        } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
+          <app-input id="editNombre" label="Nombre(s)" [(value)]="editNombre" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editApPaterno" label="Apellido Paterno" [(value)]="editApellidoPaterno" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editApMaterno" label="Apellido Materno" [(value)]="editApellidoMaterno" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editRfc" label="RFC" [(value)]="editRfc" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editCurp" label="CURP" [(value)]="editCurp" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editPhone" label="Teléfono" [(value)]="editPhone" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editCorreo" label="Correo Electrónico" type="email" [(value)]="editCorreo" [disabled]="isSavingGenerales()"></app-input>
+          
+          <div class="col-span-1 lg:col-span-3 pt-4 pb-2">
+            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Domicilio</h4>
+          </div>
+          
+          <div class="md:col-span-2">
+            <app-input id="editCalle" label="Calle" [(value)]="editCalle" [disabled]="isSavingGenerales()"></app-input>
+          </div>
+          <app-input id="editNumero" label="Número (Ext/Int)" [(value)]="editNumero" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editColonia" label="Colonia" [(value)]="editColonia" [disabled]="isSavingGenerales()"></app-input>
+          <app-input id="editCodigoPostal" label="Código Postal" [(value)]="editCodigoPostal" [disabled]="isSavingGenerales()"></app-input>
+        </div>
+        }
       </app-card>
       }
   
