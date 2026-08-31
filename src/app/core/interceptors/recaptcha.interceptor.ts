@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, from, switchMap } from 'rxjs';
+import { catchError, from, switchMap, throwError } from 'rxjs';
 
 import { RecaptchaService } from '../services/recaptcha.service';
 
@@ -17,12 +17,12 @@ const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
  * Comportamiento:
  *  - GET/HEAD/OPTIONS pasan sin token.
  *  - Con `recaptchaSiteKey` vacía (dev) pasa sin tocar la petición.
- *  - Si Google falla al generar el token, la petición sale igual
- *    sin header: el backend es quien aplica la política final
- *    (fail-open en cliente para no bloquear despliegues escalonados).
- *
- * Los tokens son de un solo uso; este interceptor pide uno nuevo
- * en cada request, incluidos reintentos del usuario.
+ *  - Si grecaptcha falla tras los reintentos del servicio, la
+ *    peticion se RECHAZA (fail-CLOSED): el backend exige token en
+ *    todos los metodos mutantes y enviar sin el es peor que avisar
+ *    al usuario. Antes era fail-open y por eso produccion fallaba
+ *    con 400 RECAPTCHA.MISSING cuando Google estaba lento o
+ *    bloqueado por un ad blocker.
  */
 export const recaptchaInterceptor: HttpInterceptorFn = (req, next) => {
   const recaptcha = inject(RecaptchaService);
@@ -42,6 +42,17 @@ export const recaptchaInterceptor: HttpInterceptorFn = (req, next) => {
           : req,
       ),
     ),
-    catchError(() => next(req)),
+    catchError((err) => {
+      console.error(
+        `[reCAPTCHA] fail-CLOSED: ${req.method} ${req.url}`,
+        err,
+      );
+      return throwError(
+        () =>
+          new Error(
+            'No se pudo verificar reCAPTCHA. Recarga la pagina o desactiva el bloqueador de anuncios.',
+          ),
+      );
+    }),
   );
 };
