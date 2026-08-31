@@ -1,4 +1,4 @@
-import { Service, inject } from '@angular/core';
+import { Service, inject, DestroyRef } from '@angular/core';
 
 import { environment } from '../../../environments/environment';
 
@@ -107,14 +107,44 @@ export class DdosProtectionService {
   private readonly samples: FailureSample[] = [];
   private readonly pendingWaits = new Map<string, Promise<void>>();
 
+  /**
+   * ID del setTimeout recursivo en `waitForBudget()` (pollster de rate
+   * limit). Se guarda aqui para poder cancelarlo en onDestroy si la app
+   * se cierra con un wait pendiente. BUG FIX 2026-08-31: antes era un
+   * setTimeout recursivo sin cleanup; podia dejar timers huerfanos
+   * en hot-reload (dev) o tests.
+   */
+  private recursiveTimer?: ReturnType<typeof setTimeout>;
+
+  /**
+   * Promesas pendientes para limpiar en destroy (rechazarlas
+   * evita callers colgados).
+   */
+  private readonly pendingResolvers = new Set<() => void>();
+
   private circuitState: CircuitState = 'closed';
   private circuitOpenedAt = 0;
   private consecutiveHalfOpenSuccesses = 0;
 
   private fingerprint: string | null = null;
 
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor() {
     this.configure(DEFAULT_RULES, DEFAULT_CIRCUIT);
+    // BUG FIX 2026-08-31: cleanup de timers recursivos cuando el
+    // servicio (root) se destruye (cierre de pestana, hot-reload, etc.).
+    this.destroyRef.onDestroy(() => {
+      if (this.recursiveTimer !== undefined) {
+        clearTimeout(this.recursiveTimer);
+        this.recursiveTimer = undefined;
+      }
+      // Resolver todas las promesas pendientes para evitar callers colgados.
+      for (const resolve of this.pendingResolvers) {
+        resolve();
+      }
+      this.pendingResolvers.clear();
+    });
   }
 
   /**
@@ -241,15 +271,20 @@ export class DdosProtectionService {
     if (inflight) return inflight;
 
     const promise = new Promise<void>((resolve) => {
+      // Registrar el resolver para cleanup en destroy.
+      this.pendingResolvers.add(resolve);
       const tick = (): void => {
         const decision = this.checkRateLimit(url);
         if (decision.kind === 'allow') {
           this.pendingWaits.delete(key);
+          this.pendingResolvers.delete(resolve);
           resolve();
           return;
         }
         const wait = decision.kind === 'delay' ? decision.waitMs : 250;
-        setTimeout(tick, Math.min(wait, 1000));
+        // BUG FIX 2026-08-31: guardar ID del timer para cancelarlo en
+        // onDestroy si el servicio se destruye con un wait pendiente.
+        this.recursiveTimer = setTimeout(tick, Math.min(wait, 1000));
       };
       tick();
     });

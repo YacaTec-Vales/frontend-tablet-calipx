@@ -1,4 +1,6 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timer } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +19,7 @@ export class SolicitarAumento implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private distribuidoresService = inject(DistribuidoresService);
+  private destroyRef = inject(DestroyRef);
 
   distribuidoraId = signal<string>('');
   monto = signal<number | undefined>(undefined);
@@ -61,11 +64,17 @@ export class SolicitarAumento implements OnInit {
       motivo: this.motivo()
     };
 
-    this.distribuidoresService.createCreditRaiseRequest(this.distribuidoraId(), dto).subscribe({
+    this.distribuidoresService.createCreditRaiseRequest(this.distribuidoraId(), dto)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: () => {
         this.successMessage.set('Solicitud de aumento enviada exitosamente a gerencia.');
         this.isSubmitting.set(false);
-        setTimeout(() => this.volver(), 2000);
+        // BUG FIX 2026-08-31: takeUntilDestroyed cancela el redirect si el
+        // componente se destruye antes de los 2s.
+        timer(2000)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => this.volver());
       },
       error: (err) => {
         this.errorMessage.set(err.error?.message || 'Error al enviar la solicitud de aumento.');
