@@ -81,6 +81,81 @@ export class FormularioCampo implements OnInit {
   /** Mensaje de error */
   readonly errorMessage = signal('');
 
+  // ─── Edición de Datos Generales (In-Place) ─────────────
+  readonly isEditingGenerales = signal(false);
+  readonly isSavingGenerales = signal(false);
+
+  readonly editNombre = signal('');
+  readonly editApellidoPaterno = signal('');
+  readonly editApellidoMaterno = signal('');
+  readonly editRfc = signal('');
+  readonly editCurp = signal('');
+  readonly editPhone = signal('');
+  readonly editCorreo = signal('');
+  readonly editCalle = signal('');
+  readonly editNumero = signal('');
+  readonly editColonia = signal('');
+  readonly editCodigoPostal = signal('');
+
+  iniciarEdicionGenerales(): void {
+    const s = this.solicitud();
+    if (!s) return;
+    this.editNombre.set(s.datos_generales.nombre);
+    this.editApellidoPaterno.set(s.datos_generales.apellido_paterno);
+    this.editApellidoMaterno.set(s.datos_generales.apellido_materno || '');
+    this.editRfc.set(s.datos_generales.rfc);
+    this.editCurp.set(s.datos_generales.curp || '');
+    this.editPhone.set(s.datos_generales.phone || '');
+    this.editCorreo.set(s.datos_generales.correo || '');
+    this.editCalle.set(s.datos_generales.calle);
+    this.editNumero.set(s.datos_generales.numero);
+    this.editColonia.set(s.datos_generales.colonia);
+    this.editCodigoPostal.set(s.datos_generales.codigo_postal);
+    this.isEditingGenerales.set(true);
+  }
+
+  cancelarEdicionGenerales(): void {
+    this.isEditingGenerales.set(false);
+  }
+
+  guardarEdicionGenerales(): void {
+    if (this.isSavingGenerales()) return;
+    const s = this.solicitud();
+    if (!s) return;
+    
+    this.isSavingGenerales.set(true);
+    this.errorMessage.set('');
+    
+    const datos_generales = {
+      ...s.datos_generales,
+      nombre: this.editNombre(),
+      apellido_paterno: this.editApellidoPaterno(),
+      apellido_materno: this.editApellidoMaterno(),
+      rfc: this.editRfc(),
+      curp: this.editCurp(),
+      phone: this.editPhone(),
+      correo: this.editCorreo(),
+      calle: this.editCalle(),
+      numero: this.editNumero(),
+      colonia: this.editColonia(),
+      codigo_postal: this.editCodigoPostal()
+    };
+
+    this.solicitudesService.update(this.solicitudId(), { datos_generales }).subscribe({
+      next: (res) => {
+        this.solicitud.set(res.data);
+        this.isSavingGenerales.set(false);
+        this.isEditingGenerales.set(false);
+        this.successMessage.set('Datos Generales actualizados correctamente.');
+        setTimeout(() => this.successMessage.set(''), 3000);
+      },
+      error: (err) => {
+        this.isSavingGenerales.set(false);
+        this.errorMessage.set(err.error?.message ?? 'Error al actualizar los datos generales.');
+      }
+    });
+  }
+
   /** Habilita los botones de dictamen solo si hay fotos y comentarios suficientes */
   get canSubmit(): boolean {
     return (
