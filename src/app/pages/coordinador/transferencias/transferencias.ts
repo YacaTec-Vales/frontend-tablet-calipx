@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardComponent } from '../../../components/ui/card/card';
@@ -10,6 +10,7 @@ import { AutorizacionesService, AuthorizationResponseDto } from '../../../core/s
 import { CoordinadoresService } from '../../../core/services/coordinadores.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { DistribuidorResponse } from '../../../core/models/distribuidor.model';
+import { validateReason } from '../../../core/validators/form-validators';
 
 /** Tipo extendido con nombres resueltos para la vista */
 interface TransferenciaView extends AuthorizationResponseDto {
@@ -149,6 +150,13 @@ export class Transferencias implements OnInit, OnDestroy {
     if (this.actionType === 'approve' && !this.selectedDistributorId) {
       this.errorMessage.set('Debes seleccionar una distribuidora destino.');
       return;
+    }
+    if (this.actionType === 'reject') {
+      const motivoErr = validateReason(this.motivoRechazo, 10, 500, 'motivo de rechazo');
+      if (motivoErr) {
+        this.errorMessage.set(motivoErr);
+        return;
+      }
     }
     this.showConfirmModal.set(true);
   }

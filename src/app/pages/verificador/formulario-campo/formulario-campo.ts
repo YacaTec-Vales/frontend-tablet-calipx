@@ -162,7 +162,7 @@ export class FormularioCampo implements OnInit {
       !!this.fotoFachada() &&
       !!this.fotoComprobante() &&
       !!this.fotoIdentificacion() &&
-      this.comentarios.length >= 5 &&
+      this.comentarios.trim().length >= 5 &&
       !this.isSubmitting()
     );
   }
@@ -202,6 +202,10 @@ export class FormularioCampo implements OnInit {
   emitirDictamen(dictamen: Dictamen): void {
     if (!this.fotoFachada() || !this.fotoComprobante() || !this.fotoIdentificacion()) {
       this.errorMessage.set('Las fotografías son requeridas antes de dictaminar.');
+      return;
+    }
+    if (this.comentarios.trim().length < 5) {
+      this.errorMessage.set('Los comentarios son obligatorios (minimo 5 caracteres).');
       return;
     }
 
