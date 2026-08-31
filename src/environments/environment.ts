@@ -1,6 +1,9 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.taquizaschavez.com.mx/api/v1',
+  // FASE B (CORS proper fix): apiUrl RELATIVO. El proxy de nginx en lb-01
+  // (public.conf / vpn.conf) resuelve /api/ al backend correspondiente,
+  // evitando preflight CORS cross-origin.
+  apiUrl: '/api/v1',
   enforceTabletResolution: true,
   // Clave pública del sitio reCAPTCHA v3 (Google reCAPTCHA Admin).
   // Un solo par de llaves cubre los dominios tecu/calipx/poch.
