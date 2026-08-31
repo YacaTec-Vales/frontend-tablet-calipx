@@ -1,4 +1,6 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timer } from 'rxjs';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -38,6 +40,7 @@ export class FormularioCampo implements OnInit {
   private readonly router = inject(Router);
   private readonly solicitudesService = inject(SolicitudesService);
   private readonly uploadsService = inject(UploadsService);
+  private readonly destroyRef = inject(DestroyRef);
 
   /** ID de la solicitud (viene de la ruta) */
   readonly solicitudId = signal('');
@@ -268,9 +271,11 @@ export class FormularioCampo implements OnInit {
               `Dictamen "${dictamenLabel}" enviado exitosamente.`,
             );
 
-            setTimeout(() => {
-              this.volver();
-            }, 2000);
+            // BUG FIX 2026-08-31: takeUntilDestroyed cancela el redirect si el
+            // componente se destruye antes de los 2s.
+            timer(2000)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe(() => this.volver());
           },
           error: (err) => {
             this.isSubmitting.set(false);
